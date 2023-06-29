@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useState, ReactNode } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import { CgPlayListAdd } from 'react-icons/cg'
 import { MdFormatListBulleted, MdOutlineInventory } from 'react-icons/md'
@@ -25,7 +25,7 @@ const navigation = [
     { name: 'Brand Enroll', href: '#', icon: CgPlayListAdd, current: false },
     { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: false },
     { name: 'Listings', href: '#', icon: MdFormatListBulleted, current: false },
-    { name: 'Orders', href: '#', icon: BsBoxSeam, current: false, subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam }, { name: 'Invoices', href: '#', icon: BsBoxSeam }] },
+    { name: 'Orders', href: '#', icon: BsBoxSeam, current: false, subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
     { name: 'Reports', href: '#', icon: BiBarChartSquare, current: false },
     { name: 'Shipping', href: '#', icon: FiTruck, current: false },
     { name: 'Account Info', href: '#', icon: FaRegUser, current: false },
@@ -36,16 +36,16 @@ const userNavigation = [
     { name: 'Sign out', href: '#' },
 ]
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-export default function Layout({ children }) {
+export default function Layout({ children }: { children: ReactNode }) {
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [openMenuName, setOpenMenuName] = useState('')
 
-    function openSubMenu(menuName) {
+    function openSubMenu(menuName: string) {
         if (openMenuName == menuName) {
             setOpenMenuName('')
         } else {
