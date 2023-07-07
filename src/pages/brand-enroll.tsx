@@ -46,7 +46,7 @@ export default function BrandEnroll() {
             notification(false, "Something went wrong")
             setLoading(false)
         }
-
+        setLoading(false)
     }
 
     function notification(success: boolean, message: string | undefined) {
