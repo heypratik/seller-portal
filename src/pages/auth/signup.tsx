@@ -67,7 +67,7 @@ export default function SignUp() {
             setSignUpSuccessfull(true)
             router.push('/auth/onboarding')
         } else {
-            notification(true, "Something went wrong")
+            notification(false, "Something went wrong")
             setLoading(false)
             setSignupErrors(data.message)
         }
