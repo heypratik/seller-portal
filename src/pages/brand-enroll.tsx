@@ -4,6 +4,7 @@ import Breadcrums from "../../components/Breadcrums"
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
+import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 
 export default function BrandEnroll() {
 
@@ -27,6 +28,9 @@ export default function BrandEnroll() {
 
     async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string }) {
         setLoading(true)
+        // https://test.mybranzapi.link/brands/register
+        // http://localhost:3004/brands/register
+        // console.log(formik.values)
         const response = await fetch('https://test.mybranzapi.link/brands/register', {
             method: 'POST',
             // mode: "no-cors",
@@ -148,12 +152,10 @@ export default function BrandEnroll() {
 
                                 {/* submit button */}
 
-                                <div className="mt-16">
-                                    <input type="submit" className="w-32 h-11 bg-[#F12D4D] rounded-md text-white text-base font-semibold mr-20 cursor-pointer" value="Next" />
+                                <div className="mt-16 flex">
+                                    <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-20 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Next`}</button>
 
-                                    <input type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer" value="Cancel" />
-
-
+                                    <button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button>
                                 </div>
                             </form>
                         </div>
