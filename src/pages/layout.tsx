@@ -19,17 +19,8 @@ import {
     XIcon,
 } from '@heroicons/react/outline'
 import { SearchIcon } from '@heroicons/react/solid'
+import { useRouter } from 'next/router'
 
-const navigation = [
-    { name: 'Dashboard', href: '#', icon: RxDashboard, current: true },
-    { name: 'Brand Enroll', href: '#', icon: CgPlayListAdd, current: false },
-    { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: false },
-    { name: 'Listings', href: '#', icon: MdFormatListBulleted, current: false },
-    { name: 'Orders', href: '#', icon: BsBoxSeam, current: false, subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
-    { name: 'Reports', href: '#', icon: BiBarChartSquare, current: false },
-    { name: 'Shipping', href: '#', icon: FiTruck, current: false },
-    { name: 'Account Info', href: '#', icon: FaRegUser, current: false },
-]
 const userNavigation = [
     { name: 'Your Profile', href: '#' },
     { name: 'Settings', href: '#' },
@@ -41,6 +32,27 @@ function classNames(...classes: string[]) {
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
+
+    const router = useRouter()
+
+    const isCurrentPage = (href: string) => {
+        if (router.pathname === href) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    const navigation = [
+        { name: 'Dashboard', href: '#', icon: RxDashboard, current: isCurrentPage(`/`) },
+        { name: 'Brand Enroll', href: '/brand-enroll', icon: CgPlayListAdd, current: isCurrentPage(`/brand-enroll`) },
+        { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: isCurrentPage(`/inventory`) },
+        { name: 'Listings', href: '#', icon: MdFormatListBulleted, current: isCurrentPage(`/list`) },
+        { name: 'Orders', href: '#', icon: BsBoxSeam, current: isCurrentPage(`/orders`), subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
+        { name: 'Reports', href: '#', icon: BiBarChartSquare, current: isCurrentPage(`/report`) },
+        { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },
+        { name: 'Account Info', href: '#', icon: FaRegUser, current: isCurrentPage(`/account-info`) },
+    ]
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [openMenuName, setOpenMenuName] = useState('')

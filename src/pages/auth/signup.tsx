@@ -40,7 +40,7 @@ export default function SignUp() {
         // Add Button loading state
         // Add Error icon for Error messages
         setLoading(true)
-        const response = await fetch('https://test.mybranzapi.link/sellers/signup', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/signup`, {
             method: 'POST',
             // mode: "no-cors",
             headers: { "Content-Type": "application/json", },

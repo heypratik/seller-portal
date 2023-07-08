@@ -8,7 +8,7 @@ export default NextAuth({
       async authorize(credentials, req) {
         try {
           // Make an API request to your login endpoint with the provided credentials
-          const response = await fetch('https://test.mybranzapi.link/sellers/login', {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({email: credentials.email, password: credentials.password})

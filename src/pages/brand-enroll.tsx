@@ -5,8 +5,23 @@ import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
+import { request } from "http";
 
-export default function BrandEnroll() {
+interface SellerData {
+    data: {
+        id: number;
+        name: string;
+        email: string;
+        password: string;
+        active: boolean;
+        createdAt: string;
+        updatedAt: string;
+    };
+}
+
+export default function BrandEnroll({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
+
+    const [brand, setBrand] = useState(brandData?.data[0])
 
     const [loading, setLoading] = useState(false)
     const { data: session } = useSession()
@@ -15,12 +30,27 @@ export default function BrandEnroll() {
         e.preventDefault()
     }
 
+    // {
+    //     "id": 2,
+    //     "sellerId": 2,
+    //     "legalBusinessName": "aas",
+    //     "brandDisplayName": "assawdddd",
+    //     "brandCategory": "option2",
+    //     "brandLogoObjectKey": "TEST",
+    //     "brandDisplayPictureObjectKey": "TEST",
+    //     "businessAddress": "sddsa",
+    //     "active": true,
+    //     "createdAt": "2023-07-07T17:17:24.319Z",
+    //     "updatedAt": "2023-07-07T17:17:24.319Z",
+    //     "SellerId": 2
+    // }
+
     const formik = useFormik({
         initialValues: {
-            businessName: "",
-            displayName: "",
-            category: "",
-            businessAddress: "",
+            businessName: brand?.legalBusinessName ? brand?.legalBusinessName : "",
+            displayName: brand?.brandDisplayName ? brand?.brandDisplayName : "",
+            category: brand?.brandCategory ? brand?.brandCategory : "",
+            businessAddress: brand?.businessAddress ? brand?.businessAddress : "",
         },
         onSubmit
     })
@@ -28,24 +58,64 @@ export default function BrandEnroll() {
 
     async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string }) {
         setLoading(true)
-        // https://test.mybranzapi.link/brands/register
-        // http://localhost:3004/brands/register
-        // console.log(formik.values)
-        const response = await fetch('https://test.mybranzapi.link/brands/register', {
-            method: 'POST',
-            // mode: "no-cors",
-            headers: { "Content-Type": "application/json", },
-            body: JSON.stringify({ sellerId: 1, legalBusinessName: values.businessName, brandDisplayName: values.displayName, brandCategory: values.category, businessAddress: values.businessAddress, brandDisplayPictureObjectKey: "TEST", brandLogoObjectKey: "TEST" })
-        })
-        const data = await response.json()
 
-        if (data.success) {
-            notification(true, "Brand registered successfully.")
-            setLoading(false)
-        } else {
-            notification(false, "Something went wrong")
-            setLoading(false)
+        // Checks if brand is true then its an update
+        try {
+            if (brand) {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/update/${brand?.id}`, {
+                    method: 'PATCH',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        sellerId: sellerData?.data?.id,
+                        legalBusinessName: values.businessName,
+                        brandDisplayName: values.displayName,
+                        brandCategory: values.category,
+                        businessAddress: values.businessAddress,
+                        brandDisplayPictureObjectKey: "TEST",
+                        brandLogoObjectKey: "TEST"
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    notification(true, "Brand updated successfully.");
+                    setLoading(false);
+                } else {
+                    notification(false, "Something went wrong");
+                    setLoading(false);
+                }
+            } else {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/register`, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        sellerId: sellerData?.data?.id,
+                        legalBusinessName: values.businessName,
+                        brandDisplayName: values.displayName,
+                        brandCategory: values.category,
+                        businessAddress: values.businessAddress,
+                        brandDisplayPictureObjectKey: "TEST",
+                        brandLogoObjectKey: "TEST"
+                    })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    setBrand(data.data)
+                    notification(true, "Brand registered successfully.");
+                    setLoading(false);
+                } else {
+                    notification(false, "Something went wrong");
+                    setLoading(false);
+                }
+            }
+        } catch (error) {
+            notification(false, "Something went wrong");
+            console.error(error);
+            setLoading(false);
+            // Handle the error
         }
+
         setLoading(false)
     }
 
@@ -95,7 +165,7 @@ export default function BrandEnroll() {
                                             <label htmlFor="category" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Category*</label>
 
                                             <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-2">
-                                                <option selected className="text-base text-[#30323E] ">Choose Category</option>
+                                                <option defaultValue="true" className="text-base text-[#30323E] ">Choose Category</option>
                                                 <option className="text-base" value="option1">Option 1</option>
                                                 <option className="text-base" value="option2">Option 2</option>
                                                 <option className="text-base" value="option3">Option 3</option>
@@ -170,9 +240,37 @@ export default function BrandEnroll() {
 export async function getServerSideProps({ req }: any) {
     const session = await getSession({ req })
 
+    if (!session) {
+        return {
+            redirect: {
+                destination: '/login',
+                permanent: false
+            }
+        }
+    }
+
+
+    // Get the seller data using the email that the user is logged in with
+    const sellerResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/seller/${session?.user?.email}`)
+    const sellerData = await sellerResponse.json()
+    if (!sellerData.success) {
+        return {
+            redirect: {
+                destination: '/auth/signup',
+                permanent: false
+            }
+        }
+    }
+
+    // Get the brands associated with the seller using the seller id
+    const brandResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/search/${sellerData?.data?.id}`)
+    const brandData = await brandResponse.json()
+
     return {
         props: {
-            session
+            session,
+            sellerData,
+            brandData
         }
     }
 }
