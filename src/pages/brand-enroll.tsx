@@ -243,7 +243,7 @@ export async function getServerSideProps({ req }: any) {
     if (!session) {
         return {
             redirect: {
-                destination: '/login',
+                destination: '/auth/login',
                 permanent: false
             }
         }
