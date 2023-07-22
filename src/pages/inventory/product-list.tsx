@@ -28,7 +28,7 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
             productCategory: '',
             productColor: '',
             productSize: '',
-            productQuanity: '',
+            productQuantity: '',
             productDescription: '',
             productSku: '',
             productSubCategory: '',
@@ -40,7 +40,7 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
         onSubmit
     })
 
-    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuanity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string }) {
+    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string }) {
         setLoading(true)
 
         try {
@@ -54,7 +54,7 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
                     productCategory: values.productCategory,
                     productColor: values.productColor,
                     productSize: values.productSize,
-                    productQuanity: values.productQuanity,
+                    productQuantity: values.productQuantity,
                     productDescription: values.productDescription,
                     productSku: values.productSku,
                     productSubCategory: values.productSubCategory,
@@ -141,7 +141,7 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
                                             </div>
 
                                             <div>
-                                                <input type='number' {...formik.getFieldProps('productQuanity')} name='productQuanity' id="productQuanity" className='outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' />
+                                                <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' id="productQuantity" className='outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' />
 
                                             </div>
                                         </div>

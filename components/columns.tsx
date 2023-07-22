@@ -13,7 +13,7 @@ export type Payment = {
     productImage: string
     productSku: number
     productName: string
-    productQuanity: number
+    productQuantity: number
     productPrice: number
     productCost: number
     productCategory: string
@@ -66,7 +66,7 @@ export const columns: ColumnDef<Payment>[] = [
         header: "Product Name",
     },
     {
-        accessorKey: "productQuanity",
+        accessorKey: "productQuantity",
         header: "Quantity",
     },
     {

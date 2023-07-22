@@ -34,7 +34,7 @@ interface Data {
 interface Product {
     id: number;
     productName: string;
-    productQuanity: number;
+    productQuantity: number;
     productPrice: number;
     productCost: number;
     productCategory: string;
@@ -59,12 +59,29 @@ export default function Products({ session, sellerData }: any) {
     const [activePageNumber, setActivePageNumber] = useState(1)
 
     const [statusFilter, setStatusFilter] = useState<string[]>([])
+    const [categoryFilter, setCategoryFilter] = useState<string[]>([])
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (categoryFilter.includes(event.target.name)) {
+            setCategoryFilter(prevState => prevState.filter((item: any) => item !== event.target.name))
+        } else {
+            setCategoryFilter(prevState => [...prevState, event.target.name])
+        }
+    };
+
+    const handleStatusFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (statusFilter.includes(event.target.name)) {
             setStatusFilter(prevState => prevState.filter((item: any) => item !== event.target.name))
         } else {
-            setStatusFilter(prevState => [...prevState, event.target.name])
+            if (event.target.name == "all") {
+                if (statusFilter.includes("Available") && statusFilter.includes("OS")) {
+                    setStatusFilter([])
+                } else {
+                    setStatusFilter(["Available", "OS"])
+                }
+            } else {
+                setStatusFilter(prevState => [...prevState, event.target.name])
+            }
         }
     };
 
@@ -87,7 +104,7 @@ export default function Products({ session, sellerData }: any) {
             setData(result)
         }
         fetchData()
-    }, [resultNumber, activePageNumber, statusFilter, search])
+    }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search])
 
     async function getData() {
         if (search) {
@@ -96,7 +113,7 @@ export default function Products({ session, sellerData }: any) {
                 if (search.length == 1) {
                     setActivePageNumber(1)
                 }
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productCategory=${statusFilter.join(',')}`)
+                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productCategory=${categoryFilter.join(',')}&status=${statusFilter.join(',')}`)
                 const productsData = await productsResponse.json()
                 const products = productsData.data
                 return products
@@ -106,7 +123,7 @@ export default function Products({ session, sellerData }: any) {
 
         } else {
             try {
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}?page=${activePageNumber}&limit=${resultNumber}&productCategory=${statusFilter.join(',')}`)
+                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}?page=${activePageNumber}&limit=${resultNumber}&productCategory=${categoryFilter.join(',')}&status=${statusFilter.join(',')}`)
                 const productsData = await productsResponse.json()
                 const products = productsData.data
                 return products
@@ -186,14 +203,13 @@ export default function Products({ session, sellerData }: any) {
                                                             <FiFilter className="mr-2" /> Filters</PopoverTrigger>
                                                         <PopoverContent>
                                                             <div className="flex flex-col items-center justify-center">
-                                                                <div className="flex items-center w-full"><label><input type="checkbox" /> All</label></div>
-                                                                <div className="mt-2 flex items-center w-full"><label><input type="checkbox" checked={statusFilter.includes("Available")} name="Available" onChange={(e) => handleCheckboxChange(e)} /> Available</label></div>
-                                                                <div className="mt-2 flex items-center w-full"><label><input type="checkbox" checked={statusFilter.includes("OS")} name="OS" onChange={(e) => handleCheckboxChange(e)} /> Out Of Stock</label></div>
+                                                                <div className="flex items-center w-full"><label><input type="checkbox" checked={statusFilter.includes("Available") && statusFilter.includes("OS")} onChange={(e) => handleStatusFilter(e)} name="all" /> All</label></div>
+                                                                <div className="mt-2 flex items-center w-full"><label><input type="checkbox" checked={statusFilter.includes("Available")} name="Available" onChange={(e) => handleStatusFilter(e)} /> Available</label></div>
+                                                                <div className="mt-2 flex items-center w-full"><label><input type="checkbox" checked={statusFilter.includes("OS")} name="OS" onChange={(e) => handleStatusFilter(e)} /> Out Of Stock</label></div>
 
-
-                                                                <div className="mt-2 flex items-center w-full"><p className="font-bold text-base my-4">Categories</p></div>
+                                                                <div className="mt-2 flex items-center w-full"><p className="font-bold text-base my-2">Categories</p></div>
                                                                 {data?.categories?.map((category: any, index: number) => (
-                                                                    <div key={index} className="mt-2 flex items-center w-full"><label><input type="checkbox" checked={statusFilter.includes(category)} name={category} onChange={(e) => handleCheckboxChange(e)} /> {category}</label></div>
+                                                                    <div key={index} className="mt-1 flex items-center w-full"><label><input type="checkbox" checked={categoryFilter.includes(category)} name={category} onChange={(e) => handleCheckboxChange(e)} /> {category}</label></div>
                                                                 ))}
                                                             </div>
                                                         </PopoverContent>
@@ -223,13 +239,13 @@ export default function Products({ session, sellerData }: any) {
                                                     {data && data?.products?.map((row, index) => (
                                                         <tr key={index} className="hover:bg-gray-50">
                                                             <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
-                                                            <td className="py-2 px-4 border-b">{row.productQuanity > 0 ? 'Available' : 'Out of Stock'}</td>
+                                                            <td className="py-2 px-4 border-b">{row.productQuantity > 0 ? 'Available' : 'Out of Stock'}</td>
                                                             <td className="py-2 px-4 border-b">
                                                                 <img src={row.productImage} alt="Product" className="w-10 h-10" />
                                                             </td>
                                                             <td className="py-2 px-4 border-b">{row.id}</td>
                                                             <td className="py-2 px-4 border-b">{row.productName}</td>
-                                                            <td className="py-2 px-4 border-b">{row.productQuanity}</td>
+                                                            <td className="py-2 px-4 border-b">{row.productQuantity}</td>
                                                             <td className="py-2 px-4 border-b">{row.productPrice}</td>
                                                             <td className="py-2 px-4 border-b">{row.productCost}</td>
                                                             <td className="py-2 px-4 border-b">{row.productCategory}</td>
