@@ -71,9 +71,9 @@ export function DataTable<TData, TValue>({
                                 <AiOutlineSearch color="#2a2a2a" fontSize="25px" />
                                 <Input
                                     placeholder="Filter Product..."
-                                    value={(table.getColumn("prodName")?.getFilterValue() as string) ?? ""}
+                                    value={(table.getColumn("productName")?.getFilterValue() as string) ?? ""}
                                     onChange={(event) =>
-                                        table.getColumn("prodName")?.setFilterValue(event.target.value)
+                                        table.getColumn("productName")?.setFilterValue(event.target.value)
                                     }
                                     className="max-w-sm bg-[#f9f9f9] border-none outline-none"
                                 />

@@ -3,20 +3,22 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "../shadcn/components/ui/checkbox"
 import { BsPencil, BsTrash3Fill } from 'react-icons/bs'
+import Link from "next/link";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type Payment = {
     id: string
     status: "Available" | "Out of Stock"
-    img: string
-    prodId: number
-    prodName: string
-    quantity: number
-    priceShipping: number
-    fee: number
-    category: string
+    productImage: string
+    productSku: number
+    productName: string
+    productQuanity: number
+    productPrice: number
+    productCost: number
+    productCategory: string
 }
+
 
 export const columns: ColumnDef<Payment>[] = [
     {
@@ -43,50 +45,51 @@ export const columns: ColumnDef<Payment>[] = [
         header: "Status",
     },
     {
-        id: "img",
+        id: "productImage",
         header: ({ table }) => (
             <>Image</>
         ),
         cell: ({ row }) => (
-            <img width="50" height="50" src={row.getValue("img")} alt="Imagee" />
+            <img width="50" height="50" src={row.getValue("productImage")} alt="Image" />
         ),
         enableSorting: false,
         enableHiding: false,
-        accessorKey: "img",
+        accessorKey: "productImage",
 
     },
     {
-        accessorKey: "prodId",
+        accessorKey: "id",
         header: "Product ID",
     },
     {
-        accessorKey: "prodName",
+        accessorKey: "productName",
         header: "Product Name",
     },
     {
-        accessorKey: "quantity",
+        accessorKey: "productQuanity",
         header: "Quantity",
     },
     {
-        accessorKey: "priceShipping",
-        header: "Price + Shipping",
+        accessorKey: "productPrice",
+        header: "Price",
     },
     {
-        accessorKey: "fee",
+        accessorKey: "productCost",
         header: "Fee",
     },
     {
-        accessorKey: "category",
+        accessorKey: "productCategory",
         header: "Category",
     },
     {
         id: "actions",
+        accessorKey: 'id',
         header: () => <>Actions</>,
         cell: ({ row }) => (
             <div className="flex items-center">
-                <BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" onClick={() => console.log(row.getValue("email"))} />
-                <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" onClick={() => console.log(row.getValue("email"))} />
-            </div>
+                <Link href={`/inventory/products/${row.getValue("id")}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" onClick={() => console.log(row.getValue("id"))} /></Link>
+                <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" onClick={() => console.log(row.getValue("id"))} />
+            </div >
         ),
         enableSorting: false,
         enableHiding: false,

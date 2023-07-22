@@ -22,13 +22,55 @@ interface SellerData {
 export default function BrandEnroll({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
 
     const [brand, setBrand] = useState(brandData?.data[0])
+    const [logoFile, setLogoFile] = useState(null);
+    const [displayPictureFile, setDisplayPictureFile] = useState(null);
+
+    const [logoObjectKey, setLogoObjectKey] = useState(null);
+    const [displayPictureObjectKey, setDisplayPictureObjectKey] = useState(null);
 
     const [loading, setLoading] = useState(false)
+
+    const [logoLoading, setLogoLoading] = useState(false)
     const { data: session } = useSession()
 
     const handleFormSubmit = (e: any) => {
         e.preventDefault()
     }
+
+    async function handleFileChange(e: any) {
+        setLogoLoading(true)
+        const selectedFile = e.target.files[0];
+        try {
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+            formData.append("uid", "2e5kcRJts1SrmOB8lBIaR1idmrr2");
+            formData.append("type", selectedFile.type);
+
+            const response = await fetch(`https://dev.mybranzapi.link/media/single`, {
+                method: 'POST',
+                headers: { "Authorization": "Bearer 615be5ed1c9b966b1d949e1f0948cf30" },
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.status == "success") {
+                setLogoLoading(false)
+                setLogoObjectKey(data.data.objectKey);
+                notification(true, "File uploaded successfully.");
+            } else {
+                setLogoLoading(false)
+                notification(false, "Something went wrong");
+            }
+        } catch (error) {
+            setLogoLoading(false)
+            console.error(error);
+            notification(false, "Something went wrong");
+        }
+
+        setLogoLoading(false)
+        setLogoFile(selectedFile);
+    };
 
     // {
     //     "id": 2,
@@ -71,7 +113,7 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                         brandDisplayName: values.displayName,
                         brandCategory: values.category,
                         businessAddress: values.businessAddress,
-                        brandDisplayPictureObjectKey: "TEST",
+                        brandDisplayPictureObjectKey: logoObjectKey ? logoObjectKey : "",
                         brandLogoObjectKey: "TEST"
                     })
                 });
@@ -156,7 +198,7 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                         <div>
                                             <label htmlFor="display" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Display Name*</label>
 
-                                            <input {...formik.getFieldProps('displayName')} type="text" id="display-name" name="displayName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
+                                            <input {...formik.getFieldProps('displayName')} type="text" id="display-name" name="displayName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
 
                                         </div>
 
@@ -179,13 +221,16 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                             <label htmlFor="logo" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Logo* </label>
 
 
-                                            <input
-                                                id="picture"
-                                                type="file"
-                                                accept="image/*"
-                                                //   onChange={(e) => setImage(e.target.files[0])}
-                                                className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
-                                            />
+                                            <span className="flex items-center">
+                                                <input
+                                                    id="picture"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleFileChange(e)}
+                                                    className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
+                                                />
+                                                {logoLoading && <AiOutlineLoading3Quarters className='spinner ml-2' />}
+                                            </span>
                                         </div >
 
 
