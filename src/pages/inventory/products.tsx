@@ -43,8 +43,13 @@ interface Product {
 
 export default function Products({ session, sellerData }: any) {
     const router = useRouter();
-    const [data, setData] = useState<Data>()
-    console.log(data)
+    const [data, setData] = useState<Data>({
+        categories: [], // Initialize with an empty array for categories
+        products: [],
+        currentPage: 0,
+        totalPages: 0,
+    });
+
     const [search, setSearch] = useState('')
 
     const [parentCheckbox, setParentCheckbox] = useState(false)
@@ -120,9 +125,9 @@ export default function Products({ session, sellerData }: any) {
             const Deletedata = await response.json()
             if (Deletedata.success) {
                 notification(true, "Product Deleted");
-                setData(prevState => ({
+                setData((prevState) => ({
                     ...prevState,
-                    products: (prevState?.products || []).filter((product: any) => product.id !== productID)
+                    products: (prevState?.products || []).filter((product: Product) => product.id !== productID)
                 }));
             } else {
                 console.log("Something went wrong")
