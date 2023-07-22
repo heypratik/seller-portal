@@ -6,6 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { useRouter } from 'next/router';
+import Link from 'next/link'
 
 interface SellerData {
     data: {
@@ -22,7 +23,7 @@ interface SellerData {
 export default function UpdateProduct({ sellerData }: any) {
     const router = useRouter();
 
-    const productID = router?.query?.productId[1]
+    const productID = router?.query?.productId?.[1]
 
     const [productData, setProductData] = useState<any>({})
 
@@ -214,7 +215,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                         <div className="mt-16 flex">
                                             <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Update">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Update`}</button>
 
-                                            <button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button>
+                                            <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                         </div>
                                     </>
                                 ) : (

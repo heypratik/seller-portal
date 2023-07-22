@@ -26,14 +26,25 @@ import { BsPencil, BsTrash3Fill } from 'react-icons/bs'
 
 interface Data {
     categories: string[]; // Array of categories
-    products: string[]; // Array of products
+    products: Product[]; // Array of products
     currentPage: number; // Current page number
     totalPages: number; // Total number of pages
+}
+
+interface Product {
+    id: number;
+    productName: string;
+    productQuanity: number;
+    productPrice: number;
+    productCost: number;
+    productCategory: string;
+    productImage: string;
 }
 
 export default function Products({ session, sellerData }: any) {
     const router = useRouter();
     const [data, setData] = useState<Data>()
+    console.log(data)
     const [search, setSearch] = useState('')
 
     const [parentCheckbox, setParentCheckbox] = useState(false)
@@ -80,7 +91,7 @@ export default function Products({ session, sellerData }: any) {
                 if (search.length == 1) {
                     setActivePageNumber(1)
                 }
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}`)
+                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productCategory=${statusFilter.join(',')}`)
                 const productsData = await productsResponse.json()
                 const products = productsData.data
                 return products
@@ -90,7 +101,7 @@ export default function Products({ session, sellerData }: any) {
 
         } else {
             try {
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}?page=${activePageNumber}&limit=${resultNumber}&productSubCategory=${statusFilter.join(',')}`)
+                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}?page=${activePageNumber}&limit=${resultNumber}&productCategory=${statusFilter.join(',')}`)
                 const productsData = await productsResponse.json()
                 const products = productsData.data
                 return products
@@ -111,7 +122,7 @@ export default function Products({ session, sellerData }: any) {
                 notification(true, "Product Deleted");
                 setData(prevState => ({
                     ...prevState,
-                    products: prevState.products.filter((product: any) => product.id !== productID)
+                    products: (prevState?.products || []).filter((product: any) => product.id !== productID)
                 }));
             } else {
                 console.log("Something went wrong")
@@ -207,7 +218,7 @@ export default function Products({ session, sellerData }: any) {
                                                     {data && data?.products?.map((row, index) => (
                                                         <tr key={index} className="hover:bg-gray-50">
                                                             <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
-                                                            <td className="py-2 px-4 border-b">{row.status}</td>
+                                                            <td className="py-2 px-4 border-b">{row.productQuanity > 0 ? 'Available' : 'Out of Stock'}</td>
                                                             <td className="py-2 px-4 border-b">
                                                                 <img src={row.productImage} alt="Product" className="w-10 h-10" />
                                                             </td>
@@ -247,11 +258,11 @@ export default function Products({ session, sellerData }: any) {
                                                     ))}
                                                 </tbody>
                                             </table>
-                                            {data?.products?.length < 1 && <div className="w-full flex items-center justify-center absolute top-1/4">No Product Data Found</div>}
+                                            {data?.products && data?.products?.length < 1 && <div className="w-full flex items-center justify-center absolute top-1/4">No Product Data Found</div>}
                                         </div>
                                         <div className="flex items-center justify-between py-4">
                                             <div>
-                                                <select onChange={(e) => setResultNumber(e.target.value)} className="border rounded-sm py-1 px-4">
+                                                <select onChange={(e) => setResultNumber(Number(e.target.value))} className="border rounded-sm py-1 px-4">
                                                     <option defaultValue={10} value="10">10 Result Per Page</option>
                                                     <option defaultValue={20} value="20">20 Result Per Page</option>
                                                     <option defaultValue={50} value="50">50 Result Per Page</option>
@@ -259,8 +270,8 @@ export default function Products({ session, sellerData }: any) {
                                                 </select>
                                             </div>
                                             <div>
-                                                <button className="border mr-2 rounded-sm py-1 px-4" disabled={data?.currentPage && data?.currentPage == 1}>Previous</button>
-                                                <button onClick={(e) => setActivePageNumber(prevState => prevState + 1)} className="border rounded-sm py-1 px-4" disabled={data?.currentPage && data?.currentPage == data?.totalPages}> Next </button>
+                                                <button onClick={(e) => setActivePageNumber(prevState => prevState - 1)} className="border mr-2 rounded-sm py-1 px-4" disabled={!!data?.currentPage && data?.currentPage == 1}>Previous</button>
+                                                <button onClick={(e) => setActivePageNumber(prevState => prevState + 1)} className="border rounded-sm py-1 px-4" disabled={!!data?.currentPage && data?.currentPage == data?.totalPages}> Next </button>
                                             </div>
                                         </div>
                                     </div>
