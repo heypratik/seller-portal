@@ -5,6 +5,7 @@ import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
+import Link from 'next/link';
 
 interface SellerData {
     data: {
@@ -182,7 +183,7 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
                                 <div className="mt-16 flex">
                                     <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Next`}</button>
 
-                                    <button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button>
+                                    <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
                             </div>
                         </form>

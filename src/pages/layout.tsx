@@ -7,6 +7,8 @@ import { BiBarChartSquare, BiBell } from 'react-icons/bi'
 import { FaRegUser, FaChevronDown } from 'react-icons/fa'
 import { FiTruck } from 'react-icons/fi'
 import { RxDashboard } from 'react-icons/rx'
+import { GrFormAdd } from 'react-icons/gr'
+import { PiStackSimpleBold } from 'react-icons/pi'
 import {
     BellIcon,
     CalendarIcon,
@@ -46,7 +48,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     const navigation = [
         { name: 'Dashboard', href: '#', icon: RxDashboard, current: isCurrentPage(`/`) },
         { name: 'Brand Enroll', href: '/brand-enroll', icon: CgPlayListAdd, current: isCurrentPage(`/brand-enroll`) },
-        { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: isCurrentPage(`/inventory`) },
+        { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: isCurrentPage(`/inventory`), subNav: [{ name: 'Add Products', href: '/inventory/product-list', icon: GrFormAdd, current: isCurrentPage(`/inventory/product-list`) }, { name: 'Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) }] },
         { name: 'Listings', href: '#', icon: MdFormatListBulleted, current: isCurrentPage(`/list`) },
         { name: 'Orders', href: '#', icon: BsBoxSeam, current: isCurrentPage(`/orders`), subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
         { name: 'Reports', href: '#', icon: BiBarChartSquare, current: isCurrentPage(`/report`) },
@@ -192,10 +194,10 @@ export default function Layout({ children }: { children: ReactNode }) {
                                             {item?.subNav?.map((subItem) => {
                                                 return <div key={subItem.name}>
                                                     {openMenuName == item.name && <a href={subItem.href} className={classNames(
-                                                        item.current ? 'bg-[#f12d4d] text-white' : 'text-[#979797] hover:bg-[#f12d4d] hover:text-white',
+                                                        subItem.current ? 'bg-[#f12d4d] text-white' : 'text-[#979797] hover:bg-[#f12d4d] hover:text-white',
                                                         'group flex items-center px-2 py-2 text-sm font-medium rounded-md')}>
 
-                                                        <item.icon className={classNames(
+                                                        <subItem.icon className={classNames(
                                                             subItem.current ? 'text-white' : 'text-[#979797] group-hover:text-white',
                                                             'mr-3 flex-shrink-0 h-6 w-6')} aria-hidden="true" /> {subItem.name} </a>}
                                                 </div>
