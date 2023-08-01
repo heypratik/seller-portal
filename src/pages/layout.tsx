@@ -49,7 +49,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         { name: 'Dashboard', href: '#', icon: RxDashboard, current: isCurrentPage(`/`) },
         { name: 'Brand Enroll', href: '/brand-enroll', icon: CgPlayListAdd, current: isCurrentPage(`/brand-enroll`) },
         { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: isCurrentPage(`/inventory`), subNav: [{ name: 'Add Products', href: '/inventory/product-list', icon: GrFormAdd, current: isCurrentPage(`/inventory/product-list`) }, { name: 'Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) }] },
-        { name: 'Listings', href: '#', icon: MdFormatListBulleted, current: isCurrentPage(`/list`) },
         { name: 'Orders', href: '#', icon: BsBoxSeam, current: isCurrentPage(`/orders`), subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
         { name: 'Reports', href: '#', icon: BiBarChartSquare, current: isCurrentPage(`/report`) },
         { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },

@@ -45,7 +45,6 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
         setLoading(true)
 
         try {
-            console.log("STARTING")
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/add/product`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -67,10 +66,7 @@ export default function ProductList({ sellerData }: { sellerData: SellerData }) 
 
                 })
             })
-            console.log("ENDED")
             const data = await response.json();
-
-            console.log(data)
 
             if (data.success) {
                 notification(true, "Product Added successfully.");
