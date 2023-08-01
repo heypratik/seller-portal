@@ -19,18 +19,21 @@ interface SellerData {
     };
 }
 
-function Account({ sellerData }: { sellerData: SellerData }) {
+function Account({ sellerData, accountData }: { sellerData: SellerData, accountData: any }) {
+
+    const sellerAccountData = accountData?.data?.seller
+    const brandAccountData = accountData?.data?.brand
 
     const [loading, setLoading] = useState(false)
     const [editingInput, setEditingInput] = useState<string>("")
 
     const formik = useFormik({
         initialValues: {
-            sellerName: '',
-            password: '',
-            bDisplayName: '',
-            sellerEmail: '',
-            companyName: '',
+            sellerName: sellerAccountData ? sellerAccountData?.name : '',
+            password: sellerAccountData ? sellerAccountData?.password : '',
+            bDisplayName: brandAccountData ? brandAccountData?.brandDisplayName : '',
+            sellerEmail: sellerAccountData ? sellerAccountData?.email : '',
+            companyName: brandAccountData ? brandAccountData?.legalBusinessName : '',
             mobileNumber: '',
         },
         onSubmit
@@ -57,7 +60,7 @@ function Account({ sellerData }: { sellerData: SellerData }) {
             })
             const data = await response.json();
             if (data.success) {
-                notification(true, "Product Added successfully.");
+                notification(true, "Updated successfully.");
                 setLoading(false);
                 setEditingInput("");
             } else {
@@ -86,20 +89,20 @@ function Account({ sellerData }: { sellerData: SellerData }) {
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
-            <div className="py-6 h-screen">
-                <div className="mx-auto px-4 sm:px-6 md:px-8">
-                    <Breadcrums parent={"Edit Profile"} childarr={[]} />
-                </div>
-                <div className="mx-auto px-4 sm:px-6 md:px-8">
-                    {/* Replace with your content */}
-                    <div className="py-4">
-                        <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] p-7 rounded-lg">
-                            <div className='flex items-center mb-10'>
-                                <img width="100px" height="100px" src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOSIZ6hZseAPKb42yOVWSqt00bWSi8yusbMQ&usqp=CAU' className=' rounded-full' />
-                                <h3 className=' text-xl font-medium ml-6'>Lorem Ipsum</h3>
-                            </div>
-                            <div className='flex items-center w-full'>
-                                <form onSubmit={formik.handleSubmit} className='flex items-center justify-between w-full'>
+            <form onSubmit={formik.handleSubmit} className='py-6 h-screen'>
+                <div className="py-6 h-screen">
+                    <div className="mx-auto px-4 sm:px-6 md:px-8">
+                        <Breadcrums parent={"Edit Profile"} childarr={[]} />
+                    </div>
+                    <div className="mx-auto px-4 sm:px-6 md:px-8">
+                        {/* Replace with your content */}
+                        <div className="py-4">
+                            <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] p-7 rounded-lg">
+                                <div className='flex items-center mb-10'>
+                                    <img width="100px" height="100px" src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOSIZ6hZseAPKb42yOVWSqt00bWSi8yusbMQ&usqp=CAU' className=' rounded-full' />
+                                    <h3 className=' text-xl font-medium ml-6'>{sellerAccountData ? sellerAccountData?.name : "Lorem Ipsum"}</h3>
+                                </div>
+                                <div className='flex items-center w-full'>
                                     <div className='flex-1'>
                                         <h3 className=' text-xl font-medium mt-6'>Seller Name*</h3>
                                         <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('sellerName')} disabled={editingInput !== "sellerName"} type="text" id="sellerName" name="sellerName" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='Lorem Ipsum' />
@@ -133,15 +136,15 @@ function Account({ sellerData }: { sellerData: SellerData }) {
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("mobileNumber")} className=' cursor-pointer' />
                                         </div>
                                     </div>
-                                </form>
-                            </div>
+                                </div>
 
-                            <button type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Save`}</button>
+                                <button type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Save`}</button>
+                            </div>
                         </div>
+                        {/* /End replace */}
                     </div>
-                    {/* /End replace */}
                 </div>
-            </div>
+            </form>
         </Layout>
     )
 }
@@ -172,10 +175,25 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
+    // Get the seller data using the email that the user is logged in with
+    const accountResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/account/${sellerData?.data?.id}`)
+    const accountData = await accountResponse.json()
+    if (!accountData.success) {
+        return {
+            props: {
+                session,
+                sellerData,
+                accountData: null
+            }
+        }
+    }
+
+
     return {
         props: {
             session,
             sellerData,
+            accountData
         }
     }
 }
