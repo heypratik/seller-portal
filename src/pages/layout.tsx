@@ -52,7 +52,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         { name: 'Orders', href: '#', icon: BsBoxSeam, current: isCurrentPage(`/orders`), subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
         { name: 'Reports', href: '#', icon: BiBarChartSquare, current: isCurrentPage(`/report`) },
         { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },
-        { name: 'Account Info', href: '#', icon: FaRegUser, current: isCurrentPage(`/account-info`) },
+        { name: 'Account Info', href: '/account', icon: FaRegUser, current: isCurrentPage(`/account`) },
     ]
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
