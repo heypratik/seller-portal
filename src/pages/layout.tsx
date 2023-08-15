@@ -1,4 +1,4 @@
-import { Fragment, useState, ReactNode } from 'react'
+import { Fragment, useState, ReactNode, useEffect } from 'react'
 import { Dialog, Menu, Transition } from '@headlessui/react'
 import { CgPlayListAdd } from 'react-icons/cg'
 import { MdFormatListBulleted, MdOutlineInventory } from 'react-icons/md'
@@ -65,6 +65,13 @@ export default function Layout({ children }: { children: ReactNode }) {
             setOpenMenuName(menuName)
         }
     }
+
+    useEffect(() => {
+        if (router.pathname.includes("inventory")) {
+            setOpenMenuName("Inventory")
+        }
+
+    }, [])
 
     return (
         <>

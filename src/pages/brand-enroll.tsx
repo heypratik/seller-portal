@@ -19,11 +19,35 @@ interface SellerData {
     };
 }
 
+type CategoryType = {
+    "Health & Beauty": string[];
+    "Clothing": string[];
+    "Accessories": string[];
+    "Footwear": string[];
+    "Watches": string[];
+    "Jewelry": string[];
+    "Bags": string[];
+    [key: string]: string[] | undefined;
+};
+
+const categories: CategoryType = {
+    "Health & Beauty": ["Bath & Body", "Makeup", "Skin Care", "Hair Care", "Nails", "Salon & Spa Equipment", "Fragrance", "Tools & Accessories", "Shaving & Hair Removal"],
+    "Clothing": ["Dresses", "Tops & Tees", "Sweaters", "Jeans", "Pants", "Skirts", "Activewear", "Swimsuits & Cover Ups", "Lingerie, Sleep & Lounge", "Coats & Jackets", "Suits & Blazers", "Socks"],
+    "Accessories": ["Scarves & Wraps", "Sunglasses", "Belts", "Wallets"],
+    "Footwear": ["Athletic", "Boots", "Fashion Sneakers", "Flats", "Outdoor", "Slippers", "Pumps & Heels", "Sandals", "Loafers & Slip-Ons", "Outdoor", "Slippers", "Oxfords", "Sandals", "Work & Safety"],
+    "Watches": ["Luxury", "Sport"],
+    "Jewelry": ["Necklaces", "Rings", "Earrings", "Bracelets", "Wedding & Engagement"],
+    "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
+};
+
 export default function BrandEnroll({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
 
     const [brand, setBrand] = useState(brandData?.data[0])
     const [logoFile, setLogoFile] = useState(null);
     const [displayPictureFile, setDisplayPictureFile] = useState(null);
+
+    const [category, setCategory] = useState('');
+    const [subCategory, setSubCategory] = useState('');
 
     const [logoObjectKey, setLogoObjectKey] = useState(null);
     const [displayPictureObjectKey, setDisplayPictureObjectKey] = useState(null);
@@ -92,13 +116,20 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
             businessName: brand?.legalBusinessName ? brand?.legalBusinessName : "",
             displayName: brand?.brandDisplayName ? brand?.brandDisplayName : "",
             category: brand?.brandCategory ? brand?.brandCategory : "",
+            brandSubCategory: brand?.brandSubCategory ? brand?.brandSubCategory : "",
             businessAddress: brand?.businessAddress ? brand?.businessAddress : "",
+            brandAvailability: brand?.brandAvailability ? brand?.brandAvailability : "",
+            businessCountry: brand?.businessCountry ? brand?.businessCountry : "",
+            brandType: brand?.brandType ? brand?.brandType : "",
+            brandTargetGender: brand?.brandTargetGender ? brand?.brandTargetGender : "",
+            brandTargetAgeGroup: brand?.brandTargetAgeGroup ? brand?.brandTargetAgeGroup : "",
+            brandIncomeBracket: brand?.brandIncomeBracket ? brand?.brandIncomeBracket : "",
+            brandPriceRange: brand?.brandPriceRange ? brand?.brandPriceRange : ""
         },
         onSubmit
     })
 
-
-    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string }) {
+    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: string, brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string }) {
         setLoading(true)
 
         // Checks if brand is true then its an update
@@ -114,7 +145,15 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                         brandCategory: values.category,
                         businessAddress: values.businessAddress,
                         brandDisplayPictureObjectKey: logoObjectKey ? logoObjectKey : "",
-                        brandLogoObjectKey: "TEST"
+                        brandLogoObjectKey: "TEST",
+                        businessCountry: values.businessCountry,
+                        brandSubCategory: values.brandSubCategory,
+                        brandAvailability: values.brandAvailability,
+                        brandType: values.brandType,
+                        brandTargetGender: values.brandTargetGender,
+                        brandTargetAgeGroup: values.brandTargetAgeGroup,
+                        brandIncomeBracket: values.brandIncomeBracket,
+                        brandPriceRange: values.brandPriceRange
                     })
                 });
                 const data = await response.json();
@@ -137,7 +176,15 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                         brandCategory: values.category,
                         businessAddress: values.businessAddress,
                         brandDisplayPictureObjectKey: "TEST",
-                        brandLogoObjectKey: "TEST"
+                        brandLogoObjectKey: "TEST",
+                        businessCountry: values.businessCountry,
+                        brandSubCategory: values.brandSubCategory,
+                        brandAvailability: values.brandAvailability,
+                        brandType: values.brandType,
+                        brandTargetGender: values.brandTargetGender,
+                        brandTargetAgeGroup: values.brandTargetAgeGroup,
+                        brandIncomeBracket: values.brandIncomeBracket,
+                        brandPriceRange: values.brandPriceRange
                     })
                 });
                 const data = await response.json();
@@ -178,92 +225,189 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                     <Breadcrums parent={"Brand Enroll"} childarr={["Product"]} />
                 </div>
                 <div className="mx-auto px-4 sm:px-6 md:px-8">
-                    {/* Replace with your content */}
                     <div className="py-4">
                         <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7">
                             <h3 className="text-[#F12D4D] font-semibold text-2xl mb-3">Brand Information</h3>
 
                             <form onSubmit={formik.handleSubmit} >
-                                <section className="flex items-start flex-wrap">
-                                    {/* left part */}
-                                    <div className="w-1/2">
-                                        {/* legal business name  */}
-                                        <div>
-                                            <label htmlFor="business" className=" block text-base font-medium text-[#30323E] mb-2 mt-4">Legal business Name*</label>
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className=" block text-base font-medium text-[#30323E] mb-2">Legal business Name*</label>
 
-                                            <input {...formik.getFieldProps('businessName')} type="text" id="business-name" name="businessName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" placeholder="Enter Brand Name" />
-                                        </div>
+                                        <input {...formik.getFieldProps('businessName')} type="text" id="business-name" name="businessName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" placeholder="Enter Brand Name" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="display" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Display Name*</label>
 
-                                        {/* brand display name  */}
-                                        <div>
-                                            <label htmlFor="display" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Display Name*</label>
-
-                                            <input {...formik.getFieldProps('displayName')} type="text" id="display-name" name="displayName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
-
-                                        </div>
-
-                                        {/* brand category  */}
-                                        <div>
-                                            <label htmlFor="category" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Category*</label>
-
-                                            <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-2">
-                                                <option defaultValue="true" className="text-base text-[#30323E] ">Choose Category</option>
-                                                <option className="text-base" value="option1">Option 1</option>
-                                                <option className="text-base" value="option2">Option 2</option>
-                                                <option className="text-base" value="option3">Option 3</option>
-                                                <option className="text-base" value="option4">Option 4</option>
-                                            </select>
-                                        </div>
-
-                                        {/* brand logo part here  */}
-
-                                        <div>
-                                            <label htmlFor="logo" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Logo* </label>
-
-
-                                            <span className="flex items-center">
-                                                <input
-                                                    id="picture"
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleFileChange(e)}
-                                                    className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
-                                                />
-                                                {logoLoading && <AiOutlineLoading3Quarters className='spinner ml-2' />}
-                                            </span>
-                                        </div >
-
-
+                                        <input {...formik.getFieldProps('displayName')} type="text" id="display-name" name="displayName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
 
                                     </div>
+                                </div>
 
-                                    {/* right part  */}
-                                    <div>
-                                        {/* brand display picture  */}
+                                {/* LINE 2 */}
 
-                                        <div>
-                                            <label htmlFor="picture" className="mt-4  block text-base font-medium text-[#30323E] mb-2"> Brand display Picture* </label>
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className=" block text-base font-medium text-[#30323E] mb-2">Business Street Address*</label>
 
+                                        <input {...formik.getFieldProps('businessAddress')} type="text" id="businessAddress" name="businessAddress" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" placeholder="1 XYZ Street" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="businessCountry" className="mt-4 block text-base font-medium text-[#30323E] mb-2">Country*</label>
+
+                                        <input {...formik.getFieldProps('businessCountry')} type="text" id="businessCountry" name="businessCountry" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
+
+                                    </div>
+                                </div>
+
+                                {/* LINE 3 */}
+
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="logo" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Logo* </label>
+
+
+                                        <span className="flex items-center">
                                             <input
-                                                id="picture"
+                                                id="brandLogoObjectKey"
                                                 type="file"
                                                 accept="image/*"
-                                                //   onChange={(e) => setImage(e.target.files[0])}
-                                                className=" w-[22.5rem] mb-1 h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4 file:py-2 file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
+                                                onChange={(e) => handleFileChange(e)}
+                                                className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 mb-6 file:cursor-pointer file:border-0 file:border-gray-300  "
                                             />
+                                            {logoLoading && <AiOutlineLoading3Quarters className='spinner ml-2' />}
+                                        </span>
+                                    </div >
+                                    <div className="flex-1">
+                                        <label htmlFor="picture" className="mt-4  block text-base font-medium text-[#30323E] mb-2"> Brand display Picture* </label>
+
+                                        <input
+                                            id="picture"
+                                            type="file"
+                                            accept="image/*"
+                                            //   onChange={(e) => setImage(e.target.files[0])}
+                                            className=" w-[22.5rem] mb-6 h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4 file:py-2 file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* LINE 4 */}
+
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="category" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Category*</label>
+
+                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory('') }} >
+                                            <option className="text-base" value="">Select Category</option>
+                                            {Object.keys(categories).map((cat) => (
+                                                <option className="text-base" key={cat} value={cat}>
+                                                    {cat}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="flex-1">
+                                        <label htmlFor="brandSubCategory" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Sub-Category*</label>
+
+                                        <select {...formik.getFieldProps('brandSubCategory')} id="brandSubCategory" name="brandSubCategory" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={subCategory} onChange={(e) => setSubCategory(e.target.value)} disabled={!category}>
+                                            <option className="text-base text-[#30323E] " value="">Select Sub-Category</option>
+                                            {category && categories[category]?.map((subCat) => (
+                                                <option className="text-base text-[#30323E] " key={subCat} value={subCat}>
+                                                    {subCat}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* LINE 5 */}
+
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="brandAvailability" className="mt-4 block text-base font-medium text-[#30323E] mb-2">Brand Availability*</label>
+
+
+                                        <select {...formik.getFieldProps('brandAvailability')} id="brandAvailability" name="brandAvailability" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-2">
+                                            <option defaultValue="true" className="text-base text-[#30323E] ">Select Availability</option>
+                                            <option className="text-base" value="Local">Local</option>
+                                            <option className="text-base" value="National">National</option>
+                                            <option className="text-base" value="International">International</option>
+                                        </select>
+                                    </div >
+                                    <div className="flex-1">
+                                        <label htmlFor="brandType" className="mt-4  block text-base font-medium text-[#30323E] mb-2">Brand Type*</label>
+
+                                        <select {...formik.getFieldProps('brandType')} id="brandType" name="brandType" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-2">
+                                            <option defaultValue="true" className="text-base text-[#30323E] ">Brand Type</option>
+                                            <option className="text-base" value="Luxury">Luxury</option>
+                                            <option className="text-base" value="Affordable">Affordable</option>
+                                            <option className="text-base" value="Vegan">Vegan</option>
+                                            <option className="text-base" value="Fastfashion">Fast-fashion</option>
+                                            <option className="text-base" value="Activewear">Activewear</option>
+                                            <option className="text-base" value="Ethical">Ethical</option>
+                                            <option className="text-base" value="Ecofriendly">Eco-friendly</option>
+                                            <option className="text-base" value="Sustainable">Sustainable</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* LINE 6 */}
+
+                                <div className=" w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="brandTargetGender" className="mt-4 block text-base font-medium text-[#30323E] mb-2">Target Demographic*</label>
+                                        <div className="flex items-center justify-start">
+                                            <select {...formik.getFieldProps('brandTargetGender')} id="brandTargetGender" name="brandTargetGender" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[10.5rem] rounded-md h-10 mb-2">
+                                                <option defaultValue="true" className="text-base text-[#30323E] ">Select Gender</option>
+                                                <option className="text-base" value="Mens">Mens</option>
+                                                <option className="text-base" value="Womens">Womens</option>
+                                                <option className="text-base" value="Unisex">Unisex</option>
+                                                <option className="text-base" value="Kids">Kids</option>
+                                            </select>
+
+                                            <select {...formik.getFieldProps('brandTargetAgeGroup')} id="brandTargetAgeGroup" name="brandTargetAgeGroup" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[10.5rem] rounded-md h-10 mb-2">
+
+                                                <option className="text-base text-[#30323E] ">Age</option>
+                                                <option value={"under 10"} className="text-base text-[#30323E] ">0-10</option>
+
+                                                <option className="text-base" value={"under 18"}>10-18</option>
+                                                <option className="text-base" value={"under 25"}>18-25</option>
+                                                <option className="text-base" value={"under 50"}>25-50</option>
+                                                <option className="text-base" value={"above 50"}>50 & Above</option>
+                                                <option className="text-base" value={"all"}>All</option>
+                                            </select>
+
+                                            <select {...formik.getFieldProps('brandIncomeBracket')} id="brandIncomeBracket" name="brandIncomeBracket" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[10.5rem] rounded-md h-10 mb-2">
+                                                <option defaultValue="true" className="text-base text-[#30323E] ">Income Bracket</option>
+                                                <option className="text-base" value="Low 10%">Low 10%</option>
+                                                <option className="text-base" value="Low 25%">Low 25%</option>
+                                                <option className="text-base" value="Low 50%">Low 50%</option>
+                                                <option className="text-base" value="Top 50%">Top 50%</option>
+                                                <option className="text-base" value="Top 25%">Top 25%</option>
+                                                <option className="text-base" value="Top 10%">Top 10%</option>
+                                                <option className="text-base" value="Top 5%">Top 5%</option>
+                                                <option className="text-base" value="Top 1%">Top 1%</option>
+                                            </select>
                                         </div>
+                                    </div>
 
-
-
-                                        {/* business address  */}
-                                        <div>
-                                            <label htmlFor="business-address" className="mt-4 block text-base font-medium text-[#30323E] my-2"> Business Address* </label>
-
-                                            <input {...formik.getFieldProps('businessAddress')} type="text" id="business-address" name="businessAddress" className="mt-1 px-3 py-2 bg-[#F7F9FA] border h-10 shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[356px] rounded-md " />
+                                    <div className="flex-1">
+                                        <label htmlFor="brandPriceRange" className="mt-4 block text-base font-medium text-[#30323E] mb-2">Price Range*</label>
+                                        <div className="flex items-center justify-start">
+                                            <select {...formik.getFieldProps('brandPriceRange')} id="brandPriceRange" name="brandPriceRange" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-2">
+                                                <option defaultValue="true" className="text-base text-[#30323E] ">Select Price Range</option>
+                                                <option className="text-base" value="BudgetFriendly">Budget-Friendly ($)</option>
+                                                <option className="text-base" value="MidRange">Mid-Range ($$)</option>
+                                                <option className="text-base" value="Premium">Premium ($$$)</option>
+                                            </select>
 
                                         </div>
                                     </div>
-                                </section>
+
+                                </div>
+
+
 
                                 {/* submit button */}
 
@@ -277,8 +421,8 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                     </div>
                     {/* /End replace */}
                 </div>
-            </div>
-        </Layout>
+            </div >
+        </Layout >
     )
 }
 
