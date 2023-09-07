@@ -5,7 +5,6 @@ import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
-import { request } from "http";
 
 interface SellerData {
     data: {
