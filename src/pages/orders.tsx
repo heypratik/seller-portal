@@ -37,7 +37,7 @@ interface Orders {
   productTotal: string;
 }
 
-export default function Orders({ session, ordersData }: any) {
+export default function Orders({ session, ordersData, sellerData }: any) {
   const router = useRouter();
   const [data, setData] = useState<Data>({
     orders: [], // Initialize with an empty array for categories
@@ -127,7 +127,7 @@ export default function Orders({ session, ordersData }: any) {
         if (search.length == 1) {
           setActivePageNumber(1)
         }
-        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/search/3?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
+        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/search/${sellerData?.data?.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
         const productsData = await productsResponse.json()
         const products = productsData.data
         return products
@@ -137,7 +137,7 @@ export default function Orders({ session, ordersData }: any) {
 
     } else {
       try {
-        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/limited/seller/3?fulfillmentStatus=${statusFilter.join(',')}&paymentStatus=${paymentFilter.join(',')}&page=${activePageNumber}&limit=${resultNumber}`)
+        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/limited/seller/${sellerData?.data?.id}?fulfillmentStatus=${statusFilter.join(',')}&paymentStatus=${paymentFilter.join(',')}&page=${activePageNumber}&limit=${resultNumber}`)
         const productsData = await productsResponse.json()
         const products = productsData.data
         return products
@@ -147,28 +147,6 @@ export default function Orders({ session, ordersData }: any) {
     }
   }
 
-  async function handleDelete(productID: number) {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${ordersData.data.id}/${productID}`, {
-        method: 'DELETE',
-        headers: { "Content-Type": "application/json", },
-      })
-      const Deletedata = await response.json()
-      if (Deletedata.success) {
-        notification(true, "Product Deleted");
-        setData((prevState) => ({
-          ...prevState,
-          products: (prevState?.orders || []).filter((product: Orders) => product.customerOrderId !== productID)
-        }));
-      } else {
-        console.log("Something went wrong")
-        notification(false, "Something went wrong");
-      }
-    } catch (error) {
-      console.log(error)
-      notification(false, "Something went wrong");
-    }
-  }
 
   function notification(success: boolean, message: string | undefined) {
     if (success) {
@@ -353,6 +331,6 @@ export async function getServerSideProps({ req }: any) {
 
 
   return {
-    props: { session, ordersData },
+    props: { session, ordersData, sellerData },
   }
 }

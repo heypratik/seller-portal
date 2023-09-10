@@ -9,15 +9,21 @@ import { RxCrossCircled } from 'react-icons/rx'
 import { useFormik } from 'formik';
 import { getSession, useSession } from 'next-auth/react'
 import Link from 'next/link';
+import { useRouter } from 'next/router'
 
 
-function OrderID({ orderData }: { orderData: any }) {
+function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any }) {
 
     const orderDetails = orderData.data
-    // console.log(orderDetails)
 
     const [editingField, setEditingField] = useState<string>();
     const [loading, setLoading] = useState(false)
+
+    const router = useRouter()
+
+    console.log(router?.query?.orderId?.[0])
+
+
 
     const formik = useFormik({
         initialValues: {
@@ -36,9 +42,8 @@ function OrderID({ orderData }: { orderData: any }) {
     })
 
     async function onSubmit(values: { orderNotes: string, customerName: string, customerEmail: string, customerPhone: string, customerShippingAddress: string, customerShippingCountry: string, customerPincode: string, customerBillingAddress: string, customerBillingCountry: string, customerBillingPincode: string }) {
-        console.log(values)
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/update-details/3/1002`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/update-details/${sellerData?.data?.id}/${router?.query?.orderId?.[0]}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(values)
@@ -88,7 +93,14 @@ function OrderID({ orderData }: { orderData: any }) {
                                             <section className='mb-8'>
                                                 <div className=' mt-2 flex items-center'>
                                                     <h1 className='mr-5 text-2xl font-bold text-gray-900'>{`#${orderDetails?.customerOrderId}`}</h1>
-                                                    <span className='mr-5 bg-yellow-200 text-sm py-1 px-4 rounded-full flex items-center'><HiOutlineExclamationCircle className='mr-2' /><p className=''>{orderDetails?.fulfillmentStatus}</p></span>
+                                                    {orderDetails?.fulfillmentStatus === 'Unfulfilled' ? <span className='mr-5 bg-yellow-200 text-sm py-1 px-4 rounded-full flex items-center'>
+                                                        <HiOutlineExclamationCircle className='mr-2' />
+                                                        <p className=''>{orderDetails?.fulfillmentStatus}</p>
+                                                    </span> : <span className='mr-5 bg-green-600 font-medium text-white text-sm py-1 px-4 rounded-full flex items-center'>
+                                                        <AiOutlineCheckCircle className='mr-2' />
+                                                        <p className=''>{orderDetails?.fulfillmentStatus}</p>
+                                                    </span>
+                                                    }
                                                     <button className='mr-5 bg-gray-200 text-sm text-gray-800 font-medium rounded-lg py-1 px-3'>Refund</button>
                                                     <select className='mr-5 bg-gray-200 text-sm text-gray-800 font-medium rounded-lg py-1 px-3'>
                                                         <option>More Options</option>
@@ -107,9 +119,13 @@ function OrderID({ orderData }: { orderData: any }) {
                                             <div className='parentdiv flex items-start'>
                                                 <div className='flex-1 mr-6'>
                                                     <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
-                                                        <span className='mb-5 flex items-center'>
+                                                        {orderDetails?.fulfillmentStatus === 'Unfulfilled' ? <span className='mb-5 flex items-center'>
                                                             <HiOutlineExclamationCircle filter='drop-shadow(0px 0px 5px rgb(255 19 3 / 0.6)' fontSize='24px' fill='#fff' color='red' />
-                                                            <p className='font-semibold ml-4'>{orderDetails?.fulfillmentStatus} (1)</p></span>
+                                                            <p className='font-semibold ml-4'>{orderDetails?.fulfillmentStatus} (1)</p>
+                                                        </span> : <span className='mb-5 flex items-center'>
+                                                            <HiOutlineCheckCircle filter='drop-shadow(0px 0px 5px rgb(35 138 87 / 0.6)' fontSize='24px' fill='#fff' color='#238a57' />
+                                                            <p className='font-semibold ml-4'>{orderDetails?.fulfillmentStatus} (1)</p>
+                                                        </span>}
                                                         {/* Product Card  */}
                                                         {orderDetails?.Inventories?.map((item: any, index: any) => {
                                                             return (
@@ -141,9 +157,13 @@ function OrderID({ orderData }: { orderData: any }) {
 
                                                     {/* Payment Card */}
                                                     <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
-                                                        <span className='mb-5 flex items-center'>
+                                                        {orderDetails?.productPaymentStatus === "Paid" ? <span className='mb-5 flex items-center'>
                                                             <HiOutlineCheckCircle filter='drop-shadow(0px 0px 5px rgb(35 138 87 / 0.6)' fontSize='24px' fill='#fff' color='#238a57' />
-                                                            <p className='font-semibold ml-4'>{orderDetails?.productPaymentStatus}</p></span>
+                                                            <p className='font-semibold ml-4'>{orderDetails?.productPaymentStatus}</p>
+                                                        </span> : <span className='mb-5 flex items-center'>
+                                                            <HiOutlineExclamationCircle filter='drop-shadow(0px 0px 5px rgb(255 19 3 / 0.6)' fontSize='24px' fill='#fff' color='red' />
+                                                            <p className='font-semibold ml-4'>{orderDetails?.productPaymentStatus}</p>
+                                                        </span>}
 
                                                         <div className='flex justify-between mb-3'>
                                                             <div className='flex w-full'>
@@ -254,7 +274,7 @@ function OrderID({ orderData }: { orderData: any }) {
                     </div>
                 </div>
             </>
-        </Layout>
+        </Layout >
     )
 }
 
@@ -301,7 +321,7 @@ export async function getServerSideProps({ req }: any) {
     }
 
     return {
-        props: { session, orderData },
+        props: { session, orderData, sellerData },
     }
 }
 
