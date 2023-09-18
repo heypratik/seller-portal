@@ -141,10 +141,20 @@ export async function getServerSideProps({ req }: any) {
 
     const productId = url.split('/').pop()
 
-    console.log(productId)
+    // Get the seller data using the email that the user is logged in with
+    const sellerResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/seller/${session?.user?.email}`)
+    const sellerData = await sellerResponse.json()
+    if (!sellerData.success) {
+        return {
+            redirect: {
+                destination: '/auth/signup',
+                permanent: false
+            }
+        }
+    }
 
     // Get the seller data using the email that the user is logged in with
-    const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/orderId/5`)
+    const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/seller/${sellerData?.data?.id}/order/${productId}`)
     const orderData = await orderResponse.json()
     if (!orderData.success) {
         return {
@@ -154,8 +164,6 @@ export async function getServerSideProps({ req }: any) {
             }
         }
     }
-
-    console.log(orderData)
 
     return {
         props: { session, orderData },

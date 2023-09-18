@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import Layout from '../layout'
 import toast, { Toaster } from 'react-hot-toast';
-import Breadcrums from '../../../components/Breadcrums';
 import { HiOutlineExclamationCircle, HiOutlineCheckCircle } from 'react-icons/hi'
 import { BsPencil } from 'react-icons/bs'
 import { AiOutlineCheckCircle } from 'react-icons/ai'
@@ -21,13 +20,9 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
     const router = useRouter()
 
-    console.log(router?.query?.orderId?.[0])
-
-
-
     const formik = useFormik({
         initialValues: {
-            orderNotes: "No Notes",
+            orderNotes: orderDetails?.orderNotes ? orderDetails?.orderNotes : "No Notes",
             customerName: orderDetails?.customerName ? orderDetails?.customerName : "No Name",
             customerEmail: orderDetails?.customerEmail ? orderDetails?.customerEmail : "No Email",
             customerPhone: orderDetails?.customerPhoneNumber ? orderDetails?.customerPhoneNumber : "No Phone Number",
@@ -249,19 +244,38 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
                                                         <section className='mb-6'>
                                                             <span className='flex items-center justify-between'><p className='font-semibold'>Shipping Address</p>
-                                                                <BsPencil onClick={() => setEditingField("shipping")} className=' cursor-pointer' /></span>
+                                                                {editingField == "shipping" ? <div className='flex items-center'>
+                                                                    <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
+                                                                    <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
+                                                                </div> : <BsPencil onClick={() => setEditingField("shipping")} className=' cursor-pointer' />}
+                                                            </span>
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerName}</p>
-                                                            <p className='mt-1 text-sm'>{formik?.values?.customerShippingAddress}</p>
-                                                            <p className='mt-1 text-sm'>{formik?.values?.customerPincode}</p>
-                                                            <p className='mt-1 text-sm'>{formik?.values?.customerShippingCountry}</p>
+                                                            {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerShippingAddress')} name="customerShippingAddress" id="customerShippingAddress" placeholder='123 Main St.' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerShippingAddress}</p>}
+
+                                                            {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerPincode')} name="customerPincode" id="customerPincode" placeholder='Pincode 9001' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerPincode}</p>}
+
+                                                            {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerShippingCountry')} name="customerShippingCountry" id="customerShippingCountry" placeholder='USA' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerShippingCountry}</p>}
+
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerPhone}</p>
-                                                            <p className='mt-1 text-sm underline'>View map</p>
+                                                            <a target='_blank' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerShippingAddress}+${formik?.values?.customerPincode},${formik?.values?.customerShippingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
                                                         </section>
 
                                                         <section className='mb-6'>
-                                                            <p className='font-semibold'>Billing Address</p>
-                                                            <p className='mt-1 text-sm text-gray-400'>Same as shipping Address</p>
+                                                            <span className='flex items-center justify-between'><p className='font-semibold'>Billing Address</p>
+                                                                {editingField == "billing" ? <div className='flex items-center'>
+                                                                    <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
+                                                                    <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
+                                                                </div> : <BsPencil onClick={() => setEditingField("billing")} className=' cursor-pointer' />}
+                                                            </span>
+                                                            <p className='mt-1 text-sm'>{formik?.values?.customerName}</p>
+                                                            {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingAddress')} name="customerBillingAddress" id="customerBillingAddress" placeholder='123 Main St.' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingAddress}</p>}
 
+                                                            {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingPincode')} name="customerBillingPincode" id="customerBillingPincode" placeholder='Pincode 9001' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingPincode}</p>}
+
+                                                            {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingCountry')} name="customerBillingCountry" id="customerBillingCountry" placeholder='USA' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingCountry}</p>}
+
+                                                            <p className='mt-1 text-sm'>{formik?.values?.customerPhone}</p>
+                                                            <a target='_blank' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerBillingAddress}+${formik?.values?.customerBillingPincode},${formik?.values?.customerBillingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
                                                         </section>
                                                     </div>
                                                 </div>
