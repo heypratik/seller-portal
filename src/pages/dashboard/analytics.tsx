@@ -2,32 +2,16 @@ import { useEffect, useState } from "react"
 import Layout from "../layout";
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
-import { AiOutlinePlus, AiOutlineSearch } from 'react-icons/ai'
-import { FiFilter } from 'react-icons/fi'
 import { useRouter } from "next/router";
-import Link from "next/link";
-import * as DialogPrimitive from "@radix-ui/react-dialog"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "../../../shadcn/components/ui/dialog"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "../../../shadcn/components/ui/popover"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, AreaChart, Area, Tooltip, CartesianGrid } from "recharts"
-import { TbActivityHeartbeat } from "react-icons/tb";
-import { BsCreditCard2Back, BsCurrencyDollar } from 'react-icons/bs'
 import { addDays, format } from "date-fns"
-// import { DateRange } from "react-day-picker"
 import { cn } from "../../../shadcn/lib/utils";
 import { Button } from "../../../shadcn/components/ui/button";
-// import { Calendar } from "../../../shadcn/components/ui/calendar";
 import { DateRange } from 'react-date-range';
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
@@ -85,11 +69,12 @@ const chartData = [
     },
 ]
 
-const getIntroOfPage = (label) => {
+
+const getIntroOfPage = (label: any) => {
     const datePattern = /^\d{4}-\d{2}-\d{2}$/;
     const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 
-    function convertTo12HourFormat(time) {
+    function convertTo12HourFormat(time: any) {
         const [hour, minute] = time.split(':').map(Number);
 
         let period = "AM";
@@ -116,7 +101,7 @@ const getIntroOfPage = (label) => {
     return '';
 };
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="custom-tooltip bg-white p-2 rounded-md">
@@ -130,13 +115,19 @@ const CustomTooltip = ({ active, payload, label }) => {
     return null;
 };
 
+type RangeKeyDict = {
+    selection: {
+        startDate: Date;
+        endDate: Date;
+        key: string;
+    }
+};
 
-export default function Orders({ session, ordersData, sellerData }: any) {
+export default function Orders({ session, sellerData }: any) {
     const router = useRouter();
 
     const [data, setData] = useState<any>([])
-    console.log(data)
-    const [date, setDate] = useState<DateRange | undefined>({ from: new Date(), to: addDays(new Date(), 7) })
+    const [date, setDate] = useState({ from: new Date(), to: addDays(new Date(), 7) })
 
     const [state, setState] = useState([
         {
@@ -145,10 +136,6 @@ export default function Orders({ session, ordersData, sellerData }: any) {
             key: 'selection'
         }
     ]);
-
-    console.log(state)
-    console.log(data)
-    console.log(format(state[0]?.startDate, "yyyy-MM-dd"))
 
     useEffect(() => {
         async function fetchData() {
@@ -234,7 +221,9 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                                                         <PopoverContent className="w-auto p-0" align="start">
                                                             <DateRange
                                                                 editableDateInputs={true}
-                                                                onChange={item => setState([item.selection])}
+                                                                onChange={item => setState([(item as RangeKeyDict).selection])}
+
+
                                                                 moveRangeOnFirstSelection={false}
                                                                 ranges={state} rangeColors={['#f33e5b', '#3ecf8e', '#fed14c']} />
                                                         </PopoverContent>
@@ -261,8 +250,10 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                                                                 axisLine={false}
                                                                 tickFormatter={(value) => `$${value}`}
                                                             />
+                                                            <Tooltip />
 
-                                                            <Bar dataKey="orders" fill="#f12c4d" radius={[4, 4, 0, 0]} />
+                                                            <Bar dataKey="orders" stackId="a" fill="#f12c4d" radius={[4, 4, 0, 0]} />
+                                                            <Bar dataKey="total" stackId="a" fill="#f12c4d" radius={[4, 4, 0, 0]} />
                                                         </BarChart>
                                                     </ResponsiveContainer>
                                                 </div>
@@ -332,20 +323,9 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
-    // Get the seller data using the email that the user is logged in with
-    const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/limited/seller/${sellerData?.data?.id}`)
-    const ordersData = await orderResponse.json()
-    if (!ordersData.success) {
-        return {
-            redirect: {
-                destination: '/auth/signup',
-                permanent: false
-            }
-        }
-    }
 
 
     return {
-        props: { session, ordersData, sellerData },
+        props: { session, sellerData },
     }
 }
