@@ -81,6 +81,10 @@ export default function Orders({ session, ordersData, sellerData }: any) {
     }
   };
 
+  function handleClick(customerid: number) {
+    router.push(`/orders/${customerid}`).then(() => window.location.href = `/orders/${customerid}`);
+  }
+
   const handlePaymentFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (paymentFilter.includes(event.target.name)) {
       console.log("Called")
@@ -113,12 +117,21 @@ export default function Orders({ session, ordersData, sellerData }: any) {
     [parentCheckbox])
 
   useEffect(() => {
+    let mounted = true;
+
     async function fetchData() {
-      const result = await getData()
-      setData(result)
+      const result = await getData();
+      if (mounted) {
+        setData(result);
+      }
     }
-    fetchData()
-  }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search, paymentFilter])
+
+    fetchData();
+
+    return () => {
+      mounted = false;
+    }
+  }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search, paymentFilter]);
 
   async function getData() {
     if (search) {
@@ -223,9 +236,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                         </thead>
                         <tbody>
                           {data && data?.orders?.map((row, index) => (
-                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={() => {
-                              router.push(`/orders/${row.customerOrderId}`)
-                            }}>
+                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => handleClick(row.customerOrderId)}>
                               <td className="py-2 px-4 border-b"><input type="checkbox" value={row.customerOrderId} name="childCheckbox" id="childCheckbox" /></td>
                               <td className="py-2 px-4 border-b">#{row.customerOrderId}</td>
                               <td className="py-2 px-4 border-b">{`${new Date(row.orderDate).toLocaleDateString('en-US', {

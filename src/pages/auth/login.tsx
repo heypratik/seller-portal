@@ -21,13 +21,13 @@ export default function Login() {
             redirect: false,
             email: email,
             password: password,
-            callbackUrl: "/brand-enroll"
+            callbackUrl: "/dashboard"
         })
 
         if (status?.ok) {
             notification(true, "Login Successful")
             setLoading(false)
-            router.push("/brand-enroll")
+            router.push("/dashboard")
         } else {
             // notify user the error message from status.error
             notification(false, status?.error)

@@ -6,6 +6,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import Link from 'next/link';
+import { ro } from 'date-fns/locale';
+import { useRouter } from 'next/router';
 
 interface SellerData {
     data: {
@@ -47,6 +49,8 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     const [productCategory, setProductCategory] = useState<string>();
     const [subCategory, setSubCategory] = useState<string>();
 
+    const router = useRouter();
+
     const formik = useFormik({
         initialValues: {
             productName: '',
@@ -71,8 +75,17 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
         onSubmit
     })
 
+    console.log(formik.values)
+
     async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productTargetGender: string, productAgeGroup: string, storeLocation: string, productMaterial: string, productDeliveryTime: string, productPromotionStatus: string }) {
         setLoading(true)
+
+        // Check if all fields have a value
+        if (!Object.values(values).every(v => v)) {
+            notification(false, "Please fill out all the fields.");
+            setLoading(false)
+            return;
+        }
 
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/add/product`, {
@@ -108,9 +121,14 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
             if (data.success) {
                 notification(true, "Product Added successfully.");
+                router.push('/inventory/products');
                 setLoading(false);
             } else {
-                notification(false, "Something went wrong");
+                if (data.message) {
+                    notification(false, data.message);
+                } else {
+                    notification(false, "Something went wrong");
+                }
                 setLoading(false);
             }
 
@@ -134,8 +152,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     const inputClass = `mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3`
 
     const labelClass = `mt-6 block text-base font-medium text-[#30323E] mb-2`
-
-    console.log(formik.values)
 
     return (
         <Layout>
@@ -315,7 +331,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                 {/* NEW LINE */}
 
                                 <div className="mt-16 flex">
-                                    <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Next`}</button>
+                                    <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Add Product`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>

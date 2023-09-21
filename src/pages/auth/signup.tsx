@@ -42,9 +42,8 @@ export default function SignUp() {
         setLoading(true)
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/signup`, {
             method: 'POST',
-            // mode: "no-cors",
             headers: { "Content-Type": "application/json", },
-            body: JSON.stringify({ name: values.name, email: values.email, password: values.password })
+            body: JSON.stringify({ name: values.name.trim(), email: values.email, password: values.password })
         })
         const data = await response.json()
         // {

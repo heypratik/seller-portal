@@ -144,6 +144,7 @@ export async function getServerSideProps({ req }: any) {
     // Get the seller data using the email that the user is logged in with
     const sellerResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/seller/${session?.user?.email}`)
     const sellerData = await sellerResponse.json()
+    console.log(sellerData)
     if (!sellerData.success) {
         return {
             redirect: {
@@ -156,10 +157,11 @@ export async function getServerSideProps({ req }: any) {
     // Get the seller data using the email that the user is logged in with
     const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/seller/${sellerData?.data?.id}/order/${productId}`)
     const orderData = await orderResponse.json()
+    console.log(orderData)
     if (!orderData.success) {
         return {
             redirect: {
-                destination: '/auth/signup',
+                destination: '/orders',
                 permanent: false
             }
         }

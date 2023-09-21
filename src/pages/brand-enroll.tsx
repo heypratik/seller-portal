@@ -5,6 +5,7 @@ import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
+import Link from "next/link";
 
 interface SellerData {
     data: {
@@ -33,7 +34,7 @@ const categories: CategoryType = {
     "Health & Beauty": ["Bath & Body", "Makeup", "Skin Care", "Hair Care", "Nails", "Salon & Spa Equipment", "Fragrance", "Tools & Accessories", "Shaving & Hair Removal"],
     "Clothing": ["Dresses", "Tops & Tees", "Sweaters", "Jeans", "Pants", "Skirts", "Activewear", "Swimsuits & Cover Ups", "Lingerie, Sleep & Lounge", "Coats & Jackets", "Suits & Blazers", "Socks"],
     "Accessories": ["Scarves & Wraps", "Sunglasses", "Belts", "Wallets"],
-    "Footwear": ["Athletic", "Boots", "Fashion Sneakers", "Flats", "Outdoor", "Slippers", "Pumps & Heels", "Sandals", "Loafers & Slip-Ons", "Outdoor", "Slippers", "Oxfords", "Sandals", "Work & Safety"],
+    "Footwear": ["Athletic", "Boots", "Fashion Sneakers", "Flats", "Outdoor", "Pumps & Heels", "Loafers & Slip-Ons", "Slippers", "Oxfords", "Sandals", "Work & Safety"],
     "Watches": ["Luxury", "Sport"],
     "Jewelry": ["Necklaces", "Rings", "Earrings", "Bracelets", "Wedding & Engagement"],
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
@@ -45,8 +46,8 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
     const [logoFile, setLogoFile] = useState(null);
     const [displayPictureFile, setDisplayPictureFile] = useState(null);
 
-    const [category, setCategory] = useState('');
-    const [subCategory, setSubCategory] = useState('');
+    const [category, setCategory] = useState(brand?.brandCategory ? brand?.brandCategory : '');
+    const [subCategory, setSubCategory] = useState(brand?.brandSubCategory ? brand?.brandSubCategory : '');
 
     const [logoObjectKey, setLogoObjectKey] = useState(null);
     const [displayPictureObjectKey, setDisplayPictureObjectKey] = useState(null);
@@ -95,6 +96,7 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
         setLogoFile(selectedFile);
     };
 
+
     // {
     //     "id": 2,
     //     "sellerId": 2,
@@ -130,6 +132,14 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
 
     async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: string, brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string }) {
         setLoading(true)
+
+        // Check if all fields have a value
+        if (!Object.values(values).every(v => v)) {
+            notification(false, "Please fill out all the fields.");
+            setLoading(false)
+            return;
+        }
+
 
         // Checks if brand is true then its an update
         try {
@@ -296,7 +306,7 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                     <div className="flex-1">
                                         <label htmlFor="category" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Category*</label>
 
-                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory('') }} >
+                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory(''); formik.handleChange(e); }} >
                                             <option className="text-base" value="">Select Category</option>
                                             {Object.keys(categories).map((cat) => (
                                                 <option className="text-base" key={cat} value={cat}>
@@ -309,7 +319,9 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                     <div className="flex-1">
                                         <label htmlFor="brandSubCategory" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Sub-Category*</label>
 
-                                        <select {...formik.getFieldProps('brandSubCategory')} id="brandSubCategory" name="brandSubCategory" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={subCategory} onChange={(e) => setSubCategory(e.target.value)} disabled={!category}>
+                                        <select {...formik.getFieldProps('brandSubCategory')} id="brandSubCategory" name="brandSubCategory" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={subCategory} onChange={(e) => {
+                                            formik.handleChange(e); setSubCategory(e.target.value)
+                                        }} disabled={!category}>
                                             <option className="text-base text-[#30323E] " value="">Select Sub-Category</option>
                                             {category && categories[category]?.map((subCat) => (
                                                 <option className="text-base text-[#30323E] " key={subCat} value={subCat}>
@@ -411,9 +423,9 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                 {/* submit button */}
 
                                 <div className="mt-16 flex">
-                                    <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-20 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Next`}</button>
+                                    <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer" value="Save">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Save`}</button>
 
-                                    <button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button>
+                                    <Link href='/dashboard'><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel</button></Link>
                                 </div>
                             </form>
                         </div>
