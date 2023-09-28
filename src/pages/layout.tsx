@@ -4,11 +4,14 @@ import { CgPlayListAdd } from 'react-icons/cg'
 import { MdFormatListBulleted, MdOutlineInventory } from 'react-icons/md'
 import { BsBoxSeam } from 'react-icons/bs'
 import { BiBarChartSquare, BiBell } from 'react-icons/bi'
-import { FaRegUser, FaChevronDown } from 'react-icons/fa'
+import { FaRegUser, FaChevronDown, FaListUl } from 'react-icons/fa'
 import { FiTruck } from 'react-icons/fi'
+import { AiOutlinePlus } from 'react-icons/ai'
 import { RxDashboard } from 'react-icons/rx'
+import { LuListChecks, LuLayoutList } from 'react-icons/lu'
 import { GrFormAdd } from 'react-icons/gr'
 import { PiStackSimpleBold } from 'react-icons/pi'
+import { IoPersonOutline } from 'react-icons/io5'
 import {
     BellIcon,
     CalendarIcon,
@@ -46,14 +49,16 @@ export default function Layout({ children }: { children: ReactNode }) {
     }
 
     const navigation = [
-        { name: 'Dashboard', href: '#', icon: RxDashboard, current: isCurrentPage(`/`) },
+        { name: 'Dashboard', href: '/dashboard', icon: RxDashboard, current: isCurrentPage(`/dashboard`) },
         { name: 'Brand Enroll', href: '/brand-enroll', icon: CgPlayListAdd, current: isCurrentPage(`/brand-enroll`) },
-        { name: 'Inventory', href: '#', icon: MdOutlineInventory, current: isCurrentPage(`/inventory`), subNav: [{ name: 'Add Products', href: '/inventory/product-list', icon: GrFormAdd, current: isCurrentPage(`/inventory/product-list`) }, { name: 'Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) }] },
-        { name: 'Orders', href: '#', icon: BsBoxSeam, current: isCurrentPage(`/orders`), subNav: [{ name: 'Customers', href: '#', icon: BsBoxSeam, current: false }, { name: 'Invoices', href: '#', icon: BsBoxSeam, current: false }] },
-        { name: 'Reports', href: '#', icon: BiBarChartSquare, current: isCurrentPage(`/report`) },
+        { name: 'Inventory', href: '/inventory/products', icon: MdOutlineInventory, current: isCurrentPage(`/inventory  /products`), subNav: [{ name: 'Add Products', href: '/inventory/product-list', icon: AiOutlinePlus, current: isCurrentPage(`/inventory/product-list`) }, { name: 'Manage Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) }, { name: 'Brand Listing', href: '/inventory/brand-listing', icon: LuLayoutList, current: isCurrentPage(`/inventory/brand-listing`) }, { name: 'Manage Brands', href: '/inventory/manage-brands', icon: LuListChecks, current: isCurrentPage(`/inventory/manage-brands`) }] },
+        { name: 'Orders', href: '/orders', icon: BsBoxSeam, current: isCurrentPage(`/orders`) },
+        { name: 'Analytics', href: '/analytics', icon: BiBarChartSquare, current: isCurrentPage(`/analytics`) },
         { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },
         { name: 'Account Info', href: '/account', icon: FaRegUser, current: isCurrentPage(`/account`) },
     ]
+
+    // { name: 'Customers', href: '#', icon: IoPersonOutline, current: false }
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const [openMenuName, setOpenMenuName] = useState('')
@@ -69,6 +74,10 @@ export default function Layout({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (router.pathname.includes("inventory")) {
             setOpenMenuName("Inventory")
+        }
+
+        if (router.pathname.includes("orders")) {
+            setOpenMenuName("Orders")
         }
 
     }, [])
@@ -191,12 +200,15 @@ export default function Layout({ children }: { children: ReactNode }) {
                                                 item.current ? 'text-white' : 'text-[#979797] group-hover:text-white',
                                                 'mr-3 flex-shrink-0 h-6 w-6')} aria-hidden="true" /> {item.name}
 
-                                            {item.subNav && <FaChevronDown onClick={() => openSubMenu(item.name)} className={classNames(
+                                            {item.subNav && <FaChevronDown onClick={(e) => {
+                                                e.preventDefault()
+                                                openSubMenu(item.name)
+                                            }} className={classNames(
                                                 item.current ? 'text-white' : 'text-[#979797] group-hover:text-white',
                                                 'h-5 w-5 ml-auto')} aria-hidden="true" />}
                                         </a>
 
-                                        <div className='submenu'>
+                                        <div className='submenu bg-[#111111] rounded-b-xl px-4'>
                                             {item?.subNav?.map((subItem) => {
                                                 return <div key={subItem.name}>
                                                     {openMenuName == item.name && <a href={subItem.href} className={classNames(
@@ -205,7 +217,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
                                                         <subItem.icon className={classNames(
                                                             subItem.current ? 'text-white' : 'text-[#979797] group-hover:text-white',
-                                                            'mr-3 flex-shrink-0 h-6 w-6')} aria-hidden="true" /> {subItem.name} </a>}
+                                                            'mr-3 flex-shrink-0 h-6 w-6 text-[#979797]')} aria-hidden="true" /> {subItem.name} </a>}
                                                 </div>
                                             })}
                                         </div>
