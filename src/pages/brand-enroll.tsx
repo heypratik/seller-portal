@@ -5,7 +5,9 @@ import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
+import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
 import Link from "next/link";
+
 
 interface SellerData {
     data: {
@@ -55,6 +57,9 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
     const [loading, setLoading] = useState(false)
 
     const [logoLoading, setLogoLoading] = useState(false)
+
+    const [countryValue, setCountryValue] = useState(brand?.businessCountry ? brand?.businessCountry : '');
+
     const { data: session } = useSession()
 
     const handleFormSubmit = (e: any) => {
@@ -264,7 +269,11 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                     <div className="flex-1">
                                         <label htmlFor="businessCountry" className="mt-4 block text-base font-medium text-[#30323E] mb-2">Country*</label>
 
-                                        <input {...formik.getFieldProps('businessCountry')} type="text" id="businessCountry" name="businessCountry" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
+                                        {/* <input {...formik.getFieldProps('businessCountry')} type="text" id="businessCountry" name="businessCountry" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" /> */}
+                                        <CountryDropdown {...formik.getFieldProps('businessCountry')} id="businessCountry" name="businessCountry" onChange={(e) => {
+                                            formik.setFieldValue('businessCountry', e)
+                                            setCountryValue(e)
+                                        }} value={countryValue} classes='mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6' />
 
                                     </div>
                                 </div>
@@ -371,8 +380,8 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                         <div className="flex items-center justify-start">
                                             <select {...formik.getFieldProps('brandTargetGender')} id="brandTargetGender" name="brandTargetGender" className="mr-4 mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[10.5rem] rounded-md h-10 mb-2">
                                                 <option defaultValue="true" className="text-base text-[#30323E] ">Select Gender</option>
-                                                <option className="text-base" value="Mens">Mens</option>
-                                                <option className="text-base" value="Womens">Womens</option>
+                                                <option className="text-base" value="Men">Men</option>
+                                                <option className="text-base" value="Women">Women</option>
                                                 <option className="text-base" value="Unisex">Unisex</option>
                                                 <option className="text-base" value="Kids">Kids</option>
                                             </select>

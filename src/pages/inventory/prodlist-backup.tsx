@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import Layout from '../layout'
 import Breadcrums from '../../../components/Breadcrums'
 import { useFormik } from 'formik';
@@ -48,7 +48,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>();
     const [subCategory, setSubCategory] = useState<string>();
-    const [prodMargin, setProdMargin] = useState<number>(0)
 
     const router = useRouter();
 
@@ -64,7 +63,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
             productSubCategory: subCategory ? subCategory : '',
             productPrice: '',
             productCost: '',
-            productMargin: "",
+            productMargin: '',
             productKeywords: '',
             productTargetGender: '',
             productAgeGroup: '',
@@ -77,16 +76,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     })
 
     console.log(formik.values)
-
-    useEffect(() => {
-        const marginValue = parseInt(formik?.values?.productPrice) - parseInt(formik?.values?.productCost)
-        formik.setFieldValue("productMargin", marginValue.toString())
-        if (formik?.values?.productPrice && formik?.values?.productCost) {
-            setProdMargin(parseInt(formik?.values?.productPrice) - parseInt(formik?.values?.productCost))
-        }
-    }, [formik.values.productCost, formik.values.productPrice])
-
-
 
     async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productTargetGender: string, productAgeGroup: string, storeLocation: string, productMaterial: string, productDeliveryTime: string, productPromotionStatus: string }) {
         setLoading(true)
@@ -223,6 +212,63 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
                                 <div className="w-full flex items-center justify-between">
                                     <div className="flex-1">
+                                        <label htmlFor="business" className={labelClass}>Target Gender*</label>
+
+                                        <select {...formik.getFieldProps('productTargetGender')} id="productTargetGender" name="productTargetGender" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" placeholder="Target Gender">
+                                            <option defaultChecked value={"Male"}>Male</option>
+                                            <option value={"Female"}>Female</option>
+                                            <option value={"Unisex"}>Unisex</option>
+                                            <option value={"Kids"}>Kids</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className={labelClass}>Age Group*</label>
+
+                                        <select {...formik.getFieldProps('productAgeGroup')} id="productAgeGroup" name="productAgeGroup" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" placeholder="Age Group">
+                                            <option defaultChecked value={"under 10"}>0-10</option>
+                                            <option value={"under 18"}>10-18</option>
+                                            <option value={"under 25"}>18-25</option>
+                                            <option value={"under 50"}>25-50</option>
+                                            <option value={"above 50"}>50 & Above</option>
+                                            <option value={"all"}>All</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className={labelClass}>Material*</label>
+
+                                        <input {...formik.getFieldProps('productMaterial')} type="text" id="productMaterial" name="productMaterial" className={inputClass} placeholder='Material' />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className={labelClass}>Store Location*</label>
+
+                                        <input {...formik.getFieldProps('storeLocation')} type="text" id="storeLocation" name="storeLocation" className={inputClass} placeholder='eg. New York' />
+                                    </div>
+                                </div>
+
+                                {/* NEW LINE */}
+
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className={labelClass}>Delivery Time*</label>
+
+                                        <input {...formik.getFieldProps('productDeliveryTime')} type="text" id="productDeliveryTime" name="productDeliveryTime" className={inputClass} placeholder='eg. 2-5 Days' />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label htmlFor="business" className={labelClass}>Promotion Status*</label>
+
+                                        <input {...formik.getFieldProps('productPromotionStatus')} type="text" id="productPromotionStatus" name="productPromotionStatus" className={inputClass} placeholder='eg. 50% OFF' />
+                                    </div>
+                                </div>
+
+                                {/* NEW LINE */}
+
+                                {/* NEW LINE */}
+
+                                <div className="w-full flex items-center justify-between">
+                                    <div className="flex-1">
                                         <label htmlFor="business" className={labelClass}>Product Options*</label>
 
                                         <div className='flex items-center justify-start mt-4'>
@@ -233,7 +279,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                                     <option value="Spanish">Sub Category 2</option>
                                                     <option value="Spanish">Sub Category 3</option>
                                                 </select>
-                                                <p className='text-center text-sm italic text-gray-600'>(Color)</p>
                                             </div>
 
                                             <div>
@@ -241,12 +286,10 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                                     <option value="English">Size</option>
                                                     <option value="Spanish">Category 1</option>
                                                 </select>
-                                                <p className='text-center text-sm italic text-gray-600'>(Size)</p>
                                             </div>
 
                                             <div>
                                                 <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' placeholder='Quantity' id="productQuantity" className="mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]" />
-                                                <p className='text-center text-sm italic text-gray-600'>(Quantity)</p>
 
                                             </div>
                                         </div>
@@ -257,17 +300,14 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         <div className='flex items-center justify-start mt-4'>
                                             <div>
                                                 <input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder='Price' />
-                                                <p className='text-center text-sm italic text-gray-600'>(Price)</p>
                                             </div>
 
                                             <div>
-                                                <input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder='COGS' />
-                                                <p className='text-center text-sm italic text-gray-600'>(COGS)</p>
+                                                <input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder='Cost' />
                                             </div>
 
                                             <div>
-                                                <input disabled type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder={`Margin: $${prodMargin && prodMargin}`} />
-                                                <p className='text-center text-sm italic text-gray-600'>(Margin)</p>
+                                                <input type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder='Margin' />
 
                                             </div>
                                         </div>
