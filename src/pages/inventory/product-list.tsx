@@ -75,16 +75,16 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
         },
         onSubmit
     })
-
-    console.log(formik.values)
+    const { values, setFieldValue } = formik;
 
     useEffect(() => {
-        const marginValue = parseInt(formik?.values?.productPrice) - parseInt(formik?.values?.productCost)
-        formik.setFieldValue("productMargin", marginValue.toString())
-        if (formik?.values?.productPrice && formik?.values?.productCost) {
-            setProdMargin(parseInt(formik?.values?.productPrice) - parseInt(formik?.values?.productCost))
+        const marginValue = parseInt(values?.productPrice) - parseInt(values?.productCost);
+        setFieldValue("productMargin", marginValue.toString());
+
+        if (values?.productPrice && values?.productCost) {
+            setProdMargin(parseInt(values?.productPrice) - parseInt(values?.productCost));
         }
-    }, [formik.values.productCost, formik.values.productPrice])
+    }, [values.productCost, values.productPrice, setFieldValue]);
 
 
 

@@ -111,8 +111,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
         el.checked = false;
       });
     }
-  },
-    [parentCheckbox])
+  }, [parentCheckbox])
 
   useEffect(() => {
     let mounted = true;
@@ -129,7 +128,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
     return () => {
       mounted = false;
     }
-  }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search, paymentFilter]);
+  }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search, paymentFilter, getData]);
 
   async function getData() {
     if (search) {
