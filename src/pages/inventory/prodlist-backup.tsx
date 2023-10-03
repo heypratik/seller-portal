@@ -43,7 +43,7 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
-export default function ProductList({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
+export default function ProductListBackup({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
 
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>();
