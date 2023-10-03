@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
 import { TbActivityHeartbeat } from "react-icons/tb";
 import { BsCreditCard2Back, BsCurrencyDollar } from 'react-icons/bs'
+import Link from "next/link";
 
 
 const getIntroOfPage = (label: any) => {
@@ -215,7 +216,7 @@ export default function Dashboard({ session, sellerData }: any) {
                           <div className="w-full h-2/5 bg-gradient-to-t from-white via-white to-transparent absolute bottom-0 right-0 rounded-md"></div>
 
                           <p className=" font-semibold text-md text-gray-700">Recent Sales</p>
-                          {data?.recentSales?.length && data?.recentSales?.length > 0 && <p className="font-semibold text-xs text-gray-500 mt-1 underline"><a href="/orders">View All Orders</a></p>}
+                          {data?.recentSales?.length && data?.recentSales?.length > 0 && <p className="font-semibold text-xs text-gray-500 mt-1 underline"><Link href="/orders">View All Orders</Link></p>}
                           {data?.recentSales?.length && data?.recentSales?.length > 0 ? data?.recentSales?.map((sale, index) => {
                             return (
                               <div key={index} className="mt-4 flex items-center justify-between">
@@ -224,7 +225,7 @@ export default function Dashboard({ session, sellerData }: any) {
                               </div>
                             )
                           })
-                            : <p className="font-semibold text-xs text-gray-500 mt-1">You've made no sales.</p>
+                            : <p className="font-semibold text-xs text-gray-500 mt-1">You have made no sales.</p>
                           }
                         </div>
                       </div>

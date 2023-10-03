@@ -257,7 +257,7 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                             {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerShippingCountry')} name="customerShippingCountry" id="customerShippingCountry" placeholder='USA' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerShippingCountry}</p>}
 
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerPhone}</p>
-                                                            <a target='_blank' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerShippingAddress}+${formik?.values?.customerPincode},${formik?.values?.customerShippingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
+                                                            <a target='_blank' rel='noreferrer' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerShippingAddress}+${formik?.values?.customerPincode},${formik?.values?.customerShippingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
                                                         </section>
 
                                                         <section className='mb-6'>
@@ -275,7 +275,7 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                             {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingCountry')} name="customerBillingCountry" id="customerBillingCountry" placeholder='USA' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingCountry}</p>}
 
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerPhone}</p>
-                                                            <a target='_blank' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerBillingAddress}+${formik?.values?.customerBillingPincode},${formik?.values?.customerBillingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
+                                                            <a target='_blank' rel='noreferrer' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerBillingAddress}+${formik?.values?.customerBillingPincode},${formik?.values?.customerBillingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
                                                         </section>
                                                     </div>
                                                 </div>
