@@ -87,7 +87,6 @@ export default function Orders({ session, ordersData, sellerData }: any) {
 
   const handlePaymentFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (paymentFilter.includes(event.target.name)) {
-      console.log("Called")
       setPaymentFilter(prevState => prevState.filter((item: any) => item !== event.target.name))
     } else {
       if (event.target.name == "all") {
@@ -97,7 +96,6 @@ export default function Orders({ session, ordersData, sellerData }: any) {
           setPaymentFilter(["Paid", "Unpaid"])
         }
       } else {
-        console.log("Called2")
         setPaymentFilter(prevState => [...prevState, event.target.name])
       }
     }

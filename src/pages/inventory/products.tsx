@@ -165,8 +165,6 @@ export default function Products({ session, sellerData }: any) {
 
     }
 
-    console.log(data)
-
 
     return (
         <Layout>

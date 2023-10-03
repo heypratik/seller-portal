@@ -36,8 +36,6 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
         onSubmit
     })
 
-    console.log(orderDetails)
-
     async function onSubmit(values: { orderNotes: string, customerName: string, customerEmail: string, customerPhone: string, customerShippingAddress: string, customerShippingCountry: string, customerPincode: string, customerBillingAddress: string, customerBillingCountry: string, customerBillingPincode: string }) {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/update-details/${sellerData?.data?.id}/${router?.query?.orderId?.[0]}`, {
