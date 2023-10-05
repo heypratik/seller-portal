@@ -53,7 +53,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         { name: 'Brand Enroll', href: '/brand-enroll', icon: CgPlayListAdd, current: isCurrentPage(`/brand-enroll`) },
         { name: 'Inventory', href: '/inventory/products', icon: MdOutlineInventory, current: isCurrentPage(`/inventory  /products`), subNav: [{ name: 'Add Products', href: '/inventory/product-list', icon: AiOutlinePlus, current: isCurrentPage(`/inventory/product-list`) }, { name: 'Manage Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) }, { name: 'Brand Listing', href: '/inventory/brand-listing', icon: LuLayoutList, current: isCurrentPage(`/inventory/brand-listing`) }, { name: 'Manage Brands', href: '/inventory/manage-brands', icon: LuListChecks, current: isCurrentPage(`/inventory/manage-brands`) }] },
         { name: 'Orders', href: '/orders', icon: BsBoxSeam, current: isCurrentPage(`/orders`) },
-        { name: 'Analytics', href: '/analytics', icon: BiBarChartSquare, current: isCurrentPage(`/analytics`) },
+        { name: 'Analytics', href: '/dashboard/analytics', icon: BiBarChartSquare, current: isCurrentPage(`/dashboard/analytics`) },
         { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },
         { name: 'Account Info', href: '/account', icon: FaRegUser, current: isCurrentPage(`/account`) },
     ]
