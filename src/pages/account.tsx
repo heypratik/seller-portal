@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import Layout from './layout'
 import Breadcrums from '../../components/Breadcrums'
 import { GoPencil } from 'react-icons/go'
@@ -19,6 +19,12 @@ interface SellerData {
     };
 }
 
+// API Configurations
+const baseURL = "https://dev.mybranzapi.link";
+const postMediaEndpoint = "media/single";
+const mediaEndpoint = "media/%s";
+const token = "fb507a0b75e0f62f65b798424555733f";
+
 function Account({ sellerData, accountData }: { sellerData: SellerData, accountData: any }) {
 
     const sellerAccountData = accountData?.data?.seller
@@ -26,6 +32,9 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
 
     const [loading, setLoading] = useState(false)
     const [editingInput, setEditingInput] = useState<string>("")
+
+    const [objectKeys, setObjectKeys] = useState<any[]>([sellerAccountData.profilePicture]);
+    const fileInputRef = useRef<any>(null);
 
     const formik = useFormik({
         initialValues: {
@@ -56,6 +65,7 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
                     sellerEmail: values.sellerEmail,
                     companyName: values.companyName,
                     mobileNumber: values.mobileNumber,
+                    profilePicture: objectKeys[0]
                 })
             })
             const data = await response.json();
@@ -86,6 +96,90 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
 
     }
 
+    const uploadFile = (file: any, token: string) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("type", "POST");
+
+        return fetch(`${baseURL}/${postMediaEndpoint}`, {
+            method: 'POST',
+            body: fd,
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+    };
+
+    const handleImageChange = useCallback(
+        async (e: any) => {
+            const files: File[] = Array.from(e.target.files);  // Convert FileList to array
+            if (files.length > 0) {
+                const uploadedKeys: string[] = [];
+                for (const file of files) {
+                    try {
+                        const response = await uploadFile(file, token);
+                        if (response.status === 'success' && response.data.objectKey) {
+                            uploadedKeys.push(response.data.objectKey);
+                        } else {
+                            console.error("Failed to upload image:", file.name);
+                            notification(false, `Upload Failed: ${file?.name}`);
+                        }
+                    } catch (error) {
+                        console.error("Error uploading the image:", file.name, error);
+                        notification(false, `Upload Failed: ${file?.name}`);
+                    }
+                }
+                setObjectKeys([...uploadedKeys]);  // Merge old and new objectKeys
+            }
+        },
+        [token]
+    );
+
+    const CustomImage = ({ objectKey, token, onClick }: { objectKey: string, token: string, onClick: any }) => {
+        const [imageData, setImageData] = useState<string | null>(null);
+
+        useEffect(() => {
+            const fetchImage = async () => {
+                try {
+                    const response = await fetch(
+                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        setImageData(URL.createObjectURL(blob));
+                    }
+                } catch (error) {
+                    console.log("Error fetching image:", error);
+                }
+            };
+
+            fetchImage();
+        }, [objectKey, token]);
+
+        return imageData ? (
+            <img
+                src={imageData}
+                alt={`custom-${imageData}`}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-[100px] h-[100px] border-2 border-gray-200 prod-images cursor-pointer rounded-full object-cover"
+            />
+
+        ) : (
+            <div>Loading image...</div>
+        );
+    };
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
@@ -99,8 +193,16 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
                         <div className="py-4">
                             <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] p-7 rounded-lg">
                                 <div className='flex items-center mb-10'>
-                                    <img width="100px" height="100px" src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOSIZ6hZseAPKb42yOVWSqt00bWSi8yusbMQ&usqp=CAU' className=' rounded-full' />
-                                    <h3 className=' text-xl font-medium ml-6'>{sellerAccountData ? sellerAccountData?.name : "Lorem Ipsum"}</h3>
+                                    <div className='flex items-center justify-center flex-col'>
+                                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: "none" }} />
+                                        {objectKeys.map((key, index) => (
+                                            <CustomImage key={index} objectKey={key} onClick={() => fileInputRef.current?.click()} token={token} />
+                                        ))}
+                                        {objectKeys.length == 0 && <img onClick={() => fileInputRef.current?.click()} width="100px" height="100px" src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOSIZ6hZseAPKb42yOVWSqt00bWSi8yusbMQ&usqp=CAU' className=' cursor-pointer rounded-full' />}
+                                        <p className=' text-xs mt-4 italic'>Click on Image to add/update</p>
+                                    </div>
+                                    <h3 className=' text-xl font-medium ml-0'>{sellerAccountData ? sellerAccountData?.name : "Lorem Ipsum"}</h3>
+
                                 </div>
                                 <div className='flex items-center w-full'>
                                     <div className='flex-1'>

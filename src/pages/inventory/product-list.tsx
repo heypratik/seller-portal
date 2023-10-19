@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import Layout from '../layout'
 import Breadcrums from '../../../components/Breadcrums'
 import { useFormik } from 'formik';
@@ -8,7 +8,8 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import Link from 'next/link';
 import { de, ro } from 'date-fns/locale';
 import { useRouter } from 'next/router';
-import { AiOutlinePlusSquare, AiFillDelete } from 'react-icons/ai'
+import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-icons/ai'
+
 
 interface SellerData {
     data: {
@@ -44,8 +45,55 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
-const sizeValueCategories = ["Health & Beauty"]
-const unitSizeCategories = ["ml", "fl", "oz", "grams"]
+
+// API Configurations
+const baseURL = "https://dev.mybranzapi.link";
+const postMediaEndpoint = "media/single";
+const mediaEndpoint = "media/%s";
+const token = "fb507a0b75e0f62f65b798424555733f";
+
+const CustomImage = ({ objectKey, token, removeImage }: { objectKey: string, token: string, removeImage: any }) => {
+    const [imageData, setImageData] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchImage = async () => {
+            try {
+                const response = await fetch(
+                    `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                if (response.ok) {
+                    const blob = await response.blob();
+                    setImageData(URL.createObjectURL(blob));
+                }
+            } catch (error) {
+                console.log("Error fetching image:", error);
+            }
+        };
+
+        fetchImage();
+    }, [objectKey, token]);
+
+    return imageData ? (
+        <div className="relative group w-[10%] mr-2 mt-4 ">
+            <img
+                src={imageData}
+                alt={`custom-${imageData}`}
+                className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
+            />
+
+            <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                <span onClick={() => removeImage(objectKey)} className="text-white text-3xl font-bold cursor-pointer">×</span>
+            </div>
+        </div>
+    ) : (
+        <div>Loading image...</div>
+    );
+};
 
 export default function ProductList({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
 
@@ -58,6 +106,9 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     const [productTypeTableOpen, setProductTypeTableOpen] = useState("type")
     const [productType, setProductType] = useState("Single Product")
+
+    const [objectKeys, setObjectKeys] = useState<any[]>([]);
+    const fileInputRef = useRef<any>(null);
 
     const router = useRouter();
 
@@ -82,6 +133,56 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     })
     const { values, setFieldValue } = formik;
 
+    function removeImage(key: string) {
+        const newKeys = objectKeys.filter((k) => k !== key);
+        setObjectKeys(newKeys);
+    }
+
+    const uploadFile = (file: any, token: string) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("type", "POST");
+
+        return fetch(`${baseURL}/${postMediaEndpoint}`, {
+            method: 'POST',
+            body: fd,
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+    };
+
+    const handleImageChange = useCallback(
+        async (e: any) => {
+            const files: File[] = Array.from(e.target.files);  // Convert FileList to array
+            if (files.length > 0) {
+                const uploadedKeys: string[] = [];
+                for (const file of files) {
+                    try {
+                        const response = await uploadFile(file, token);
+                        if (response.status === 'success' && response.data.objectKey) {
+                            uploadedKeys.push(response.data.objectKey);
+                        } else {
+                            console.error("Failed to upload image:", file.name);
+                            notification(false, `Upload Failed: ${file?.name}`);
+                        }
+                    } catch (error) {
+                        console.error("Error uploading the image:", file.name, error);
+                        notification(false, `Upload Failed: ${file?.name}`);
+                    }
+                }
+                setObjectKeys(prevKeys => [...prevKeys, ...uploadedKeys]);  // Merge old and new objectKeys
+            }
+        },
+        [token]
+    );
+
     useEffect(() => {
         const marginValue = parseInt(values?.productPrice) - parseInt(values?.productCost);
         setFieldValue("productMargin", marginValue.toString());
@@ -94,9 +195,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productSizeValue: string, productType: string }) {
         setLoading(true)
-
-        console.log(formik.values)
-
 
         // Create a copy of values excluding the optional fields
         const requiredValues: { [key: string]: any } = { ...values };
@@ -135,7 +233,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                     productCost: values.productCost ? values.productCost : 0,
                     productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                     productKeywordArray: values.productKeywords.split(","),
-                    productImage: 'NULL',
+                    productImagesArray: objectKeys,
                     productVariations: productVariations,
                     productType: values.productType
                 })
@@ -273,6 +371,25 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
                                 <div className="w-full flex items-center justify-between">
                                     <div className="flex-1">
+                                        <label htmlFor="productImages" className={labelClass}>Product Images*</label>
+                                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: "none" }} multiple />
+                                        <div onClick={() => fileInputRef.current?.click()} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
+                                            <p className='my-2 text-black text-lg'>Jpg, Png</p>
+                                            <p className='my-2 text-gray-400 text-base'>File not Exceed 10mb</p>
+                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' /> Upload </button>
+                                        </div>
+                                        <div className='flex items-center justify-start flex-wrap'>
+                                            {objectKeys.map((key, index) => (
+                                                <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* NEW LINE */}
+
+                                <div className="w-full flex items-center justify-center">
+                                    <div className="flex-1">
                                         <label htmlFor="productCategory" className={labelClass}>Product Category*</label>
 
                                         <select {...formik.getFieldProps('productCategory')} id="productCategory" name="productCategory" className={inputClass} value={productCategory} onChange={(e) => { setProductCategory(e.target.value); setSubCategory(''); formik.setFieldValue('productCategory', e.target.value); }}>
@@ -296,8 +413,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         </select>
                                     </div>
                                 </div>
-
-                                {/* NEW LINE */}
 
                                 {/* <div className="w-full flex items-center justify-between">
                                     <div className="flex-1">
