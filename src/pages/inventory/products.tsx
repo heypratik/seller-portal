@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import Layout from "../layout"
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
-import { AiOutlinePlus, AiOutlineSearch } from 'react-icons/ai'
+import { AiOutlinePlus, AiOutlineSearch, AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { FiFilter } from 'react-icons/fi'
 import { useRouter } from "next/router";
 import Link from "next/link";
@@ -39,6 +39,7 @@ interface Product {
     productCost: number;
     productCategory: string;
     productImage: string;
+    productImagesArray: string[];
 }
 
 export default function Products({ session, sellerData }: any) {
@@ -165,6 +166,108 @@ export default function Products({ session, sellerData }: any) {
 
     }
 
+    function checkProductStatus(row: any) {
+
+        if (row.productType === "Single Product") {
+            if (row.productQuantity > 0) {
+                return "Available";
+            } else {
+                return "Out of Stock";
+            }
+        }
+
+        if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
+            for (let variation of row.productVariations) {
+                for (let value of variation.values) {
+                    if (value.quantity > 0) {
+                        return "Available";
+                    }
+                }
+            }
+            return "Out of Stock";
+        }
+    }
+
+    function checkproductDetails(row: any, type: string) {
+        if (type == "quantity") {
+            if (row.productType === "Single Product") {
+                console.log(row.productQuantity)
+                return row.productQuantity;
+            }
+
+            if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
+                let totalQuantity = 0;
+                for (let variation of row.productVariations) {
+                    for (let value of variation.values) {
+                        totalQuantity += value.quantity;
+                    }
+                }
+                return totalQuantity;
+            }
+        }
+
+        if (type == "price") {
+            if (row.productType === "Single Product") {
+                return row.productPrice;
+            }
+
+            if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
+                let price = [];
+                for (let variation of row.productVariations) {
+                    for (let value of variation.values) {
+                        console.log(value.price)
+                        price.push(value.price);
+                    }
+                }
+                let highestValue = Math.max(...price);
+                return highestValue;
+            }
+        }
+    }
+
+    function ProductImage({ objKey }: any) {
+        const [imageData, setImageData] = useState<string | null>(null);
+        const baseURL = "https://dev.mybranzapi.link";
+        const mediaEndpoint = "media/%s";
+        const token = "fb507a0b75e0f62f65b798424555733f";
+
+        useEffect(() => {
+            const fetchImage = async () => {
+                try {
+                    const response = await fetch(
+                        `${baseURL}/${mediaEndpoint.replace(/%s/, objKey)}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        setImageData(url);
+                    }
+                } catch (error) {
+                    console.log("Error fetching image:", error);
+                }
+            };
+
+            if (objKey) {
+                fetchImage();
+            }
+        }, [objKey]);
+
+        return imageData ? (
+            <img
+                src={imageData}
+                alt={`custom-${imageData}`}
+                className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images"
+            />
+        ) : (
+            <div><AiOutlineLoading3Quarters className='spinner' /></div>
+        );
+    }
+
 
     return (
         <Layout>
@@ -237,14 +340,12 @@ export default function Products({ session, sellerData }: any) {
                                                     {data && data?.products?.map((row, index) => (
                                                         <tr key={index} className="hover:bg-gray-50">
                                                             <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
-                                                            <td className="py-2 px-4 border-b">{row.productQuantity > 0 ? 'Available' : 'Out of Stock'}</td>
-                                                            <td className="py-2 px-4 border-b">
-                                                                <img src={row.productImage} alt="Product" className="w-10 h-10" />
-                                                            </td>
+                                                            <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
+                                                            <td className="py-2 px-4 border-b">{row?.productImagesArray ? <ProductImage objKey={row.productImagesArray[0]} /> : "No Image"}</td>
                                                             <td className="py-2 px-4 border-b">{row.id}</td>
                                                             <td className="py-2 px-4 border-b">{row.productName}</td>
-                                                            <td className="py-2 px-4 border-b">{row.productQuantity}</td>
-                                                            <td className="py-2 px-4 border-b">{row.productPrice}</td>
+                                                            <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
+                                                            <td className="py-2 px-4 border-b">{checkproductDetails(row, "price")}</td>
                                                             <td className="py-2 px-4 border-b">{row.productCost}</td>
                                                             <td className="py-2 px-4 border-b">{row.productCategory}</td>
                                                             <td className="py-2 px-4 border-b">

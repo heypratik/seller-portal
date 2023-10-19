@@ -131,6 +131,10 @@ export default function UpdateProduct({ sellerData }: any) {
             setSubCategory(productData?.data?.productSubCategory)
         }
 
+        if (productData?.data?.productVariations) {
+            setProductVariations(productData?.data?.productVariations)
+        }
+
     }, [productData])
 
 
@@ -200,12 +204,13 @@ export default function UpdateProduct({ sellerData }: any) {
             productPrice: productData?.data?.productPrice || '',
             productCost: productData?.data?.productCost || '',
             productMargin: productData?.data?.productMargin || '',
-            productKeywords: productData?.data?.productKeywordArray.join(",") || ''
+            productKeywords: productData?.data?.productKeywordArray.join(",") || '',
+            productType: productType ? productType : '',
         },
         onSubmit
     })
 
-    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string }) {
+    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productType: string }) {
         setLoading(true)
 
         try {
@@ -216,17 +221,19 @@ export default function UpdateProduct({ sellerData }: any) {
                     sellerId: sellerData?.data?.id,
                     productName: values.productName,
                     productCategory: values.productCategory,
-                    productColor: values.productColor,
-                    productSize: values.productSize,
-                    productQuantity: values.productQuantity,
+                    productColor: values.productColor === "" ? null : values.productColor,
+                    productSize: values.productSize === "" ? null : values.productSize,
+                    productQuantity: values.productQuantity === "" ? 0 : values.productQuantity,
                     productDescription: values.productDescription,
                     productSku: values.productSku,
                     productSubCategory: values.productSubCategory,
-                    productPrice: values.productPrice,
-                    productCost: values.productCost,
-                    productMargin: values.productMargin,
+                    productPrice: values.productPrice === "" ? 0 : values.productPrice,
+                    productCost: values.productCost === "" ? 0 : values.productCost,
+                    productMargin: values.productMargin === "" ? 0 : values.productMargin,
                     productKeywordArray: values.productKeywords.split(","), // Was an array of keywords but changed to string. Need to change in backend too the name
-                    productImage: 'NULL'
+                    productImagesArray: objectKeys,
+                    productVariations: productVariations,
+                    productType: values.productType
 
                 })
             })
@@ -345,7 +352,8 @@ export default function UpdateProduct({ sellerData }: any) {
                     productPrice: productData?.data?.productPrice || '',
                     productCost: productData?.data?.productCost || '',
                     productMargin: productData?.data?.productMargin || '',
-                    productKeywords: productData?.data?.productKeywordArray.join(",") || ''
+                    productKeywords: productData?.data?.productKeywordArray.join(",") || '',
+                    productType: productData?.data?.productType || '',
                 })
             } catch (error) {
                 console.log(error)
@@ -389,7 +397,11 @@ export default function UpdateProduct({ sellerData }: any) {
                                     <div className="flex-1">
                                         <label htmlFor="productImages" className={labelClass}>Product Images*</label>
                                         <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: "none" }} multiple />
-                                        <div onClick={() => fileInputRef.current?.click()} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
+                                        <div onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            fileInputRef.current?.click()
+                                        }} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
                                             <p className='my-2 text-black text-lg'>Jpg, Png</p>
                                             <p className='my-2 text-gray-400 text-base'>File not Exceed 10mb</p>
                                             <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' /> Upload </button>
@@ -620,7 +632,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                                                             type='number'
                                                                             className='flex-1 border p-2'
                                                                             step="1"
-                                                                            min="1"
+                                                                            min="0"
                                                                             pattern="[0-9]"
                                                                             value={value.quantity}
                                                                             onChange={(e) => handleInputChange(e, variation.id, "quantity", value.id)}
