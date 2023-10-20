@@ -1,11 +1,11 @@
-import React, { useState } from "react"
+import React, { useState, useCallback, useRef, useEffect } from "react"
 import Layout from "./layout"
 import Breadcrums from "../../components/Breadcrums"
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
-import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
+import { CountryDropdown } from 'react-country-region-selector';
 import Link from "next/link";
 
 
@@ -32,6 +32,12 @@ type CategoryType = {
     [key: string]: string[] | undefined;
 };
 
+// API Configurations
+const baseURL = "https://dev.mybranzapi.link";
+const postMediaEndpoint = "media/single";
+const mediaEndpoint = "media/%s";
+const token = "fb507a0b75e0f62f65b798424555733f";
+
 const categories: CategoryType = {
     "Health & Beauty": ["Bath & Body", "Makeup", "Skin Care", "Hair Care", "Nails", "Salon & Spa Equipment", "Fragrance", "Tools & Accessories", "Shaving & Hair Removal"],
     "Clothing": ["Dresses", "Tops & Tees", "Sweaters", "Jeans", "Pants", "Skirts", "Activewear", "Swimsuits & Cover Ups", "Lingerie, Sleep & Lounge", "Coats & Jackets", "Suits & Blazers", "Socks"],
@@ -45,14 +51,13 @@ const categories: CategoryType = {
 export default function BrandEnroll({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
 
     const [brand, setBrand] = useState(brandData?.data[0])
-    const [logoFile, setLogoFile] = useState(null);
-    const [displayPictureFile, setDisplayPictureFile] = useState(null);
 
     const [category, setCategory] = useState(brand?.brandCategory ? brand?.brandCategory : '');
     const [subCategory, setSubCategory] = useState(brand?.brandSubCategory ? brand?.brandSubCategory : '');
 
-    const [logoObjectKey, setLogoObjectKey] = useState(null);
-    const [displayPictureObjectKey, setDisplayPictureObjectKey] = useState(null);
+    const [logoObjectKey, setLogoObjectKey] = useState<any>(null);
+    const [displayPictureObjectKey, setDisplayPictureObjectKey] = useState<any>(null);
+    const fileInputRef = useRef<any>(null);
 
     const [loading, setLoading] = useState(false)
 
@@ -66,39 +71,95 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
         e.preventDefault()
     }
 
-    async function handleFileChange(e: any) {
-        setLogoLoading(true)
-        const selectedFile = e.target.files[0];
-        try {
-            const formData = new FormData();
-            formData.append("file", selectedFile);
-            formData.append("uid", "2e5kcRJts1SrmOB8lBIaR1idmrr2");
-            formData.append("type", selectedFile.type);
-
-            const response = await fetch(`https://dev.mybranzapi.link/media/single`, {
-                method: 'POST',
-                headers: { "Authorization": "Bearer 615be5ed1c9b966b1d949e1f0948cf30" },
-                body: formData,
-            });
-
-            const data = await response.json();
-
-            if (data.status == "success") {
-                setLogoLoading(false)
-                setLogoObjectKey(data.data.objectKey);
-                notification(true, "File uploaded successfully.");
-            } else {
-                setLogoLoading(false)
-                notification(false, "Something went wrong");
-            }
-        } catch (error) {
-            setLogoLoading(false)
-            console.error(error);
-            notification(false, "Something went wrong");
+    useEffect(() => {
+        if (brand) {
+            setLogoObjectKey(brand?.brandLogoObjectKey)
+            setDisplayPictureObjectKey(brand?.brandDisplayPictureObjectKey)
         }
+    }, [brand])
 
-        setLogoLoading(false)
-        setLogoFile(selectedFile);
+    const uploadFile = (file: any, token: string) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("type", "POST");
+
+        return fetch(`${baseURL}/${postMediaEndpoint}`, {
+            method: 'POST',
+            body: fd,
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            });
+    };
+
+    const handleImageChange = useCallback(
+        async (e: any, variableToUpdate: any) => {
+            const files: File[] = Array.from(e.target.files);
+            if (files.length > 0) {
+                let uploadedKeys: string | null = null;
+                for (const file of files) {
+                    try {
+                        const response = await uploadFile(file, token);
+                        if (response.status === 'success' && response.data.objectKey) {
+                            uploadedKeys = response.data.objectKey;
+                        } else {
+                            console.error("Failed to upload image:", file.name);
+                            notification(false, `Upload Failed: ${file?.name}`);
+                        }
+                    } catch (error) {
+                        console.error("Error uploading the image:", file.name, error);
+                        notification(false, `Upload Failed: ${file?.name}`);
+                    }
+                }
+                variableToUpdate(uploadedKeys);
+            }
+        },
+        [token]
+    );
+
+    const CustomImage = ({ objectKey, token, onClick }: { objectKey: string, token: string, onClick: any }) => {
+        const [imageData, setImageData] = useState<string | null>(null);
+
+        useEffect(() => {
+            const fetchImage = async () => {
+                try {
+                    const response = await fetch(
+                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        setImageData(URL.createObjectURL(blob));
+                    }
+                } catch (error) {
+                    console.log("Error fetching image:", error);
+                }
+            };
+
+            fetchImage();
+        }, [objectKey, token]);
+
+        return imageData ? (
+            <img
+                src={imageData}
+                alt={`custom-${imageData}`}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-[100px] h-[100px] border-2 border-gray-200 prod-images cursor-pointer object-cover"
+            />
+
+        ) : (
+            <div><AiOutlineLoading3Quarters className='spinner' /></div>
+        );
     };
 
 
@@ -158,8 +219,8 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                         brandDisplayName: values.displayName,
                         brandCategory: values.category,
                         businessAddress: values.businessAddress,
-                        brandDisplayPictureObjectKey: logoObjectKey ? logoObjectKey : "",
-                        brandLogoObjectKey: "TEST",
+                        brandDisplayPictureObjectKey: displayPictureObjectKey ? displayPictureObjectKey : "",
+                        brandLogoObjectKey: logoObjectKey ? logoObjectKey : "",
                         businessCountry: values.businessCountry,
                         brandSubCategory: values.brandSubCategory,
                         brandAvailability: values.brandAvailability,
@@ -189,8 +250,8 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                         brandDisplayName: values.displayName,
                         brandCategory: values.category,
                         businessAddress: values.businessAddress,
-                        brandDisplayPictureObjectKey: "TEST",
-                        brandLogoObjectKey: "TEST",
+                        brandDisplayPictureObjectKey: displayPictureObjectKey ? displayPictureObjectKey : "",
+                        brandLogoObjectKey: logoObjectKey ? logoObjectKey : "",
                         businessCountry: values.businessCountry,
                         brandSubCategory: values.brandSubCategory,
                         brandAvailability: values.brandAvailability,
@@ -285,15 +346,15 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                         <label htmlFor="logo" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Logo* </label>
 
 
-                                        <span className="flex items-center">
+                                        <span className="flex items-start flex-col justify-start">
                                             <input
                                                 id="brandLogoObjectKey"
                                                 type="file"
                                                 accept="image/*"
-                                                onChange={(e) => handleFileChange(e)}
+                                                onChange={(e) => handleImageChange(e, setLogoObjectKey)}
                                                 className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 mb-6 file:cursor-pointer file:border-0 file:border-gray-300  "
                                             />
-                                            {logoLoading && <AiOutlineLoading3Quarters className='spinner ml-2' />}
+                                            {logoObjectKey && <CustomImage objectKey={logoObjectKey} token={token} onClick={sellerData} />}
                                         </span>
                                     </div >
                                     <div className="flex-1">
@@ -303,9 +364,15 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
                                             id="picture"
                                             type="file"
                                             accept="image/*"
-                                            //   onChange={(e) => setImage(e.target.files[0])}
+                                            onChange={(e) => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                handleImageChange(e, setDisplayPictureObjectKey)
+                                            }}
                                             className=" w-[22.5rem] mb-6 h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4 file:py-2 file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
                                         />
+                                        {displayPictureObjectKey && <CustomImage objectKey={displayPictureObjectKey} token={token} onClick={sellerData} />}
+
                                     </div>
                                 </div>
 

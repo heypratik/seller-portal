@@ -176,7 +176,7 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
             />
 
         ) : (
-            <div>Loading image...</div>
+            <div><img src="https://itcs.nu.edu.eg/themes/custom/it/assets/images/dummy-avatar.jpeg" className="w-[100px] h-[100px] border-2 border-gray-200 prod-images cursor-pointer rounded-full object-cover" /></div>
         );
     };
 
@@ -207,34 +207,38 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
                                 <div className='flex items-center w-full'>
                                     <div className='flex-1'>
                                         <h3 className=' text-xl font-medium mt-6'>Seller Name*</h3>
-                                        <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('sellerName')} disabled={editingInput !== "sellerName"} type="text" id="sellerName" name="sellerName" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='Lorem Ipsum' />
-                                            <GoPencil fontSize={20} onClick={() => setEditingInput("sellerName")} className=' cursor-pointer' />
+                                        <div className={`${editingInput == "sellerName" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('sellerName')} disabled={editingInput !== "sellerName"} type="text" id="sellerName" name="sellerName" className={`${editingInput == "sellerName" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='Lorem Ipsum' />
+                                            <GoPencil fontSize={20} onClick={(e) => {
+                                                e.preventDefault()
+                                                e.stopPropagation()
+                                                setEditingInput("sellerName")
+                                            }} className=' cursor-pointer' />
                                         </div>
 
                                         <h3 className=' text-xl font-medium mt-6'>Password*</h3>
-                                        <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('password')} disabled={editingInput !== "password"} type="password" id="password" name="password" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='******' />
+                                        <div className={`${editingInput == "password" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('password')} disabled={editingInput !== "password"} type="password" id="password" name="password" className={`${editingInput == "password" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='******' />
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("password")} className=' cursor-pointer' />
                                         </div>
 
                                         <h3 className=' text-xl font-medium mt-6'>Brand Display Name*</h3>
-                                        <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('bDisplayName')} disabled={editingInput !== "bDisplayName"} type="text" id="bDisplayName" name="bDisplayName" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='Lorem Ipsum' />
+                                        <div className={`${editingInput == "bDisplayName" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('bDisplayName')} disabled={editingInput !== "bDisplayName"} type="text" id="bDisplayName" name="bDisplayName" className={`${editingInput == "bDisplayName" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='Lorem Ipsum' />
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("bDisplayName")} className=' cursor-pointer' />
                                         </div>
 
                                     </div>
                                     <div className='flex-1'>
                                         <h3 className=' text-xl font-medium mt-6'>Email Address*</h3>
-                                        <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('sellerEmail')} disabled={editingInput !== "sellerEmail"} type="text" id="sellerEmail" name="sellerEmail" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='abc@xyz.com' />
+                                        <div className={`${editingInput == "sellerEmail" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('sellerEmail')} disabled={editingInput !== "sellerEmail"} type="text" id="sellerEmail" name="sellerEmail" className={`${editingInput == "sellerEmail" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='abc@xyz.com' />
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("sellerEmail")} className=' cursor-pointer' />
                                         </div>
 
                                         <h3 className=' text-xl font-medium mt-6'>Legal Company Name*</h3>
-                                        <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('companyName')} disabled={editingInput !== "companyName"} type="email" id="companyName" name="companyName" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='Lorem Ipsum Inc' />
+                                        <div className={`${editingInput == "companyName" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('companyName')} disabled={editingInput !== "companyName"} type="email" id="companyName" name="companyName" className={`${editingInput == "companyName" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='Lorem Ipsum Inc' />
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("companyName")} className=' cursor-pointer' />
                                         </div>
 
                                         <h3 className=' text-xl font-medium mt-6'>Mobile No*</h3>
-                                        <div className='flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]'><input {...formik.getFieldProps('mobileNumber')} disabled={editingInput !== "mobileNumber"} type="email" id="mobileNumber" name="mobileNumber" className="bg-[#f7f9fa] outline-none focus:outline-none w-full" placeholder='+91 987456321' />
+                                        <div className={`${editingInput == "mobileNumber" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('mobileNumber')} disabled={editingInput !== "mobileNumber"} type="email" id="mobileNumber" name="mobileNumber" className={`${editingInput == "mobileNumber" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='+91 987456321' />
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("mobileNumber")} className=' cursor-pointer' />
                                         </div>
                                     </div>

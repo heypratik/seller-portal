@@ -25,11 +25,12 @@ import {
 } from '@heroicons/react/outline'
 import { SearchIcon } from '@heroicons/react/solid'
 import { useRouter } from 'next/router'
+import { signOut } from "next-auth/react"
+
 
 const userNavigation = [
-    { name: 'Your Profile', href: '#' },
-    { name: 'Settings', href: '#' },
-    { name: 'Sign out', href: '#' },
+    { name: 'Your Profile', href: '/account' },
+    { name: 'Sign out', href: '#', onclick: () => signOut() },
 ]
 
 function classNames(...classes: string[]) {
