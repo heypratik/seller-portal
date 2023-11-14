@@ -100,6 +100,7 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
         const fd = new FormData();
         fd.append("file", file);
         fd.append("type", "POST");
+        fd.append("uid", "97");
 
         return fetch(`${baseURL}/${postMediaEndpoint}`, {
             method: 'POST',
@@ -114,7 +115,7 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
                 }
                 return response.json();
             });
-    };
+    }
 
     const handleImageChange = useCallback(
         async (e: any) => {

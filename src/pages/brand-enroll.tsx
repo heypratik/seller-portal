@@ -82,6 +82,7 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
         const fd = new FormData();
         fd.append("file", file);
         fd.append("type", "POST");
+        fd.append("uid", "97");
 
         return fetch(`${baseURL}/${postMediaEndpoint}`, {
             method: 'POST',
