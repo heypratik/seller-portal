@@ -23,6 +23,8 @@ import {
 } from "../../../shadcn/components/ui/popover"
 
 import { BsPencil, BsTrash3Fill } from 'react-icons/bs'
+import { MdOutlineImportExport } from "react-icons/md";
+
 
 interface Data {
     categories: string[]; // Array of categories
@@ -178,11 +180,10 @@ export default function Products({ session, sellerData }: any) {
 
         if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
             for (let variation of row.productVariations) {
-                for (let value of variation.values) {
-                    if (value.quantity > 0) {
-                        return "Available";
-                    }
+                if (variation.stock > 0) {
+                    return "Available";
                 }
+
             }
             return "Out of Stock";
         }
@@ -198,28 +199,38 @@ export default function Products({ session, sellerData }: any) {
             if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
                 let totalQuantity = 0;
                 for (let variation of row.productVariations) {
-                    for (let value of variation.values) {
-                        totalQuantity += value.quantity;
-                    }
+                    totalQuantity += Number(variation.stock);
                 }
+
+                if (Number.isNaN(totalQuantity) || totalQuantity == undefined || totalQuantity == null) {
+                    return totalQuantity = 0;
+                }
+
                 return totalQuantity;
             }
         }
 
         if (type == "price") {
             if (row.productType === "Single Product") {
+
+                if (Number.isNaN(row.productPrice) || row.productPrice == undefined || row.productPrice == null) {
+                    return row.productPrice = 0;
+                }
                 return row.productPrice;
             }
 
             if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
                 let price = [];
                 for (let variation of row.productVariations) {
-                    for (let value of variation.values) {
-                        console.log(value.price)
-                        price.push(value.price);
-                    }
+                    price.push(variation.price);
                 }
+
                 let highestValue = Math.max(...price);
+
+                if (Number.isNaN(highestValue) || highestValue == undefined || highestValue == null) {
+                    return highestValue = 0;
+                }
+
                 return highestValue;
             }
         }
@@ -230,6 +241,10 @@ export default function Products({ session, sellerData }: any) {
         const baseURL = "https://dev.mybranzapi.link";
         const mediaEndpoint = "media/%s";
         const token = "fb507a0b75e0f62f65b798424555733f";
+
+        if (objKey.includes("http")) {
+            return null
+        }
 
         useEffect(() => {
             const fetchImage = async () => {
@@ -297,10 +312,12 @@ export default function Products({ session, sellerData }: any) {
                                                 </div>
 
                                                 <div className="flex-1 flex items-end justify-end">
-                                                    <Link href={`/inventory/product-list`}><button className="flex items-center justify-center mr-4 px-5 py-2 bg-[#F12D4D] rounded-md text-white font-semibold">
+                                                    <Link href={`/inventory/import`}><button className="flex items-center justify-center mr-4 px-5 py-2 bg-white border border-[#F12D4D] rounded-md text-[#F12D4D] font-semibold">
+                                                        <MdOutlineImportExport className="mr-2" /> Import Products</button></Link>
+                                                    <Link href={`/inventory/product-list`}><button className="flex items-center justify-center mr-4 px-5 py-2 bg-[#F12D4D]  border border-[#F12D4D] rounded-md text-white font-semibold">
                                                         <AiOutlinePlus className="mr-2" /> Add Product</button></Link>
                                                     <Popover>
-                                                        <PopoverTrigger className="flex items-center justify-center mr-4 px-5 py-2 bg-[#F12D4D] rounded-md text-white font-semibold">
+                                                        <PopoverTrigger className="flex  border border-[#F12D4D] items-center justify-center mr-4 px-5 py-2 bg-[#F12D4D] rounded-md text-white font-semibold">
                                                             <FiFilter className="mr-2" /> Filters</PopoverTrigger>
                                                         <PopoverContent>
                                                             <div className="flex flex-col items-center justify-center">
@@ -338,10 +355,10 @@ export default function Products({ session, sellerData }: any) {
                                                 </thead>
                                                 <tbody>
                                                     {data && data?.products?.map((row, index) => (
-                                                        <tr key={index} className="hover:bg-gray-50">
+                                                        <tr key={index} className={`hover:bg-gray-50 !h-16`}>
                                                             <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
                                                             <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
-                                                            <td className="py-2 px-4 border-b">{row?.productImagesArray ? <ProductImage objKey={row.productImagesArray[0]} /> : "No Image"}</td>
+                                                            <td className="py-2 px-4 border-b">{row?.productImagesArray && !row?.productImagesArray[0].includes("http") ? <ProductImage objKey={row.productImagesArray[0]} /> : "No Image"}</td>
                                                             <td className="py-2 px-4 border-b">{row.id}</td>
                                                             <td className="py-2 px-4 border-b">{row.productName}</td>
                                                             <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>

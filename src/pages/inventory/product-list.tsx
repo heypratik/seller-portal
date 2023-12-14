@@ -9,7 +9,12 @@ import Link from 'next/link';
 import { de, ro } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-icons/ai'
+import { v4 as uuidv4 } from 'uuid';
 
+interface VariantOption {
+    id: number;
+    values: { id: number; value: string }[];
+}
 
 interface SellerData {
     data: {
@@ -104,11 +109,31 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     const [productVariations, setProductVariations] = useState<any[]>([])
 
+
+    const [variantOptions, setVariantOptions] = useState<any[]>([])
+    const [variationValues, setVariationValues] = useState<any[]>([]);
+
+    const [variationKeys, setVariationKeys] = useState<any[]>([])
+
     const [productTypeTableOpen, setProductTypeTableOpen] = useState("type")
     const [productType, setProductType] = useState("Single Product")
 
     const [objectKeys, setObjectKeys] = useState<any[]>([]);
     const fileInputRef = useRef<any>(null);
+
+
+    function handleVariationChange(e: any, id: number) {
+        setVariationValues((prevVariationValues: any) =>
+            prevVariationValues.map((variation: any) => {
+                if (variation.id !== id) {
+                    return variation;
+                }
+
+                return { ...variation, [e.target.name]: e.target.value };
+            })
+        );
+
+    }
 
     const router = useRouter();
 
@@ -235,7 +260,8 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                     productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                     productKeywordArray: values.productKeywords.split(","),
                     productImagesArray: objectKeys,
-                    productVariations: productVariations,
+                    productVariations: variationValues,
+                    variantOptions: variantOptions,
                     productType: values.productType
                 })
             })
@@ -271,19 +297,87 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     }
 
-    function addVariations(e: any) {
-        e.preventDefault();
-        e.stopPropagation();
-        setProductVariations([...productVariations, { id: productVariations.length, name: " Variation Name", values: [] }])
+    function generateVariants(options: VariantOption[]): string[][] {
+        const result: string[][] = [];
+
+        function generateCombinations(index: number, currentCombination: string[]): void {
+            if (index === options.length) {
+                result.push([...currentCombination]);
+                return;
+            }
+
+            const currentOption = options[index];
+            for (const value of currentOption.values) {
+                generateCombinations(index + 1, [...currentCombination, value.value]);
+            }
+        }
+
+        generateCombinations(0, []);
+
+        return result;
     }
 
+    useEffect(() => {
+        if (variantOptions.length > 0) {
+            setVariationKeys(generateVariants(variantOptions));
+        }
+    }, [variantOptions])
+
+    useEffect(() => {
+        const oldVariationValues = variationValues;
+        setVariationValues(() => {
+            const newVariationValues = variationKeys.map((variation: any) => {
+                // Check if the variation already exists in oldVariationValues
+                const existingVariation = oldVariationValues.find(
+                    (v) =>
+                        v.options.length === variation.length &&
+                        v.options.slice().sort().every((option: any, index: any) => option === variation.slice().sort()[index])
+                );
+
+                if (existingVariation) {
+                    // If the variation exists, return the existing variation
+                    return existingVariation;
+                } else {
+                    // If the variation doesn't exist, create a new one
+                    return {
+                        id: uuidv4(),
+                        options: variation[0] == "" ? [] : variation,
+                        price: 0,
+                        stock: 0,
+                        sku: "",
+                        mediaObjectKey: "",
+                    };
+                }
+            });
+
+            return newVariationValues;
+        });
+    }, [variationKeys]);
+
+    function addOptions(e: any) {
+        e.preventDefault();
+        e.stopPropagation();
+        setVariantOptions([...variantOptions, { id: uuidv4(), name: "", values: [] }])
+    }
+
+    function addOptionsAttributes(id: number) {
+        const newVariations = variantOptions.map((variation, index) => {
+            if (variation.id === id) {
+                return { ...variation, values: [...variation.values, { id: uuidv4(), value: "" }] }
+            }
+            return variation;
+        })
+        setVariantOptions(newVariations);
+    }
+
+
     function deleteVariation(id: number) {
-        const newVariations = productVariations.filter((variation) => variation.id !== id);
-        setProductVariations(newVariations);
+        const newVariations = variantOptions.filter((variation) => variation.id !== id);
+        setVariantOptions(newVariations);
     }
 
     function deleteVariationAttribute(variationId: number, valueId: number) {
-        const newVariations = productVariations.map((variation) => {
+        const newVariations = variantOptions.map((variation) => {
             if (variation.id !== variationId) {
                 return variation;
             }
@@ -294,25 +388,14 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
             };
         });
 
-        setProductVariations(newVariations);
-    }
-
-    function addVariationAttributes(id: number) {
-        console.log(id);
-        const newVariations = productVariations.map((variation) => {
-            if (variation.id === id) {
-                return { ...variation, values: [...variation.values, { id: variation.values.length, name: " Variation Value", price: 0, quantity: 0 }] }
-            }
-            return variation;
-        })
-        setProductVariations(newVariations);
+        setVariantOptions(newVariations);
     }
 
     function handleInputChange(e: any, variationId: number, valueType: any, valueId: any) {
 
         const { value } = e.target;
 
-        setProductVariations(prevVariations =>
+        setVariantOptions(prevVariations =>
             prevVariations.map(variation => {
                 if (variation.id !== variationId) {
                     return variation;
@@ -329,8 +412,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                         if (val.id !== valueId) {
                             return val;
                         }
-
-                        return { ...val, [valueType]: valueType === "name" ? value : parseFloat(value) };
+                        return { ...val, [valueType]: valueType === "value" ? value : parseFloat(value) };
                     })
                 };
             })
@@ -414,62 +496,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         </select>
                                     </div>
                                 </div>
-
-                                {/* <div className="w-full flex items-center justify-between">
-                                    <div className="flex-1">
-                                        <label htmlFor="business" className={labelClass}>Product Options*</label>
-
-                                        <div className='flex items-center justify-start mt-4'>
-                                            <div>
-                                                <select {...formik.getFieldProps('productColor')} name='productColor' id="productColor" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]'>
-                                                    <option value="English">Color</option>
-                                                    <option value="Spanish">Sub Category 1</option>
-                                                    <option value="Spanish">Sub Category 2</option>
-                                                    <option value="Spanish">Sub Category 3</option>
-                                                </select>
-                                                <p className='text-center text-sm italic text-gray-600'>(Color)</p>
-                                            </div>
-
-                                            {sizeValueCategories?.includes(productCategory) && (
-                                                <div>
-                                                    <select {...formik.getFieldProps('productSize')} name='productSize' id="productSize" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]'>
-                                                        <option value="English">Size</option>
-                                                        <option value="Spanish">Category 1</option>
-                                                    </select>
-                                                    <p className='text-center text-sm italic text-gray-600'>(Size)</p>
-                                                </div>)}
-
-                                            <div>
-                                                <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' placeholder='Quantity' id="productQuantity" className="mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]" />
-                                                <p className='text-center text-sm italic text-gray-600'>(Quantity)</p>
-
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div className="flex-1">
-                                        <label htmlFor="business" className={labelClass}>Price*</label>
-                                        <div className='flex items-center justify-start mt-4'>
-                                            <div>
-                                                <input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder='Price' />
-                                                <p className='text-center text-sm italic text-gray-600'>(Price)</p>
-                                            </div>
-
-                                            <div>
-                                                <input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder='COGS' />
-                                                <p className='text-center text-sm italic text-gray-600'>(COGS)</p>
-                                            </div>
-
-                                            <div>
-                                                <input disabled type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='outline-none focus:outline-none border-brand-border rounded bg-[#f7f9fa] text-brand-text px-5 py-4 w-[148px]' placeholder={`Margin: $${prodMargin && prodMargin}`} />
-                                                <p className='text-center text-sm italic text-gray-600'>(Margin)</p>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> */}
-
-                                {/* NEW LINE */}
 
                                 <div className="w-full flex items-center justify-between">
                                     <div className="w-full">
@@ -565,58 +591,60 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
                                                 {productTypeTableOpen === "variations" && (
                                                     <div className='variations'>
-                                                        <button onClick={(e) => addVariations(e)} className='bg-white p-4'>+ Add Variations</button>
-                                                        {productVariations.map((variation) => (
+                                                        {variantOptions.length < 3 && <button onClick={(e) => addOptions(e)} className='bg-white p-4'>+ Add Variations Options</button>}
+                                                        {variantOptions.map((variation, index) => (
                                                             <div className='variationChild' key={variation.id}>
                                                                 <div className='bg-gray-300 mt-4 p-4 flex justify-between'>
-                                                                    <input
-                                                                        type='text'
-                                                                        className=' border bg-transparent w-fit'
-                                                                        value={variation.name}
-                                                                        onChange={(e) => handleInputChange(e, variation.id, null, null)}
-                                                                    />
+                                                                    <span className='w-full'>
+                                                                        <p className='text-sm mb-2'>Option Name</p>
+                                                                        <input
+                                                                            type='text'
+                                                                            className=' border px-2 py-2 bg-transparent w-full'
+                                                                            value={variation.name}
+                                                                            placeholder='Color / Size / Material'
+                                                                            onChange={(e) => handleInputChange(e, variation.id, null, null)}
+
+                                                                        />
+                                                                    </span>
                                                                     <div className='p-2 flex'>
-                                                                        <AiOutlinePlusSquare onClick={(e) => addVariationAttributes(variation.id)} className='cursor-pointer' />
+                                                                        <AiOutlinePlusSquare onClick={(e) => addOptionsAttributes(variation.id)} className='cursor-pointer' />
                                                                         <AiFillDelete onClick={(e) => deleteVariation(variation.id)} className='cursor-pointer ml-4' />
                                                                     </div>
                                                                 </div>
-                                                                <div className='flex bg-gray p-2 justify-between'>
-                                                                    <p className='flex-1 text-sm '>Variation Name</p>
-                                                                    <p className='flex-1 text-sm '>Variation Price</p>
-                                                                    <p className='flex-1 text-sm '>Variation Quantity</p>
-                                                                    <p className='flex-[0.1] text-sm '>Actions</p>
-                                                                </div>
                                                                 {variation.values.map((value: any) => (
-                                                                    <div className='flex bg-white p-4 justify-between' key={value.id}>
+                                                                    <div className='flex bg-white p-4 justify-between' id={value.id} key={value.id}>
                                                                         <input
                                                                             type='text'
                                                                             className='flex-1 border p-2'
-                                                                            value={value.name}
-                                                                            onChange={(e) => handleInputChange(e, variation.id, "name", value.id)}
+                                                                            value={value.value}
+                                                                            placeholder='Option Value'
+                                                                            onChange={(e) => handleInputChange(e, variation.id, "value", value.id)}
                                                                         />
-                                                                        <input
-                                                                            type='number'
-                                                                            step=".01"
-                                                                            className='flex-1 border p-2'
-                                                                            value={value.price}
-                                                                            onChange={(e) => handleInputChange(e, variation.id, "price", value.id)}
-                                                                        />
-                                                                        <input
-                                                                            type='number'
-                                                                            className='flex-1 border p-2'
-                                                                            step="1"
-                                                                            min="1"
-                                                                            pattern="[0-9]"
-                                                                            value={value.quantity}
-                                                                            onChange={(e) => handleInputChange(e, variation.id, "quantity", value.id)}
-                                                                        />
-                                                                        <p className='p-2 cursor-pointer'><AiFillDelete onClick={(e) => deleteVariationAttribute(variation.id, value.id)} /></p>
+                                                                        <p className='flex-1 text-sm er'><AiFillDelete onClick={(e) => deleteVariationAttribute(variation.id, value.id)} /></p>
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         ))}
                                                     </div>
                                                 )}
+                                                {variationValues.length > 0 && variationValues[0].options.length > 0 && <div className='bg-white p-2 mt-4'>
+                                                    {variationValues.length > 0 && variationValues.map((variation, index) => {
+                                                        if (variation.options && variation.options.length > 0) {
+                                                            return (
+                                                                <div key={index} className='variationKeys flex items-center justify-between p-2'>
+                                                                    <p className='flex-[0.25] text-sm'>{variation?.options?.toString().split(",").join(" / ")}</p>
+                                                                    <input className='border border-gray-300 rounded-md flex-[0.25] mx-1 px-1 py-1' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                                    <input className='border border-gray-300 rounded-md flex-[0.25] mx-1 px-1 py-1' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                                    <input className='border border-gray-300 rounded-md flex-[0.25] mx-1 px-1 py-1' type='text' placeholder='Stock' name="stock" value={variation.stock} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                                </div>
+                                                            );
+                                                        } else {
+                                                            // Render nothing if variation.options is empty
+                                                            return null;
+                                                        }
+                                                    })}
+                                                </div>}
+
                                             </div>
                                         </div>
                                     </div>
@@ -648,8 +676,8 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                     </div>
                     {/* /End replace */}
                 </div>
-            </div>
-        </Layout>
+            </div >
+        </Layout >
     )
 }
 
