@@ -242,8 +242,9 @@ export default function Products({ session, sellerData }: any) {
         const mediaEndpoint = "media/%s";
         const token = "fb507a0b75e0f62f65b798424555733f";
 
+        // Exit early if objKey includes "http"
         if (objKey.includes("http")) {
-            return null
+            return null;
         }
 
         useEffect(() => {
@@ -282,7 +283,6 @@ export default function Products({ session, sellerData }: any) {
             <div><AiOutlineLoading3Quarters className='spinner' /></div>
         );
     }
-
 
     return (
         <Layout>
