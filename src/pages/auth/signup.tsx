@@ -64,7 +64,7 @@ export default function SignUp() {
             notification(true, "Signup Successful")
             setLoading(false)
             setSignUpSuccessfull(true)
-            router.push('/brand-enroll')
+            router.push('/brand')
         } else {
             notification(false, "Something went wrong")
             setLoading(false)
