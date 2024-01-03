@@ -242,11 +242,6 @@ export default function Products({ session, sellerData }: any) {
         const mediaEndpoint = "media/%s";
         const token = "fb507a0b75e0f62f65b798424555733f";
 
-        // Exit early if objKey includes "http"
-        if (objKey.includes("http")) {
-            return null;
-        }
-
         useEffect(() => {
             const fetchImage = async () => {
                 try {
@@ -268,10 +263,16 @@ export default function Products({ session, sellerData }: any) {
                 }
             };
 
-            if (objKey) {
+            if (objKey && !objKey.includes("http")) {
                 fetchImage();
+            } else {
+                // Handle the case where objKey includes "http" if needed
             }
         }, [objKey]);
+
+        if (objKey && objKey.includes("http")) {
+            return null;
+        }
 
         return imageData ? (
             <img
