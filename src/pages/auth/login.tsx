@@ -12,6 +12,10 @@ export default function Login() {
 
     const [loading, setLoading] = useState(false)
 
+    function handlepagechange() {
+        router.push('/resetpassword')
+    }
+
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
 
@@ -68,7 +72,7 @@ export default function Login() {
                             <input onChange={(e) => setPassword(e.target.value)} value={password} className=' outline-none shadow-[0px_3px_0px_0px_#00000024] w-full border border-brand-border-sec rounded-md px-4 py-3 mt-2' type="password" placeholder="Atleast 6 Characters" />
                         </label>
 
-                        <Link href="/resetpassword"><p className='text-right underline text-[#646464c8] mt-7'>Forgot your password?</p></Link>
+                        <p onClick={() => handlepagechange()} className='text-right underline text-[#646464c8] mt-7'>Forgot your password?</p>
 
                         <button onClick={submitFunction} disabled={password.length < 7 || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)}
                             className='h-12 text-white bg-[#f12d4d] flex items-center justify-center w-full rounded-md text-xl font-semibold mt-7'>{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Login`}</button>
