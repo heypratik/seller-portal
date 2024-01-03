@@ -145,7 +145,7 @@ export default function Import() {
 
         // Variations Option Building
         for (const [key, value] of Object.entries(productObject)) {
-            let optionsArr: any[][] | { id: number; name: any; values: never[]; }[] = []
+            let optionsArr: any[] = []
             let optionOneValues: any[] = []
             let optionTwoValues: any[] = []
             let optionThreeValues: any[] = []
