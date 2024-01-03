@@ -7,7 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router'
 import { FaCheckCircle } from "react-icons/fa";
 
-export default function resetpassword({ token, data }: any) {
+export default function Resetpassword({ token, data }: any) {
 
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState("")
