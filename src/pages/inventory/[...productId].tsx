@@ -7,6 +7,7 @@ import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters, AiOutlineCloudUpload, AiOutlinePlusSquare, AiFillDelete } from 'react-icons/ai'
 import { useRouter } from 'next/router';
 import Link from 'next/link'
+import { MdKeyboardArrowDown } from "react-icons/md";
 
 interface SellerData {
     data: {
@@ -100,7 +101,8 @@ export default function UpdateProduct({ sellerData }: any) {
 
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>(productData.data?.productCategory || '');
-    const [subCategory, setSubCategory] = useState<string>();
+    const [subCategory, setSubCategory] = useState<any>(productData.data?.subCategory || []);
+    const [subCategoryOpen, setSubCategoryOpen] = useState(false);
     const [prodMargin, setProdMargin] = useState<number>(0)
 
     const [productVariations, setProductVariations] = useState<any[]>([])
@@ -201,7 +203,7 @@ export default function UpdateProduct({ sellerData }: any) {
             productQuantity: productData?.data?.productQuantity || '',
             productDescription: productData?.data?.productDescription || '',
             productSku: productData?.data?.productSku || '',
-            productSubCategory: productData?.data?.productSubCategory || '',
+            productSubCategory: productData?.data?.productSubCategory || [],
             productPrice: productData?.data?.productPrice || '',
             productCost: productData?.data?.productCost || '',
             productMargin: productData?.data?.productMargin || '',
@@ -211,7 +213,7 @@ export default function UpdateProduct({ sellerData }: any) {
         onSubmit
     })
 
-    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: string, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productType: string }) {
+    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: any, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productType: string }) {
         setLoading(true)
 
         try {
@@ -349,7 +351,7 @@ export default function UpdateProduct({ sellerData }: any) {
                     productQuantity: productData?.data?.productQuantity || '',
                     productDescription: productData?.data?.productDescription || '',
                     productSku: productData?.data?.productSku || '',
-                    productSubCategory: productData?.data?.productSubCategory || '',
+                    productSubCategory: productData?.data?.productSubCategory || [],
                     productPrice: productData?.data?.productPrice || '',
                     productCost: productData?.data?.productCost || '',
                     productMargin: productData?.data?.productMargin || '',
@@ -430,7 +432,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                             ))}
                                         </select>
                                     </div>
-                                    <div className="flex-1">
+                                    {/* <div className="flex-1">
                                         <label htmlFor="productSubCategory" className={labelClass}>Product Sub-Category*</label>
                                         <select {...formik.getFieldProps('productSubCategory')} id="productSubCategory" name="productSubCategory" className={inputClass} value={subCategory} onChange={(e) => { setSubCategory(e.target.value); formik.setFieldValue('productSubCategory', e.target.value); }} disabled={!productCategory}>
                                             <option className="text-base text-[#30323E] " value="">Select Sub-Category</option>
@@ -440,6 +442,40 @@ export default function UpdateProduct({ sellerData }: any) {
                                                 </option>
                                             ))}
                                         </select>
+                                    </div> */}
+
+                                    <div className="flex-1">
+                                        <label className={labelClass}>Product Sub-Category*</label>
+                                        <div className={`${inputClass} !px-0`} id="productSubCategory" onClick={(e) => setSubCategoryOpen(true)}>
+                                            {productCategory && subCategoryOpen && <div onClick={(e) => { e.stopPropagation(); setSubCategoryOpen(false); }} className='w-full min-h-[150vh] opacity-0 bg-black absolute top-0 right-0'></div>}
+                                            <span className='flex items-center justify-between'><p className=' opacity-50 ml-3'>Select Sub-Category</p>
+                                                <MdKeyboardArrowDown className='mr-2' fontSize="20px" /></span>
+                                            {productCategory && subCategoryOpen && <div className="dropdown z-10 relative mt-2 shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] px-3 py-2 bg-white border border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none w-[22.5rem] rounded-md">
+                                                {productCategory && categories[productCategory]?.map((subCat) => (
+                                                    <div key={subCat} className="checkbox-option flex items-center ">
+                                                        <input
+                                                            type="checkbox"
+                                                            id={subCat}
+                                                            name={subCat}
+                                                            value={subCat}
+                                                            checked={subCategory.includes(subCat)}
+                                                            onChange={(e) => {
+                                                                const isChecked = e.target.checked;
+                                                                const updatedSubCategories = isChecked
+                                                                    ? [...subCategory, subCat]
+                                                                    : subCategory.filter((category: any) => category !== subCat);
+
+                                                                setSubCategory(updatedSubCategories);
+                                                                formik.setFieldValue('productSubCategory', updatedSubCategories);
+                                                            }}
+                                                        />
+                                                        <label htmlFor={subCat} className=" w-full text-base text-[#30323E] ml-2 cursor-pointer">
+                                                            {subCat}
+                                                        </label>
+                                                    </div>
+                                                ))}
+                                            </div>}
+                                        </div>
                                     </div>
                                 </div>
 
