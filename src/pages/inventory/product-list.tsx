@@ -510,7 +510,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         <label className={labelClass}>Product Sub-Category*</label>
                                         <div className={`${inputClass} !px-0`} id="productSubCategory" onClick={(e) => setSubCategoryOpen(true)}>
                                             {productCategory && subCategoryOpen && <div onClick={(e) => { e.stopPropagation(); setSubCategoryOpen(false); }} className='w-full min-h-[150vh] opacity-0 bg-black absolute top-0 right-0'></div>}
-                                            <span className='flex items-center justify-between'><p className=' opacity-50 ml-3'>SELECT</p>
+                                            <span className='flex items-center justify-between'><p className=' opacity-50 ml-3'>Select Sub-Category</p>
                                                 <MdKeyboardArrowDown className='mr-2' fontSize="20px" /></span>
                                             {productCategory && subCategoryOpen && <div className="dropdown z-10 relative mt-2 shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] px-3 py-2 bg-white border border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none w-[22.5rem] rounded-md">
                                                 {productCategory && categories[productCategory]?.map((subCat) => (
