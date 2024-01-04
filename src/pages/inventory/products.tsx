@@ -355,45 +355,48 @@ export default function Products({ session, sellerData }: any) {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {data && data?.products?.map((row, index) => (
-                                                        <tr key={index} className={`hover:bg-gray-50 !h-16`}>
-                                                            <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
-                                                            <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
-                                                            <td className="py-2 px-4 border-b">{row?.productImagesArray && !row?.productImagesArray[0].includes("http") ? <ProductImage objKey={row.productImagesArray[0]} /> : "No Image"}</td>
-                                                            <td className="py-2 px-4 border-b">{row.id}</td>
-                                                            <td className="py-2 px-4 border-b">{row.productName}</td>
-                                                            <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
-                                                            <td className="py-2 px-4 border-b">{checkproductDetails(row, "price")}</td>
-                                                            <td className="py-2 px-4 border-b">{row.productCost}</td>
-                                                            <td className="py-2 px-4 border-b">{row.productCategory}</td>
-                                                            <td className="py-2 px-4 border-b">
-                                                                <div className="flex items-center">
-                                                                    <Link href={`/inventory/product-update/${row.id}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" /></Link>
-                                                                    <Dialog>
-                                                                        <DialogTrigger asChild>
-                                                                            <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" />
-                                                                        </DialogTrigger>
-                                                                        <DialogContent>
-                                                                            <DialogHeader>
-                                                                                <div className="flex flex-col items-center justify-center">
-                                                                                    <BsTrash3Fill fontSize={"25px"} className="cursor-pointer mb-4" />
-                                                                                    <DialogTitle>Are you sure you want to delete this product?</DialogTitle>
+                                                    {data && data?.products?.map((row, index) => {
+                                                        console.log(row.productName, Boolean(row?.productImagesArray))
+                                                        return (
+                                                            <tr key={index} className={`hover:bg-gray-50 !h-16`}>
+                                                                <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
+                                                                <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
+                                                                <td className="py-2 px-4 border-b">{row?.productImagesArray && row?.productImagesArray.length > 0 && !row?.productImagesArray[0]?.includes("http") ? <ProductImage objKey={row?.productImagesArray[0]} /> : "No Image"}</td>
+                                                                <td className="py-2 px-4 border-b">{row.id}</td>
+                                                                <td className="py-2 px-4 border-b">{row.productName}</td>
+                                                                <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
+                                                                <td className="py-2 px-4 border-b">{checkproductDetails(row, "price")}</td>
+                                                                <td className="py-2 px-4 border-b">{row.productCost}</td>
+                                                                <td className="py-2 px-4 border-b">{row.productCategory}</td>
+                                                                <td className="py-2 px-4 border-b">
+                                                                    <div className="flex items-center">
+                                                                        <Link href={`/inventory/product-update/${row.id}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" /></Link>
+                                                                        <Dialog>
+                                                                            <DialogTrigger asChild>
+                                                                                <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" />
+                                                                            </DialogTrigger>
+                                                                            <DialogContent>
+                                                                                <DialogHeader>
+                                                                                    <div className="flex flex-col items-center justify-center">
+                                                                                        <BsTrash3Fill fontSize={"25px"} className="cursor-pointer mb-4" />
+                                                                                        <DialogTitle>Are you sure you want to delete this product?</DialogTitle>
+                                                                                    </div>
+                                                                                </DialogHeader>
+                                                                                <div className="flex items-center justify-between mt-4 ">
+                                                                                    <DialogPrimitive.Close asChild>
+                                                                                        <button className="flex-1 mr-2 text-white font-bold rounded-md px-3 py-2 bg-[#F12D4D]" onClick={() => handleDelete(row.id)}>Confirm</button>
+                                                                                    </DialogPrimitive.Close>
+                                                                                    <DialogPrimitive.Close asChild>
+                                                                                        <button className="flex-1 ml-2 text-gray-400 font-bold rounded-md px-3 py-2 bg-[#F5F5F5]" type="submit">Cancel</button>
+                                                                                    </DialogPrimitive.Close>
                                                                                 </div>
-                                                                            </DialogHeader>
-                                                                            <div className="flex items-center justify-between mt-4 ">
-                                                                                <DialogPrimitive.Close asChild>
-                                                                                    <button className="flex-1 mr-2 text-white font-bold rounded-md px-3 py-2 bg-[#F12D4D]" onClick={() => handleDelete(row.id)}>Confirm</button>
-                                                                                </DialogPrimitive.Close>
-                                                                                <DialogPrimitive.Close asChild>
-                                                                                    <button className="flex-1 ml-2 text-gray-400 font-bold rounded-md px-3 py-2 bg-[#F5F5F5]" type="submit">Cancel</button>
-                                                                                </DialogPrimitive.Close>
-                                                                            </div>
-                                                                        </DialogContent>
-                                                                    </Dialog>
-                                                                </div >
-                                                            </td>
-                                                        </tr>
-                                                    ))}
+                                                                            </DialogContent>
+                                                                        </Dialog>
+                                                                    </div >
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    })}
                                                 </tbody>
                                             </table>
                                             {data?.products && data?.products?.length < 1 && <div className="w-full flex items-center justify-center absolute top-1/4">No Product Data Found</div>}
