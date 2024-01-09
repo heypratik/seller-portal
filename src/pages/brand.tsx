@@ -48,7 +48,7 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
-export default function BrandEnroll({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
+export default function Brand({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
 
     const [brand, setBrand] = useState(brandData?.data[0])
 
@@ -298,7 +298,7 @@ export default function BrandEnroll({ sellerData, brandData }: { sellerData: Sel
             <Toaster position="top-center" reverseOrder={true} />
             <div className="py-6 h-screen">
                 <div className="mx-auto px-4 sm:px-6 md:px-8">
-                    <Breadcrums parent={"Brand Enroll"} childarr={["Product"]} />
+                    <Breadcrums parent={"Brands"} childarr={["Product"]} />
                 </div>
                 <div className="mx-auto px-4 sm:px-6 md:px-8">
                     <div className="py-4">
