@@ -99,7 +99,7 @@ export default function Import() {
                     productQuantity: 0,
                     productDescription: item['SEO Description'] || 'TEST', // TODO : Use the SEO description if available, or leave an empty string
                     productSku: item['Variant SKU'] || '',
-                    productSubCategory: prodSubCategory || '',
+                    productSubCategory: prodSubCategory ? [prodSubCategory] : [],
                     productPrice: 0,
                     productCost: 0,
                     productMargin: 0,
