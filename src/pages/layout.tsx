@@ -29,8 +29,8 @@ import { signOut } from "next-auth/react"
 
 
 const userNavigation = [
-    { name: 'Your Profile', href: '/account' },
-    { name: 'Sign out', href: '#', onclick: () => signOut() },
+    { name: 'Your Profile', href: '/account', onClick: (e: any) => { e.preventDefault() } },
+    { name: 'Sign out', href: '#', onClick: (e: any) => { e.preventDefault(); signOut(); } },
 ]
 
 function classNames(...classes: string[]) {
@@ -295,6 +295,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                                                     {({ active }) => (
                                                         <a
                                                             href={item.href}
+                                                            onClick={item.onClick}
                                                             className={classNames(
                                                                 active ? 'bg-gray-100' : '',
                                                                 'block px-4 py-2 text-sm text-gray-700'
