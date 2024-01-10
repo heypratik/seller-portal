@@ -2,13 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import Layout from "../layout"
 import Papa from "papaparse";
 import { v4 as uuidv4 } from 'uuid';
-import { parse } from "path";
-import { it } from "node:test";
 import { FaShopify } from "react-icons/fa";
-import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload, AiOutlineLoading3Quarters } from 'react-icons/ai'
+import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import toast, { Toaster } from 'react-hot-toast';
-import { set } from "date-fns";
-
+import { getSession } from 'next-auth/react'
 
 const productFields = [
     "Product Name",
@@ -28,7 +25,7 @@ const productFields = [
 ];
 
 
-export default function Import() {
+export default function Import({ sellerData }: { sellerData: any }) {
     const [file, setFile] = useState();
     const [array, setArray] = useState<any>([]);
     const fileInputRef = useRef<any>(null);
@@ -89,7 +86,7 @@ export default function Import() {
 
             if (!productObject[handle]) {
                 productObject[handle] = {
-                    sellerId: 3,
+                    sellerId: sellerData?.data?.id,
                     brandId: 3,
                     productName: item.Title || '',
                     productCategory: prodCategory || 'Not Defined',
@@ -346,3 +343,32 @@ export default function Import() {
     );
 }
 
+export async function getServerSideProps({ req }: any) {
+    const session = await getSession({ req })
+
+    if (!session) {
+        return {
+            redirect: {
+                destination: '/auth/login',
+                permanent: false,
+            },
+        }
+    }
+
+    // Get the seller data using the email that the user is logged in with
+    const sellerResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/seller/${session?.user?.email}`)
+    const sellerData = await sellerResponse.json()
+    if (!sellerData.success) {
+        return {
+            redirect: {
+                destination: '/auth/signup',
+                permanent: false
+            }
+        }
+    }
+
+
+    return {
+        props: { session, sellerData },
+    }
+}
