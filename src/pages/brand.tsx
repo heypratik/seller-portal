@@ -61,15 +61,15 @@ export default function Brand({ sellerData, brandData }: { sellerData: SellerDat
 
     const [loading, setLoading] = useState(false)
 
-    const [logoLoading, setLogoLoading] = useState(false)
-
     const [countryValue, setCountryValue] = useState(brand?.businessCountry ? brand?.businessCountry : '');
 
-    const { data: session } = useSession()
+    const [shippingTimesOne, setShippingTimesOne] = useState(brand?.brandShippingTimes ? brand?.brandShippingTimes.split(' ')[0] : 1);
+    const [shippingTimesTwo, setShippingTimesTwo] = useState(brand?.brandShippingTimes ? brand?.brandShippingTimes.split(' ')[2] : 3);
 
-    const handleFormSubmit = (e: any) => {
-        e.preventDefault()
-    }
+    useEffect(() => {
+        formik.setFieldValue('brandShippingTimes', `${shippingTimesOne} to ${shippingTimesTwo} Days`)
+    }, [shippingTimesOne, shippingTimesTwo])
+
 
     useEffect(() => {
         if (brand) {
@@ -192,14 +192,15 @@ export default function Brand({ sellerData, brandData }: { sellerData: SellerDat
             brandTargetGender: brand?.brandTargetGender ? brand?.brandTargetGender : "",
             brandTargetAgeGroup: brand?.brandTargetAgeGroup ? brand?.brandTargetAgeGroup : "",
             brandIncomeBracket: brand?.brandIncomeBracket ? brand?.brandIncomeBracket : "",
-            brandPriceRange: brand?.brandPriceRange ? brand?.brandPriceRange : ""
+            brandPriceRange: brand?.brandPriceRange ? brand?.brandPriceRange : "",
+            brandShippingTimes: `${shippingTimesOne} to ${shippingTimesTwo} Days`
         },
         onSubmit
     })
 
-    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: string, brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string }) {
-        setLoading(true)
+    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: string, brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string, brandShippingTimes: string }) {
 
+        setLoading(true)
         // Check if all fields have a value
         if (!Object.values(values).every(v => v)) {
             notification(false, "Please fill out all the fields.");
@@ -229,7 +230,8 @@ export default function Brand({ sellerData, brandData }: { sellerData: SellerDat
                         brandTargetGender: values.brandTargetGender,
                         brandTargetAgeGroup: values.brandTargetAgeGroup,
                         brandIncomeBracket: values.brandIncomeBracket,
-                        brandPriceRange: values.brandPriceRange
+                        brandPriceRange: values.brandPriceRange,
+                        brandShippingTimes: values.brandShippingTimes,
                     })
                 });
                 const data = await response.json();
@@ -260,7 +262,9 @@ export default function Brand({ sellerData, brandData }: { sellerData: SellerDat
                         brandTargetGender: values.brandTargetGender,
                         brandTargetAgeGroup: values.brandTargetAgeGroup,
                         brandIncomeBracket: values.brandIncomeBracket,
-                        brandPriceRange: values.brandPriceRange
+                        brandPriceRange: values.brandPriceRange,
+                        brandShippingTimes: values.brandShippingTimes
+
                     })
                 });
                 const data = await response.json();
@@ -291,6 +295,20 @@ export default function Brand({ sellerData, brandData }: { sellerData: SellerDat
             toast.error(message || 'An error occurred')
         }
 
+    }
+
+    function handleShippingTimes(e: any) {
+        e.preventDefault()
+        e.stopPropagation()
+        if (e.target.name === 'shippingTimesOne') {
+            if (e.target.value >= 0) {
+                setShippingTimesOne(e.target.value)
+            }
+        } else {
+            if (e.target.value >= 0) {
+                setShippingTimesTwo(e.target.value)
+            }
+        }
     }
 
     return (
@@ -491,6 +509,25 @@ export default function Brand({ sellerData, brandData }: { sellerData: SellerDat
                                             </select>
 
                                         </div>
+                                    </div>
+
+                                </div>
+
+                                {/* LINE 7 */}
+
+                                <div className=" w-full flex items-center justify-between">
+                                    <div className="flex-1">
+                                        <label htmlFor="brandPriceRange" className="mt-4 block text-base font-medium text-[#30323E] mb-2">Shipping Times*</label>
+                                        <div className="flex items-center justify-start">
+                                            <input value={shippingTimesOne} type="number" id="shippingTimesOne" name="shippingTimesOne" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none mr w-[5rem] h-10 mr-2 rounded-md mb-3" placeholder="1" onChange={(e) => handleShippingTimes(e)} /> to
+                                            <input value={shippingTimesTwo} type="number" id="shippingTimesTwo" name="shippingTimesTwo" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[5rem] h-10 mr-2 ml-2 rounded-md mb-3" placeholder="3" onChange={(e) => handleShippingTimes(e)} />
+                                            Days
+
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1">
+
                                     </div>
 
                                 </div>
