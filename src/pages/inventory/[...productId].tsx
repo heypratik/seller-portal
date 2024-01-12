@@ -137,6 +137,10 @@ export default function UpdateProduct({ sellerData }: any) {
             setProductVariations(productData?.data?.productVariations)
         }
 
+        if (productData?.data?.productType === "Variable Product") {
+            setProductType("Variable Product")
+        }
+
     }, [productData])
 
 
@@ -410,9 +414,29 @@ export default function UpdateProduct({ sellerData }: any) {
                                             <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' /> Upload </button>
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap'>
-                                            {objectKeys.map((key, index) => (
-                                                <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
-                                            ))}
+                                            {objectKeys.map((key, index) => {
+                                                if (key.includes("http")) {
+                                                    return (
+                                                        <div className="relative group w-[10%] mr-2 mt-4 ">
+                                                            <img
+                                                                key={index}
+                                                                src={key}
+                                                                alt={`custom-${key}`}
+                                                                className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
+                                                            />
+
+                                                            <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                                                                <span onClick={() => removeImage(key)} className="text-white text-3xl font-bold cursor-pointer">×</span>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                } else if (!key.includes("https")) {
+                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                } else {
+                                                    return null
+                                                }
+
+                                            })}
                                         </div>
                                     </div>
                                 </div>
@@ -650,7 +674,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                                                     <p className='flex-1 text-sm '>Variation Quantity</p>
                                                                     <p className='flex-[0.1] text-sm '>Actions</p>
                                                                 </div>
-                                                                {variation.values.map((value: any) => (
+                                                                {variation?.values?.map((value: any) => (
                                                                     <div className='flex bg-white p-4 justify-between' key={value.id}>
                                                                         <input
                                                                             type='text'

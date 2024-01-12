@@ -193,21 +193,21 @@ export default function Import({ sellerData }: { sellerData: any }) {
                 optionTwoValues = [...new Set(optionTwoValues)]
                 optionThreeValues = [...new Set(optionThreeValues)]
                 if (index === 0) {
-                    item.values.push(optionOneValues.map((item) => {
+                    item.values.push(...optionOneValues.map((item) => {
                         return {
                             id: uuidv4(),
                             value: item,
                         }
                     }))
                 } else if (index === 1) {
-                    item.values.push(optionTwoValues.map((item) => {
+                    item.values.push(...optionTwoValues.map((item) => {
                         return {
                             id: uuidv4(),
                             value: item,
                         }
                     }))
                 } else if (index === 2) {
-                    item.values.push(optionThreeValues.map((item) => {
+                    item.values.push(...optionThreeValues.map((item) => {
                         return {
                             id: uuidv4(),
                             value: item,
@@ -216,7 +216,6 @@ export default function Import({ sellerData }: { sellerData: any }) {
                 }
 
             })
-
             productObject[key].variantOptions = [...optionsArr]
         }
 
