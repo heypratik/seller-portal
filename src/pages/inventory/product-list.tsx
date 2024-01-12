@@ -438,8 +438,8 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                 <div className="mx-auto px-4 sm:px-6 md:px-8 pb-24">
                     {/* Replace with your content */}
                     <div className="py-4">
-                        <form onSubmit={formik.handleSubmit} >
-                            <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7">
+                        <form onSubmit={formik.handleSubmit} className='flex justify-center gap-4'>
+                            <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7  flex-1">
                                 <h1 className=' text-[#F12D4D] text-2xl font-semibold'>Product Listing</h1>
 
                                 <div className="w-full flex items-center justify-between">
@@ -715,6 +715,9 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
+                            </div>
+                            <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.2]'>
+                                <p>Collections</p>
                             </div>
                         </form>
                     </div>
