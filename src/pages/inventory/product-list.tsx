@@ -716,7 +716,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
                             </div>
-                            <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.2]'>
+                            <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.3]'>
                                 <p>Collections</p>
                             </div>
                         </form>
