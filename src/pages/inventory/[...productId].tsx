@@ -411,7 +411,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                         }} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
                                             <p className='my-2 text-black text-lg'>Jpg, Png</p>
                                             <p className='my-2 text-gray-400 text-base'>File not Exceed 10mb</p>
-                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' /> Upload </button>
+                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' />Upload</button>
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap'>
                                             {objectKeys.map((key, index) => {

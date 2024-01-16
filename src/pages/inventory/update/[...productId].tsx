@@ -545,7 +545,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                             {objectKeys.map((key, index) => {
                                                 if (showImg && key.includes("http")) {
                                                     return (
-                                                        <div className="relative group w-[10%] mr-2 mt-4" key={index}>
+                                                        <div className="relative group w-[10%] mr-2 mt-4" key={index} >
                                                             <img
                                                                 key={index}
                                                                 src={key}
