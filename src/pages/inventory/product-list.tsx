@@ -110,7 +110,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     const [subCategoryOpen, setSubCategoryOpen] = useState(false);
     const [prodMargin, setProdMargin] = useState<number>(0)
 
-    const [productVariations, setProductVariations] = useState<any[]>([])
+    // const [productVariations, setProductVariations] = useState<any[]>([])
 
 
     const [variantOptions, setVariantOptions] = useState<any[]>([])
