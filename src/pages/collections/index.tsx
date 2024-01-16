@@ -6,7 +6,9 @@ import toast, { Toaster } from 'react-hot-toast';
 import Breadcrums from '../../../components/Breadcrums';
 import { AiOutlineLoading3Quarters, AiOutlineCloudUpload } from 'react-icons/ai'
 import { useInView } from "react-intersection-observer";
-import { CiImageOn } from "react-icons/ci";
+import { CiImageOn, CiShoppingTag, CiCircleRemove } from "react-icons/ci";
+
+
 import {
     Sheet,
     SheetContent,
@@ -43,7 +45,7 @@ const postMediaEndpoint = "media/single";
 const mediaEndpoint = "media/%s";
 const token = "fb507a0b75e0f62f65b798424555733f";
 
-const CustomImage = ({ objectKey, token, removeImage }: { objectKey: string, token: string, removeImage: any }) => {
+const CustomImage = ({ objectKey, token, removeImage, size }: { objectKey: string, token: string, removeImage: any, size: string }) => {
 
     if (objectKey?.includes('http')) {
         return (
@@ -83,7 +85,7 @@ const CustomImage = ({ objectKey, token, removeImage }: { objectKey: string, tok
         <img
             src={imageData}
             alt={`custom-${imageData}`}
-            className="w-[35px] h-[35px] rounded-md border shadow-sm border-[#DDDDDD] object-cover"
+            className={`${size} rounded-md border shadow-sm border-[#DDDDDD] object-cover`}
         />
     ) : (
         <div className=' bg-gray-50 rounded-md h-[35px] w-[35px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' /></div>
@@ -95,10 +97,12 @@ export default function index({ sellerData }: { sellerData: any }) {
 
     const [loading, setLoading] = useState(false)
     const fileInputRef = useRef<any>(null);
+    const sidebarRef = useRef<any>(null);
     const [activePageNumber, setActivePageNumber] = useState(0)
     const [resultNumber, setResultNumber] = useState(20)
     const [search, setSearch] = useState('')
     const [objectKeys, setObjectKeys] = useState<any[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
 
     const [productApiData, setProductApiData] = useState<Data>({
         categories: [], // Initialize with an empty array for categories
@@ -234,7 +238,20 @@ export default function index({ sellerData }: { sellerData: any }) {
 
     }
 
-    console.log(productApiData)
+    function handleSelectedProduct(e: any) {
+        if (e.target.name !== undefined) {
+            const prodId = Number(e.target.name)
+            if (selectedProducts.includes(prodId)) {
+                const filtered = selectedProducts.filter((product) => product !== prodId)
+                setSelectedProducts(filtered)
+            } else {
+                setSelectedProducts((prev) => [...prev, prodId])
+            }
+        }
+    }
+
+    console.log(selectedProducts)
+
 
     return (
         <Layout>
@@ -261,9 +278,38 @@ export default function index({ sellerData }: { sellerData: any }) {
                                         <textarea {...formik.getFieldProps('collectionDescription')} rows={3} id="collectionDescription" name="collectionDescription" className="bg-[#f7f9fa] border shadow-sm border-[#DDDDDD] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full" placeholder='Collection Description' />
                                     </div>
 
+                                    <div className="flex-1 mt-6">
+                                        <div className='border shadow-sm border-[#DDDDDD] rounded-md w-full'>
+                                            <div className='flex items-center justify-between bg-[#f7f9fa]  px-5 py-4'>
+                                                <p>Products</p>
+                                                <button onClick={() => sidebarRef.current?.click()} className='flex text-base items-center bg-red-600 text-white py-1 px-3 rounded-md my-2'>Add Products</button>
+                                            </div>
+
+                                            <div className='max-h-[350px] overflow-y-scroll'>
+                                                {productApiData.products.filter((product: any) => selectedProducts.includes(product.id)).map((product: any, index: number) => (
+                                                    <div key={index} className=" hover:bg-[#f6f6f6] checkbox-option justify-between flex items-center px-5 py-4 border-b border-[#DDDDDD]">
+                                                        <div className='flex items-center justify-start'>
+                                                            <CustomImage size={"w-[35px] h-[35px]"} objectKey={product?.productImagesArray?.[0]} token={token} removeImage={removeImage} />
+                                                            <label htmlFor={product.id} className=" text-sm font-semibold text-black ml-2 cursor-pointer">
+                                                                {product.productName}<p className='text-sm text-[#b9b9b9]'>{product.productCategory}</p>
+                                                            </label>
+                                                        </div>
+                                                        <CiCircleRemove onClick={(e) => setSelectedProducts((prev) => prev.filter((productId) => productId !== product.id))} fontSize="20px" fontWeight="700" className='cursor-pointer' />
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {selectedProducts.length === 0 && <div className='flex flex-col justify-center items-center px-5 py-8'>
+                                                <CiShoppingTag color='#919191' fontSize='30px' />
+                                                <p className='text-base'>There are no products in this collection.</p>
+                                                <p className='text-base'>Search or browse to add products.</p>
+                                            </div>}
+                                        </div>
+                                    </div>
+
                                     <Sheet>
                                         <SheetTrigger asChild>
-                                            <button onClick={(e) => setActivePageNumber(1)}>Open</button>
+                                            <button onClick={(e) => setActivePageNumber(1)} ref={sidebarRef} className='hidden'>Open</button>
                                         </SheetTrigger>
                                         <SheetContent className="mr-0">
                                             <SheetHeader>
@@ -274,8 +320,8 @@ export default function index({ sellerData }: { sellerData: any }) {
                                             </SheetHeader>
                                             {productApiData?.products?.length > 0 && productApiData?.products?.map((product: any, index: number) => (
                                                 <div key={index} className="checkbox-option flex items-center py-4 border-b border-[#DDDDDD]">
-                                                    <input type="checkbox" name={product.id} id={product.id} className='mr-2' />
-                                                    <CustomImage objectKey={product?.productImagesArray?.[0]} token={token} removeImage={removeImage} />
+                                                    <input checked={selectedProducts.includes(product.id)} onChange={(e) => handleSelectedProduct(e)} type="checkbox" name={product.id} id={product.id} className='mr-2' />
+                                                    <CustomImage size={"w-[35px] h-[35px]"} objectKey={product?.productImagesArray?.[0]} token={token} removeImage={removeImage} />
                                                     <label htmlFor={product.id} className=" text-sm font-semibold text-black ml-2 cursor-pointer">
                                                         {product.productName}<p className='text-sm text-[#b9b9b9]'>{product.productCategory}</p>
                                                     </label>
@@ -298,16 +344,16 @@ export default function index({ sellerData }: { sellerData: any }) {
                                 <div className='flex items-center w-full'>
                                     <div className='flex-1'>
                                         <label htmlFor="productImages" className={labelClass}>Collection Image*</label>
-                                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: "none" }} multiple />
+                                        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} style={{ display: "none" }} />
                                         <div onClick={() => fileInputRef.current?.click()} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
                                             <p className='my-1 text-black text-sm'>Jpg, Png</p>
                                             <p className='my-2 text-gray-400 text-sm'>File not Exceed 10mb</p>
                                             <button type='reset' className='flex text-base items-center bg-red-600 text-white py-1 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="18" className='mr-2' /> Upload </button>
                                         </div>
-                                        <div className='flex items-center justify-start flex-wrap'>
-                                            {/* {objectKeys.map((key, index) => (
-                                                <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
-                                            ))} */}
+                                        <div className='flex items-center justify-start flex-wrap mt-4'>
+                                            {objectKeys.map((key, index) => (
+                                                <CustomImage size={"w-[200px] h-[200px]"} key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                            ))}
                                         </div>
 
                                     </div>
