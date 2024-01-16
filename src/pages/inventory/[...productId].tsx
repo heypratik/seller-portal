@@ -417,7 +417,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                             {objectKeys.map((key, index) => {
                                                 if (key.includes("http")) {
                                                     return (
-                                                        <div className="relative group w-[10%] mr-2 mt-4 ">
+                                                        <div key={index} className="relative group w-[10%] mr-2 mt-4 ">
                                                             <img
                                                                 key={index}
                                                                 src={key}
