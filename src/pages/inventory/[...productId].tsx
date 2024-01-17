@@ -411,7 +411,7 @@ export default function UpdateProduct({ sellerData }: any) {
                                         }} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
                                             <p className='my-2 text-black text-lg'>Jpg, Png</p>
                                             <p className='my-2 text-gray-400 text-base'>File not Exceed 10mb</p>
-                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' /> Upload </button>
+                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' />Upload</button>
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap'>
                                             {objectKeys.map((key, index) => {
@@ -419,7 +419,6 @@ export default function UpdateProduct({ sellerData }: any) {
                                                     return (
                                                         <div key={index} className="relative group w-[10%] mr-2 mt-4 ">
                                                             <img
-                                                                key={index}
                                                                 src={key}
                                                                 alt={`custom-${key}`}
                                                                 className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
@@ -429,13 +428,12 @@ export default function UpdateProduct({ sellerData }: any) {
                                                                 <span onClick={() => removeImage(key)} className="text-white text-3xl font-bold cursor-pointer">×</span>
                                                             </div>
                                                         </div>
-                                                    )
+                                                    );
                                                 } else if (!key.includes("https")) {
-                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />;
                                                 } else {
-                                                    return null
+                                                    return null;
                                                 }
-
                                             })}
                                         </div>
                                     </div>
