@@ -6,6 +6,7 @@ import { getSession, useSession } from 'next-auth/react'
 import { AiOutlinePlus, AiOutlineSearch, AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { FiFilter } from 'react-icons/fi'
 import { useRouter } from "next/router";
+import { CiImageOn } from "react-icons/ci";
 import Link from "next/link";
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import {
@@ -289,15 +290,9 @@ export default function Products({ session, sellerData }: any) {
         if (row?.productImagesArray && row?.productImagesArray.length > 0 && !row?.productImagesArray[0]?.includes("http")) {
             return <ProductImage objKey={row?.productImagesArray[0]} />;
         } else if (row?.productImagesArray && row?.productImagesArray.length > 0 && row?.productImagesArray[0]?.includes("http")) {
-            //rmchk later
-            // const targetDate = new Date('2023-01-12T00:00:00.000Z');
-            if (true) {
-                return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
-            } else {
-                return "No Image";
-            }
+            return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
         } else {
-            return "No Image";
+            return <div className="flex items-center justify-center w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images"><CiImageOn fontSize="20px" color="#7f7f7f" /></div>
         }
     }
 
