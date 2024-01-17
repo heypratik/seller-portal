@@ -285,6 +285,22 @@ export default function Products({ session, sellerData }: any) {
         );
     }
 
+    function renderProductImage(row: any) {
+        if (row?.productImagesArray && row?.productImagesArray.length > 0 && !row?.productImagesArray[0]?.includes("http")) {
+            return <ProductImage objKey={row?.productImagesArray[0]} />;
+        } else if (row?.productImagesArray && row?.productImagesArray.length > 0 && row?.productImagesArray[0]?.includes("http")) {
+            //rmchk later
+            const targetDate = new Date('2023-01-12T00:00:00.000Z');
+            if (row?.createdAt >= targetDate) {
+                return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
+            } else {
+                return "No Image";
+            }
+        } else {
+            return "No Image";
+        }
+    }
+
     return (
         <Layout>
             <>
@@ -361,7 +377,7 @@ export default function Products({ session, sellerData }: any) {
                                                             <tr key={index} className={`hover:bg-gray-50 !h-16`}>
                                                                 <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
                                                                 <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
-                                                                <td className="py-2 px-4 border-b">{row?.productImagesArray && row?.productImagesArray.length > 0 && !row?.productImagesArray[0]?.includes("http") ? <ProductImage objKey={row?.productImagesArray[0]} /> : "No Image"}</td>
+                                                                <td className="py-2 px-4 border-b">{renderProductImage(row)}</td>
                                                                 <td className="py-2 px-4 border-b">{row.id}</td>
                                                                 <td className="py-2 px-4 border-b">{row.productName}</td>
                                                                 <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
@@ -370,7 +386,7 @@ export default function Products({ session, sellerData }: any) {
                                                                 <td className="py-2 px-4 border-b">{row.productCategory}</td>
                                                                 <td className="py-2 px-4 border-b">
                                                                     <div className="flex items-center">
-                                                                        <Link href={`/inventory/product-update/${row.id}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" /></Link>
+                                                                        <Link href={`/inventory/update/${row.id}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" /></Link>
                                                                         <Dialog>
                                                                             <DialogTrigger asChild>
                                                                                 <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" />
