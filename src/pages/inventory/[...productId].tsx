@@ -417,9 +417,8 @@ export default function UpdateProduct({ sellerData }: any) {
                                             {objectKeys.map((key, index) => {
                                                 if (key.includes("http")) {
                                                     return (
-                                                        <div className="relative group w-[10%] mr-2 mt-4 ">
+                                                        <div className="relative group w-[10%] mr-2 mt-4" key={index}>
                                                             <img
-                                                                key={index}
                                                                 src={key}
                                                                 alt={`custom-${key}`}
                                                                 className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
@@ -429,13 +428,12 @@ export default function UpdateProduct({ sellerData }: any) {
                                                                 <span onClick={() => removeImage(key)} className="text-white text-3xl font-bold cursor-pointer">×</span>
                                                             </div>
                                                         </div>
-                                                    )
+                                                    );
                                                 } else if (!key.includes("https")) {
-                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />;
                                                 } else {
-                                                    return null
+                                                    return null;
                                                 }
-
                                             })}
                                         </div>
                                     </div>

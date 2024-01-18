@@ -110,6 +110,17 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     const [productData, setProductData] = useState<any>({})
 
+    ////rmchk later
+    const createdDate = productData?.data?.createdAt
+    const targetDate = new Date('2023-01-12T00:00:00.000Z');
+    const [showImg, setShowImg] = useState(false)
+    useEffect(() => {
+        if (createdDate >= targetDate) {
+            setShowImg(true)
+        }
+    }, [productData])
+
+
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>();
     const [subCategory, setSubCategory] = useState<any>([]);
@@ -161,9 +172,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     }, [productData])
 
     const fileInputRef = useRef<any>(null);
-
-    console.log("VARIATION OPTIONS", variantOptions)
-
 
     function handleVariationChange(e: any, id: number) {
         setVariationValues((prevVariationValues: any) =>
@@ -471,7 +479,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                 const productResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}/${productID}`)
                 const productData = await productResponse.json()
                 setProductData(productData)
-                console.log(productData)
                 formik.setValues({
                     productName: productData?.data?.productName || '',
                     productCategory: productData?.data?.productCategory || '',
@@ -536,9 +543,9 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap'>
                                             {objectKeys.map((key, index) => {
-                                                if (key.includes("http")) {
+                                                if (showImg && key.includes("http")) {
                                                     return (
-                                                        <div className="relative group w-[10%] mr-2 mt-4 ">
+                                                        <div className="relative group w-[10%] mr-2 mt-4" key={index}>
                                                             <img
                                                                 key={index}
                                                                 src={key}
