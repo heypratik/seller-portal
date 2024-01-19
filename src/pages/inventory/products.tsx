@@ -5,6 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlinePlus, AiOutlineSearch, AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { FiFilter } from 'react-icons/fi'
+import { CiImageOn } from "react-icons/ci";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import * as DialogPrimitive from "@radix-ui/react-dialog"
@@ -289,15 +290,9 @@ export default function Products({ session, sellerData }: any) {
         if (row?.productImagesArray && row?.productImagesArray.length > 0 && !row?.productImagesArray[0]?.includes("http")) {
             return <ProductImage objKey={row?.productImagesArray[0]} />;
         } else if (row?.productImagesArray && row?.productImagesArray.length > 0 && row?.productImagesArray[0]?.includes("http")) {
-            //rmchk later
-            const targetDate = new Date('2023-01-12T00:00:00.000Z');
-            if (row?.createdAt >= targetDate) {
-                return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
-            } else {
-                return "No Image";
-            }
+            return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
         } else {
-            return "No Image";
+            return <div className=' bg-gray-50 rounded-md h-[35px] w-[35px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' /></div>
         }
     }
 

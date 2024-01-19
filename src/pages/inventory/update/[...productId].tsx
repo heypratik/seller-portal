@@ -11,6 +11,7 @@ import { useRouter } from 'next/router';
 import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-icons/ai'
 import { v4 as uuidv4 } from 'uuid';
 import { MdKeyboardArrowDown } from "react-icons/md";
+import { CiImageOn } from "react-icons/ci";
 
 
 interface VariantOption {
@@ -98,7 +99,7 @@ const CustomImage = ({ objectKey, token, removeImage }: { objectKey: string, tok
             </div>
         </div>
     ) : (
-        <div>Loading image...</div>
+        <div className=' bg-gray-50 rounded-md h-[35px] w-[35px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' /></div>
     );
 };
 
@@ -113,13 +114,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
     ////rmchk later
     const createdDate = productData?.data?.createdAt
     const targetDate = new Date('2023-01-12T00:00:00.000Z');
-    const [showImg, setShowImg] = useState(false)
-    useEffect(() => {
-        if (createdDate >= targetDate) {
-            setShowImg(true)
-        }
-    }, [productData])
-
 
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>();
@@ -543,7 +537,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap'>
                                             {objectKeys.map((key, index) => {
-                                                if (showImg && key.includes("http")) {
+                                                if (key.includes("http")) {
                                                     return (
                                                         <div key={index} className="relative group w-[10%] mr-2 mt-4 ">
                                                             <img

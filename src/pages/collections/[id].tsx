@@ -7,7 +7,7 @@ import Breadcrums from '../../../components/Breadcrums';
 import { AiOutlineLoading3Quarters, AiOutlineCloudUpload } from 'react-icons/ai'
 import { useInView } from "react-intersection-observer";
 import { CiImageOn, CiShoppingTag, CiCircleRemove } from "react-icons/ci";
-
+import { useRouter } from 'next/router'
 
 import {
     Sheet,
@@ -93,16 +93,21 @@ const CustomImage = ({ objectKey, token, removeImage, size }: { objectKey: strin
 };
 
 export default function index({ sellerData }: { sellerData: any }) {
-    const { ref, inView } = useInView();
 
+    const router = useRouter()
+
+    const { ref, inView } = useInView();
     const [loading, setLoading] = useState(false)
     const fileInputRef = useRef<any>(null);
     const sidebarRef = useRef<any>(null);
     const [activePageNumber, setActivePageNumber] = useState(0)
-    const [resultNumber, setResultNumber] = useState(20)
+    const [resultNumber, setResultNumber] = useState(10)
     const [search, setSearch] = useState('')
     const [objectKeys, setObjectKeys] = useState<any[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
+    const [isPageUpdate, setIsPageUpdate] = useState(false)
+
+    console.log(selectedProducts)
 
     const [productApiData, setProductApiData] = useState<Data>({
         categories: [], // Initialize with an empty array for categories
@@ -111,19 +116,74 @@ export default function index({ sellerData }: { sellerData: any }) {
         totalPages: 0,
     });
 
+    const [selectedProductsData, setSelectedProductsData] = useState<any[]>([])
+
     const formik = useFormik({
         initialValues: {
             collectionName: '',
             collectionDescription: '',
-            bDisplayName: '',
-            sellerEmail: '',
-            companyName: '',
-            mobileNumber: '',
         },
         onSubmit
     })
 
-    async function onSubmit(values: any) { }
+    async function onSubmit(values: any) {
+
+        try {
+            if (!isPageUpdate) {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        brandId: sellerData?.data?.Brands?.[0]?.id,
+                        collectionName: values.collectionName,
+                        collectionDescription: values.collectionDescription,
+                        collectionImageObjectKey: objectKeys?.[0],
+                        collectionProductsId: selectedProducts
+                    })
+                })
+
+                const data = await response.json()
+                if (data.success) {
+                    notification(true, data.message)
+                    formik.resetForm()
+                    setObjectKeys([])
+                    setSelectedProducts([])
+                } else {
+                    notification(false, data.message)
+                }
+            } else {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/update/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        brandId: sellerData?.data?.Brands?.[0]?.id,
+                        collectionName: values.collectionName,
+                        collectionDescription: values.collectionDescription,
+                        collectionImageObjectKey: objectKeys?.[0],
+                        collectionProductsId: selectedProducts
+                    })
+                })
+
+                const data = await response.json()
+                if (data.success) {
+                    notification(true, data.message)
+                } else {
+                    notification(false, data.message)
+                }
+            }
+
+        } catch (error) {
+            notification(false, "Something went wrong");
+            console.error(error);
+            setLoading(false);
+        }
+
+        setLoading(false);
+    }
 
     function removeImage(key: string) {
         const newKeys = objectKeys.filter((k) => k !== key);
@@ -178,6 +238,28 @@ export default function index({ sellerData }: { sellerData: any }) {
 
 
     useEffect(() => {
+        async function fetchData() {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/getbyids/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    productIds: selectedProducts
+                })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                setSelectedProductsData(data.data)
+            }
+
+        }
+        fetchData()
+    }, [selectedProducts])
+
+    useEffect(() => {
         if (inView) {
             setActivePageNumber((prev) => prev + 1);
         }
@@ -187,12 +269,17 @@ export default function index({ sellerData }: { sellerData: any }) {
         if (activePageNumber !== 0) {
             async function fetchData() {
                 const result = await getData()
-                setProductApiData((prev) => ({
-                    ...prev,
-                    products: [...prev.products, ...result.products],
-                    currentPage: result.currentPage,
-                    totalPages: result.totalPages,
-                }))
+                if (search === '' && activePageNumber > 1) {
+                    console.log('here', activePageNumber)
+                    setProductApiData((prev) => ({
+                        ...prev,
+                        products: [...prev.products, ...result.products],
+                        currentPage: result.currentPage,
+                        totalPages: result.totalPages,
+                    }))
+                } else {
+                    setProductApiData(result)
+                }
             }
             fetchData()
         }
@@ -205,7 +292,7 @@ export default function index({ sellerData }: { sellerData: any }) {
                 if (search.length == 1) {
                     setActivePageNumber(1)
                 }
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}`)
+                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${1}&limit=${10000}`)
                 const productsData = await productsResponse.json()
                 const products = productsData.data
                 return products
@@ -250,8 +337,27 @@ export default function index({ sellerData }: { sellerData: any }) {
         }
     }
 
-    console.log(selectedProducts)
+    // Update Page
 
+    const { id } = router.query;
+
+    useEffect(() => {
+        if (id !== "new" && id !== undefined && id !== null && id !== "" && typeof (Number(id)) === 'number') {
+            setIsPageUpdate(true)
+            async function fetchData() {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/get/${id}`)
+                const data = await response.json()
+                if (data.success) {
+                    const collection = data.data
+                    formik.setFieldValue('collectionName', collection.collectionName)
+                    formik.setFieldValue('collectionDescription', collection.collectionDescription)
+                    setObjectKeys([collection.collectionImageObjectKey])
+                    setSelectedProducts(collection.collectionProductsId.map((id: any) => Number(id)))
+                }
+            }
+            fetchData()
+        }
+    }, [id])
 
     return (
         <Layout>
@@ -282,11 +388,15 @@ export default function index({ sellerData }: { sellerData: any }) {
                                         <div className='border shadow-sm border-[#DDDDDD] rounded-md w-full'>
                                             <div className='flex items-center justify-between bg-[#f7f9fa]  px-5 py-4'>
                                                 <p>Products</p>
-                                                <button onClick={() => sidebarRef.current?.click()} className='flex text-base items-center bg-red-600 text-white py-1 px-3 rounded-md my-2'>Add Products</button>
+                                                <button onClick={(e) => (
+                                                    e.preventDefault(),
+                                                    e.stopPropagation(),
+                                                    sidebarRef.current?.click()
+                                                )} className='flex text-base items-center bg-red-600 text-white py-1 px-3 rounded-md my-2'>Add Products</button>
                                             </div>
 
                                             <div className='max-h-[350px] overflow-y-scroll'>
-                                                {productApiData.products.filter((product: any) => selectedProducts.includes(product.id)).map((product: any, index: number) => (
+                                                {selectedProductsData.map((product: any, index: number) => (
                                                     <div key={index} className=" hover:bg-[#f6f6f6] checkbox-option justify-between flex items-center px-5 py-4 border-b border-[#DDDDDD]">
                                                         <div className='flex items-center justify-start'>
                                                             <CustomImage size={"w-[35px] h-[35px]"} objectKey={product?.productImagesArray?.[0]} token={token} removeImage={removeImage} />
@@ -294,7 +404,12 @@ export default function index({ sellerData }: { sellerData: any }) {
                                                                 {product.productName}<p className='text-sm text-[#b9b9b9]'>{product.productCategory}</p>
                                                             </label>
                                                         </div>
-                                                        <CiCircleRemove onClick={(e) => setSelectedProducts((prev) => prev.filter((productId) => productId !== product.id))} fontSize="20px" fontWeight="700" className='cursor-pointer' />
+                                                        <CiCircleRemove onClick={(e) => (
+                                                            e.preventDefault(),
+                                                            e.stopPropagation(),
+                                                            console.log(product.id),
+                                                            setSelectedProducts((prev) => prev.filter((productId) => productId !== product.id))
+                                                        )} fontSize="20px" fontWeight="700" className='cursor-pointer' />
                                                     </div>
                                                 ))}
                                             </div>
@@ -316,6 +431,7 @@ export default function index({ sellerData }: { sellerData: any }) {
                                                 <SheetTitle>Select Products</SheetTitle>
                                                 <SheetDescription>
                                                     Select the products you want to add to this collection.
+                                                    <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" name="search" id="search" className="mt-4 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-full h-10 rounded-md mb-3" placeholder='Search' />
                                                 </SheetDescription>
                                             </SheetHeader>
                                             {productApiData?.products?.length > 0 && productApiData?.products?.map((product: any, index: number) => (
@@ -337,7 +453,7 @@ export default function index({ sellerData }: { sellerData: any }) {
                                     </Sheet>
                                 </div>
 
-                                <button type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Save`}</button>
+                                <button type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update" : "Save"}`}</button>
                             </div>
 
                             <div className="sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] p-7 rounded-lg flex-[0.3]">
@@ -392,7 +508,6 @@ export async function getServerSideProps({ req }: any) {
             }
         }
     }
-
 
     return {
         props: { session, sellerData },
