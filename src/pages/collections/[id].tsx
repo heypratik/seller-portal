@@ -107,8 +107,6 @@ export default function index({ sellerData }: { sellerData: any }) {
     const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
     const [isPageUpdate, setIsPageUpdate] = useState(false)
 
-    console.log(selectedProducts)
-
     const [productApiData, setProductApiData] = useState<Data>({
         categories: [], // Initialize with an empty array for categories
         products: [],

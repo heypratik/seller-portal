@@ -11,6 +11,7 @@ import { useRouter } from 'next/router';
 
 interface SellerData {
     data: {
+        Brands: any[]
         id: number;
         name: string;
         email: string;
@@ -43,7 +44,7 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
-export default function ProductListBackup({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
+export default function ProductListBackup({ sellerData }: { sellerData: SellerData }) {
 
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>();
@@ -93,7 +94,7 @@ export default function ProductListBackup({ sellerData, brandData }: { sellerDat
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     sellerId: sellerData?.data?.id,
-                    brandId: brandData?.data?.id ? brandData?.data?.id : 0,
+                    brandId: sellerData?.data?.Brands?.[0].id || 0,
                     productName: values.productName,
                     productCategory: values.productCategory,
                     productColor: values.productColor,
@@ -370,11 +371,7 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
-    // Get the brands associated with the seller using the seller id
-    const brandResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/search/${sellerData?.data?.id}`)
-    const brandData = await brandResponse.json()
-
     return {
-        props: { session, sellerData, brandData },
+        props: { session, sellerData },
     }
 }

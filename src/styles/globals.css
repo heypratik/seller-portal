@@ -106,3 +106,16 @@
     transform: rotate(360deg);
   }
 }
+
+.submenu.fade-in-out {
+  opacity: 0;
+  /* Initially hidden */
+  transition: opacity 0.5s ease-in-out;
+  /* Smooth fade transition */
+}
+
+.submenu.fade-in-out.show {
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+  /* Visible when show class is applied */
+}
