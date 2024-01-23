@@ -3,7 +3,7 @@ import { Dialog, Menu, Transition } from '@headlessui/react'
 import { CgPlayListAdd } from 'react-icons/cg'
 import { MdFormatListBulleted, MdOutlineInventory } from 'react-icons/md'
 import { BsBoxSeam } from 'react-icons/bs'
-import { BiBarChartSquare, BiBell } from 'react-icons/bi'
+import { BiBarChartSquare, BiBell, BiCollection } from 'react-icons/bi'
 import { FaRegUser, FaChevronDown, FaListUl } from 'react-icons/fa'
 import { FiTruck } from 'react-icons/fi'
 import { AiOutlinePlus } from 'react-icons/ai'
@@ -12,6 +12,7 @@ import { LuListChecks, LuLayoutList } from 'react-icons/lu'
 import { GrFormAdd } from 'react-icons/gr'
 import { PiStackSimpleBold } from 'react-icons/pi'
 import { IoPersonOutline } from 'react-icons/io5'
+import { motion, AnimatePresence } from "framer-motion"
 import {
     BellIcon,
     CalendarIcon,
@@ -52,7 +53,16 @@ export default function Layout({ children }: { children: ReactNode }) {
     const navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: RxDashboard, current: isCurrentPage(`/dashboard`) },
         { name: 'Brand', href: '/brand', icon: CgPlayListAdd, current: isCurrentPage(`/brand`) },
-        { name: 'Inventory', href: '/inventory/products', icon: MdOutlineInventory, current: isCurrentPage(`/inventory  /products`), subNav: [{ name: 'Add Products', href: '/inventory/product-list', icon: AiOutlinePlus, current: isCurrentPage(`/inventory/product-list`) }, { name: 'Manage Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) }, { name: 'Brand Listing', href: '/inventory/brand-listing', icon: LuLayoutList, current: isCurrentPage(`/inventory/brand-listing`) }, { name: 'Manage Brands', href: '/inventory/manage-brands', icon: LuListChecks, current: isCurrentPage(`/inventory/manage-brands`) }] },
+        {
+            name: 'Inventory', href: '/inventory/products', icon: MdOutlineInventory, current: isCurrentPage(`/inventory  /products`), subNav:
+                [
+                    { name: 'Add Products', href: '/inventory/new', icon: AiOutlinePlus, current: isCurrentPage(`/inventory/[id]`) },
+                    { name: 'Manage Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) },
+                    { name: 'Collections', href: '/collections', icon: BiCollection, current: isCurrentPage(`/collections`) },
+                    { name: 'Brand Listing', href: '/inventory/brand-listing', icon: LuLayoutList, current: isCurrentPage(`/inventory/brand-listing`) },
+                    { name: 'Manage Brands', href: '/inventory/manage-brands', icon: LuListChecks, current: isCurrentPage(`/inventory/manage-brands`) }
+                ]
+        },
         { name: 'Orders', href: '/orders', icon: BsBoxSeam, current: isCurrentPage(`/orders`) },
         { name: 'Analytics', href: '/dashboard/analytics', icon: BiBarChartSquare, current: isCurrentPage(`/dashboard/analytics`) },
         { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },
@@ -74,6 +84,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (router.pathname.includes("inventory")) {
+            setOpenMenuName("Inventory")
+        }
+
+        if (router.pathname.includes("collections")) {
             setOpenMenuName("Inventory")
         }
 
@@ -208,20 +222,21 @@ export default function Layout({ children }: { children: ReactNode }) {
                                                 item.current ? 'text-white' : 'text-[#979797] group-hover:text-white',
                                                 'h-5 w-5 ml-auto')} aria-hidden="true" />}
                                         </a>
-
-                                        <div className='submenu bg-[#111111] rounded-b-xl px-4'>
-                                            {item?.subNav?.map((subItem) => {
-                                                return <div key={subItem.name}>
-                                                    {openMenuName == item.name && <a href={subItem.href} className={classNames(
-                                                        subItem.current ? 'bg-[#f12d4d] text-white' : 'text-[#979797] hover:bg-[#f12d4d] hover:text-white',
-                                                        'group flex items-center px-2 py-2 text-sm font-medium rounded-md')}>
-
-                                                        <subItem.icon className={classNames(
-                                                            subItem.current ? 'text-white' : 'text-[#979797] group-hover:text-white',
-                                                            'mr-3 flex-shrink-0 h-6 w-6 text-[#979797]')} aria-hidden="true" /> {subItem.name} </a>}
-                                                </div>
-                                            })}
-                                        </div>
+                                        <AnimatePresence>
+                                            {item.subNav && openMenuName === item.name && (
+                                                <motion.div
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    exit={{ opacity: 0 }}
+                                                    className={`submenu bg-[#111111] rounded-b-xl px-2 py-1`} >
+                                                    {item?.subNav?.map((subItem) => (
+                                                        <div key={subItem.name}>
+                                                            {openMenuName === item.name && (
+                                                                <a href={subItem.href} className={classNames(subItem.current ? 'bg-[#f12d4d] text-white' : 'text-[#979797] hover:bg-[#f12d4d] hover:text-white my-1', 'group flex items-center px-2 py-2 text-xs font-medium rounded-md')} >
+                                                                    <subItem.icon className={classNames(subItem.current ? 'text-white' : 'text-[#979797] group-hover:text-white', 'mr-3 flex-shrink-0 h-4 w-4 text-[#979797]')} aria-hidden="true" /> {subItem.name} </a>)} </div>))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
                                 })}

@@ -4,8 +4,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getSession } from 'next-auth/react'
 import { AiOutlinePlus, AiOutlineSearch, AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { FiFilter } from 'react-icons/fi'
-import { useRouter } from "next/router";
 import { CiImageOn } from "react-icons/ci";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import {
@@ -23,32 +23,20 @@ import {
 } from "../../../shadcn/components/ui/popover"
 
 import { BsPencil, BsTrash3Fill } from 'react-icons/bs'
-import { MdOutlineImportExport } from "react-icons/md";
 
 
 interface Data {
-    categories: string[]; // Array of categories
-    products: Product[]; // Array of products
+    // categories: string[]; // Array of categories
+    collections: any[]; // Array of products
     currentPage: number; // Current page number
     totalPages: number; // Total number of pages
-}
-
-interface Product {
-    id: number;
-    productName: string;
-    productQuantity: number;
-    productPrice: number;
-    productCost: number;
-    productCategory: string;
-    productImage: string;
-    productImagesArray: string[];
 }
 
 export default function Products({ session, sellerData }: any) {
     const router = useRouter();
     const [data, setData] = useState<Data>({
-        categories: [], // Initialize with an empty array for categories
-        products: [],
+        // categories: [], // Initialize with an empty array for categories
+        collections: [],
         currentPage: 0,
         totalPages: 0,
     });
@@ -116,38 +104,38 @@ export default function Products({ session, sellerData }: any) {
                 if (search.length == 1) {
                     setActivePageNumber(1)
                 }
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productCategory=${categoryFilter.join(',')}&status=${statusFilter.join(',')}`)
-                const productsData = await productsResponse.json()
-                const products = productsData.data
-                return products
+                const collectionsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/search/${sellerData?.data?.Brands?.[0]?.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}}`)
+                const collectionData = await collectionsResponse.json()
+                const collections = collectionData.data
+                return collections
             } catch (error) {
-                return { currentPage: 1, totalPages: 1, products: [] }
+                return { currentPage: 1, totalPages: 1, collections: [] }
             }
 
         } else {
             try {
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}?page=${activePageNumber}&limit=${resultNumber}&productCategory=${categoryFilter.join(',')}&status=${statusFilter.join(',')}`)
-                const productsData = await productsResponse.json()
-                const products = productsData.data
-                return products
+                const collectionsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/get/forbrand/${sellerData?.data?.Brands?.[0]?.id}?page=${activePageNumber}&limit=${resultNumber}`)
+                const collectionData = await collectionsResponse.json()
+                const collections = collectionData.data
+                return collections
             } catch (error) {
-                return { currentPage: 1, totalPages: 1, products: [] }
+                return { currentPage: 1, totalPages: 1, collections: [] }
             }
         }
     }
 
-    async function handleDelete(productID: number) {
+    async function handleDelete(id: number) {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData.data.id}/${productID}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/delete/${id}`, {
                 method: 'DELETE',
                 headers: { "Content-Type": "application/json", },
             })
             const Deletedata = await response.json()
             if (Deletedata.success) {
-                notification(true, "Product Deleted");
+                notification(true, "Collection Deleted");
                 setData((prevState) => ({
                     ...prevState,
-                    products: (prevState?.products || []).filter((product: Product) => product.id !== productID)
+                    collections: (prevState?.collections || []).filter((collection: any) => collection.id !== id)
                 }));
             } else {
                 console.log("Something went wrong")
@@ -166,74 +154,6 @@ export default function Products({ session, sellerData }: any) {
             toast.error(message || 'An error occurred')
         }
 
-    }
-
-    function checkProductStatus(row: any) {
-
-        if (row.productType === "Single Product") {
-            if (row.productQuantity > 0) {
-                return "Available";
-            } else {
-                return "Out of Stock";
-            }
-        }
-
-        if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
-            for (let variation of row.productVariations) {
-                if (variation.stock > 0) {
-                    return "Available";
-                }
-
-            }
-            return "Out of Stock";
-        }
-    }
-
-    function checkproductDetails(row: any, type: string) {
-        if (type == "quantity") {
-            if (row.productType === "Single Product") {
-                console.log(row.productQuantity)
-                return row.productQuantity;
-            }
-
-            if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
-                let totalQuantity = 0;
-                for (let variation of row.productVariations) {
-                    totalQuantity += Number(variation.stock);
-                }
-
-                if (Number.isNaN(totalQuantity) || totalQuantity == undefined || totalQuantity == null) {
-                    return totalQuantity = 0;
-                }
-
-                return totalQuantity;
-            }
-        }
-
-        if (type == "price") {
-            if (row.productType === "Single Product") {
-
-                if (Number.isNaN(row.productPrice) || row.productPrice == undefined || row.productPrice == null) {
-                    return row.productPrice = 0;
-                }
-                return row.productPrice;
-            }
-
-            if (row.productType === "Variable Product" && row.productVariations && row.productVariations.length > 0) {
-                let price = [];
-                for (let variation of row.productVariations) {
-                    price.push(variation.price);
-                }
-
-                let highestValue = Math.max(...price);
-
-                if (Number.isNaN(highestValue) || highestValue == undefined || highestValue == null) {
-                    return highestValue = 0;
-                }
-
-                return highestValue;
-            }
-        }
     }
 
     function ProductImage({ objKey }: any) {
@@ -286,11 +206,10 @@ export default function Products({ session, sellerData }: any) {
     }
 
     function renderProductImage(row: any) {
-        if (row?.productImagesArray && row?.productImagesArray.length > 0 && !row?.productImagesArray[0]?.includes("http")) {
-            return <ProductImage objKey={row?.productImagesArray[0]} />;
-        } else if (row?.productImagesArray && row?.productImagesArray.length > 0 && row?.productImagesArray[0]?.includes("http")) {
-            return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
-            return <img src={row?.productImagesArray[0]} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
+        if (row?.collectionImageObjectKey && !row?.collectionImageObjectKey.includes("http")) {
+            return <ProductImage objKey={row?.collectionImageObjectKey} />;
+        } else if (row?.collectionImageObjectKey && row?.collectionImageObjectKey.includes("http")) {
+            return <img src={row?.collectionImageObjectKey} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
         } else {
             return <div className=' bg-gray-50 rounded-md h-[50px] w-[50px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' fontSize="20px" /></div>
         }
@@ -310,11 +229,11 @@ export default function Products({ session, sellerData }: any) {
                                         <div>
                                             <div className="flex items-center justify-between py-4">
                                                 <div className="flex flex-1 justify-start items-center">
-                                                    <h1 className=' text-[#F12D4D] text-2xl mr-8 font-semibold'>Inventory</h1>
+                                                    <h1 className=' text-[#F12D4D] text-2xl mr-8 font-semibold'>Collections</h1>
                                                     <div className="flex items-center bg-[#f9f9f9] px-4 py-2 w-[385px] rounded-md">
                                                         <AiOutlineSearch color="#2a2a2a" fontSize="25px" className=" mr-4" />
                                                         <input
-                                                            placeholder="Filter Product..."
+                                                            placeholder="Search Collections..."
                                                             type="text"
                                                             className="w-full bg-[#f9f9f9] border-none outline-none"
                                                             onChange={(e) => { setSearch(e.target.value) }}
@@ -324,11 +243,9 @@ export default function Products({ session, sellerData }: any) {
                                                 </div>
 
                                                 <div className="flex-1 flex items-end justify-end">
-                                                    <Link href={`/inventory/import`}><button className="flex items-center justify-center mr-4 px-5 py-2 bg-white border border-[#F12D4D] rounded-md text-[#F12D4D] font-semibold">
-                                                        <MdOutlineImportExport className="mr-2" /> Import Products</button></Link>
-                                                    <Link href={`/inventory/new`}><button className="flex items-center justify-center mr-4 px-5 py-2 bg-[#F12D4D]  border border-[#F12D4D] rounded-md text-white font-semibold">
-                                                        <AiOutlinePlus className="mr-2" /> Add Product</button></Link>
-                                                    <Popover>
+                                                    <Link href={`/collections/new`}><button className="flex items-center justify-center mr-4 px-5 py-2 bg-white border border-[#F12D4D] rounded-md text-[#F12D4D] font-semibold">
+                                                        <AiOutlinePlus className="mr-2" /> Add Collections</button></Link>
+                                                    {/* <Popover>
                                                         <PopoverTrigger className="flex  border border-[#F12D4D] items-center justify-center mr-4 px-5 py-2 bg-[#F12D4D] rounded-md text-white font-semibold">
                                                             <FiFilter className="mr-2" /> Filters</PopoverTrigger>
                                                         <PopoverContent>
@@ -343,7 +260,7 @@ export default function Products({ session, sellerData }: any) {
                                                                 ))}
                                                             </div>
                                                         </PopoverContent>
-                                                    </Popover>
+                                                    </Popover> */}
 
                                                 </div>
 
@@ -354,34 +271,23 @@ export default function Products({ session, sellerData }: any) {
                                                 <thead>
                                                     <tr>
                                                         <th className="py-2 px-4 bg-gray-100 border-b text-left"><input type="checkbox" checked={parentCheckbox} onChange={(e) => setParentCheckbox(prevState => !prevState)} name="parentCheckbox" id="parentCheckbox" /></th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Status</th>
                                                         <th className="py-2 px-4 bg-gray-100 border-b text-left">Image</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Product ID</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Product Name</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Quantity</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Price</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Fee</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Category</th>
-                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Actions</th>
+                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Collection Name</th>
+                                                        <th className="py-2 px-4 bg-gray-100 border-b text-left">Products</th>
+                                                        <th className="py-2 px-8 bg-gray-100 border-b text-right">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    {data && data?.products?.map((row, index) => {
-                                                        console.log(row.productName, Boolean(row?.productImagesArray))
+                                                    {data && data?.collections?.map((row, index) => {
                                                         return (
                                                             <tr key={index} className={`hover:bg-gray-50 !h-16`}>
                                                                 <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>
-                                                                <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
                                                                 <td className="py-2 px-4 border-b">{renderProductImage(row)}</td>
-                                                                <td className="py-2 px-4 border-b">{row.id}</td>
-                                                                <td className="py-2 px-4 border-b">{row.productName}</td>
-                                                                <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
-                                                                <td className="py-2 px-4 border-b">{checkproductDetails(row, "price")}</td>
-                                                                <td className="py-2 px-4 border-b">{row.productCost}</td>
-                                                                <td className="py-2 px-4 border-b">{row.productCategory}</td>
+                                                                <td className="py-2 px-4 border-b">{row.collectionName}</td>
+                                                                <td className="py-2 px-4 border-b">{row.collectionProductsId.length}</td>
                                                                 <td className="py-2 px-4 border-b">
-                                                                    <div className="flex items-center">
-                                                                        <Link href={`/inventory/${row.id}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" /></Link>
+                                                                    <div className="flex items-center justify-end px-8">
+                                                                        <Link href={`/collections/${row.id}`}><BsPencil fontSize={"16px"} className="mr-3 cursor-pointer" /></Link>
                                                                         <Dialog>
                                                                             <DialogTrigger asChild>
                                                                                 <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" />
@@ -390,7 +296,7 @@ export default function Products({ session, sellerData }: any) {
                                                                                 <DialogHeader>
                                                                                     <div className="flex flex-col items-center justify-center">
                                                                                         <BsTrash3Fill fontSize={"25px"} className="cursor-pointer mb-4" />
-                                                                                        <DialogTitle>Are you sure you want to delete this product?</DialogTitle>
+                                                                                        <DialogTitle>Are you sure you want to delete this collection?</DialogTitle>
                                                                                     </div>
                                                                                 </DialogHeader>
                                                                                 <div className="flex items-center justify-between mt-4 ">
@@ -410,7 +316,7 @@ export default function Products({ session, sellerData }: any) {
                                                     })}
                                                 </tbody>
                                             </table>
-                                            {data?.products && data?.products?.length < 1 && <div className="w-full flex items-center justify-center absolute top-1/4">No Product Data Found</div>}
+                                            {data?.collections && data?.collections?.length < 1 && <div className="w-full flex items-center justify-center absolute top-1/4">No Collections Found</div>}
                                         </div>
                                         <div className="flex items-center justify-between py-4">
                                             <div>

@@ -11,6 +11,7 @@ import Link from "next/link";
 
 interface SellerData {
     data: {
+        Brands: any[];
         id: number;
         name: string;
         email: string;
@@ -48,9 +49,9 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
-export default function Brand({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
+export default function Brand({ sellerData }: { sellerData: SellerData }) {
 
-    const [brand, setBrand] = useState(brandData?.data[0])
+    const [brand, setBrand] = useState(sellerData.data.Brands[0])
 
     const [category, setCategory] = useState(brand?.brandCategory ? brand?.brandCategory : '');
     const [subCategory, setSubCategory] = useState(brand?.brandSubCategory ? brand?.brandSubCategory : '');
@@ -576,15 +577,10 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
-    // Get the brands associated with the seller using the seller id
-    const brandResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/search/${sellerData?.data?.id}`)
-    const brandData = await brandResponse.json()
-
     return {
         props: {
             session,
             sellerData,
-            brandData
         }
     }
 }

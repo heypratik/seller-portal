@@ -12,7 +12,6 @@ import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-i
 import { v4 as uuidv4 } from 'uuid';
 import { MdKeyboardArrowDown } from "react-icons/md";
 
-
 interface VariantOption {
     id: number;
     values: { id: number; value: string }[];
@@ -20,6 +19,7 @@ interface VariantOption {
 
 interface SellerData {
     data: {
+        Brands: any[];
         id: number;
         name: string;
         email: string;
@@ -102,16 +102,18 @@ const CustomImage = ({ objectKey, token, removeImage }: { objectKey: string, tok
     );
 };
 
-export default function ProductList({ sellerData, brandData }: { sellerData: SellerData, brandData: any }) {
+export default function ProductList({ sellerData, productData, collecionData }: { sellerData: SellerData, productData: any, collecionData: any }) {
+    const router = useRouter();
+    const { id } = router.query;
 
     const [loading, setLoading] = useState(false)
-    const [productCategory, setProductCategory] = useState<string>();
+    const [productCategory, setProductCategory] = useState<string>(sellerData.data.Brands[0].brandCategory);
     const [subCategory, setSubCategory] = useState<any>([]);
     const [subCategoryOpen, setSubCategoryOpen] = useState(false);
+    const [collectionOpen, setCollectionOpen] = useState(false);
     const [prodMargin, setProdMargin] = useState<number>(0)
-
+    const [isPageUpdate, setIsPageUpdate] = useState(false)
     // const [productVariations, setProductVariations] = useState<any[]>([])
-
 
     const [variantOptions, setVariantOptions] = useState<any[]>([])
     const [variationValues, setVariationValues] = useState<any[]>([]);
@@ -123,6 +125,18 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     const [objectKeys, setObjectKeys] = useState<any[]>([]);
     const fileInputRef = useRef<any>(null);
+
+
+    const [productCollections, setProductCollections] = useState<any[]>([]); // Collection this product belongs to
+    const [allCollectionData, setAllCollectionData] = useState<any[]>([]); // All collections of a brand fetched from the API
+
+    useEffect(() => {
+
+        if (collecionData !== null && id === "new") {
+            setAllCollectionData(collecionData.data.collections)
+        }
+
+    }, [])
 
 
     function handleVariationChange(e: any, id: number) {
@@ -138,7 +152,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     }
 
-    const router = useRouter();
 
     const formik = useFormik({
         initialValues: {
@@ -156,6 +169,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
             productMargin: "",
             productKeywords: '',
             productType: productType ? productType : '',
+            productCollections: productCollections ? productCollections : []
         },
         onSubmit
     })
@@ -243,44 +257,89 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
         }
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/add/product`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    sellerId: sellerData?.data?.id,
-                    brandId: brandData?.data[0]?.id ? brandData?.data[0]?.id : 0,
-                    productName: values.productName,
-                    productCategory: values.productCategory,
-                    productColor: values.productColor ? values.productColor : 'NULL',
-                    productSize: values.productSize ? values.productSize : 'NULL',
-                    productSizeValue: values.productSizeValue ? values.productSizeValue : 0,
-                    productQuantity: values.productQuantity ? values.productQuantity : 0,
-                    productDescription: values.productDescription ? values.productDescription : 'NULL',
-                    productSku: values.productSku,
-                    productSubCategory: values.productSubCategory,
-                    productPrice: values.productPrice ? values.productPrice : 0,
-                    productCost: values.productCost ? values.productCost : 0,
-                    productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
-                    productKeywordArray: values.productKeywords.split(","),
-                    productImagesArray: objectKeys,
-                    productVariations: variationValues,
-                    variantOptions: variantOptions,
-                    productType: values.productType
+            if (isPageUpdate) {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData?.data?.id}/${id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sellerId: sellerData?.data?.id,
+                        brandId: sellerData?.data?.Brands?.[0]?.id ? sellerData?.data?.Brands?.[0]?.id : 0,
+                        productName: values.productName,
+                        productCategory: values.productCategory,
+                        productColor: values.productColor ? values.productColor : 'NULL',
+                        productSize: values.productSize ? values.productSize : 'NULL',
+                        productSizeValue: values.productSizeValue ? values.productSizeValue : 0,
+                        productQuantity: values.productQuantity ? values.productQuantity : 0,
+                        productDescription: values.productDescription ? values.productDescription : 'NULL',
+                        productSku: values.productSku,
+                        productSubCategory: values.productSubCategory,
+                        productPrice: values.productPrice ? values.productPrice : 0,
+                        productCost: values.productCost ? values.productCost : 0,
+                        productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
+                        productKeywordArray: values.productKeywords.split(","),
+                        productImagesArray: objectKeys,
+                        productVariations: variationValues,
+                        variantOptions: variantOptions,
+                        productType: values.productType,
+                        productCollections: productCollections
+                    })
                 })
-            })
-            const data = await response.json();
+                const data = await response.json();
 
-            if (data.success) {
-                notification(true, "Product Added successfully.");
-                router.push('/inventory/products');
-                setLoading(false);
-            } else {
-                if (data.message) {
-                    notification(false, data.message);
+                if (data.success) {
+                    notification(true, "Product Updated successfully.");
+                    router.push('/inventory/products');
+                    setLoading(false);
                 } else {
-                    notification(false, "Something went wrong");
+                    if (data.message) {
+                        notification(false, data.message);
+                    } else {
+                        notification(false, "Something went wrong");
+                    }
+                    setLoading(false);
                 }
-                setLoading(false);
+
+            } else {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/add/product`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sellerId: sellerData?.data?.id,
+                        brandId: sellerData?.data?.Brands?.[0]?.id ? sellerData?.data?.Brands?.[0]?.id : 0,
+                        productName: values.productName,
+                        productCategory: values.productCategory,
+                        productColor: values.productColor ? values.productColor : 'NULL',
+                        productSize: values.productSize ? values.productSize : 'NULL',
+                        productSizeValue: values.productSizeValue ? values.productSizeValue : 0,
+                        productQuantity: values.productQuantity ? values.productQuantity : 0,
+                        productDescription: values.productDescription ? values.productDescription : 'NULL',
+                        productSku: values.productSku,
+                        productSubCategory: values.productSubCategory,
+                        productPrice: values.productPrice ? values.productPrice : 0,
+                        productCost: values.productCost ? values.productCost : 0,
+                        productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
+                        productKeywordArray: values.productKeywords.split(","),
+                        productImagesArray: objectKeys,
+                        productVariations: variationValues,
+                        variantOptions: variantOptions,
+                        productType: values.productType,
+                        productCollections: productCollections
+                    })
+                })
+                const data = await response.json();
+
+                if (data.success) {
+                    notification(true, "Product Added successfully.");
+                    router.push('/inventory/products');
+                    setLoading(false);
+                } else {
+                    if (data.message) {
+                        notification(false, data.message);
+                    } else {
+                        notification(false, "Something went wrong");
+                    }
+                    setLoading(false);
+                }
             }
 
         } catch (error) {
@@ -426,14 +485,59 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     const labelClass = `mt-6 block text-base font-medium text-[#30323E] mb-2`
 
-    console.log(subCategoryOpen)
+    // Update Page
+    useEffect(() => {
+        if (id !== "new" && id !== undefined && id !== null && id !== "" && typeof (Number(id)) === 'number') {
+            setIsPageUpdate(true)
+            const fetchProduct = async () => {
+                try {
+                    if (productData) {
+                        const product = productData.data;
+                        const productCollectionNumberArray = product.productCollections && product.productCollections.length > 0 ? product.productCollections.map((id: any) => Number(id)) : [];
+                        setFieldValue("productName", product.productName || "");
+                        setFieldValue("productCategory", sellerData.data.Brands[0].brandCategory || "");
+                        setFieldValue("productColor", product.productColor || "");
+                        setFieldValue("productSize", product.productSize || "");
+                        setFieldValue("productSizeValue", product.productSizeValue || "");
+                        setFieldValue("productQuantity", product.productQuantity || 0);
+                        setFieldValue("productDescription", product.productDescription || "");
+                        setFieldValue("productSku", product.productSku || "");
+                        setFieldValue("productSubCategory", product.productSubCategory || "");
+                        setFieldValue("productPrice", product.productPrice || 0);
+                        setFieldValue("productCost", product.productCost || 0);
+                        setFieldValue("productMargin", product.productMargin || "");
+                        setFieldValue("productKeywords", product.productKeywordArray.join(",") || '');
+                        setFieldValue("productType", product.productType);
+                        setFieldValue("productCollections", productCollectionNumberArray);
+                        setVariantOptions(product.variantOptions || []);
+                        setVariationValues(product.productVariations || []);
+                        setObjectKeys(product.productImagesArray || []);
+                        setProductType(product.productType);
+                        setProductCategory(sellerData.data.Brands[0].brandCategory);
+                        setSubCategory(product.productSubCategory);
+                        setAllCollectionData(productData.collections)
+                        setProductCollections(productCollectionNumberArray)
+                    } else {
+                        window.location.href = "/inventory/new";
+                        // router.push('/inventory/new');
+
+                        //FIX This so we check this on server & just pass the data to the page
+                    }
+                } catch (error) {
+
+                    console.error(error);
+                }
+            }
+            fetchProduct();
+        }
+    }, [id])
 
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
             <div className="py-6 h-screen">
                 <div className="mx-auto px-4 sm:px-6 md:px-8 ">
-                    <Breadcrums parent={"Inventory"} childarr={["Add Product"]} />
+                    <Breadcrums parent={"Inventory"} childarr={[`${isPageUpdate ? "Update Product" : "Add Product"}`]} />
                 </div>
                 <div className="mx-auto px-4 sm:px-6 md:px-8 pb-24">
                     {/* Replace with your content */}
@@ -464,82 +568,36 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                         <div onClick={() => fileInputRef.current?.click()} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
                                             <p className='my-2 text-black text-lg'>Jpg, Png</p>
                                             <p className='my-2 text-gray-400 text-base'>File not Exceed 10mb</p>
-                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' /> Upload </button>
+                                            <button type='reset' className='flex items-center bg-red-600 text-white py-2 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="20" className='mr-2' />Upload</button>
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap'>
-                                            {objectKeys.map((key, index) => (
-                                                <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
-                                            ))}
+                                            {objectKeys.map((key, index) => {
+                                                if (key.includes("http")) {
+                                                    return (
+                                                        <div key={index} className="relative group w-[10%] mr-2 mt-4 ">
+                                                            <img
+                                                                key={index}
+                                                                src={key}
+                                                                alt={`custom-${key}`}
+                                                                className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
+                                                            />
+
+                                                            <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                                                                <span onClick={() => removeImage(key)} className="text-white text-3xl font-bold cursor-pointer">×</span>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                } else if (!key.includes("https")) {
+                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                } else {
+                                                    return null
+                                                }
+
+                                            })}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* NEW LINE */}
-
-                                <div className="w-full flex items-center justify-center">
-                                    <div className="flex-1">
-                                        <label htmlFor="productCategory" className={labelClass}>Product Category*</label>
-
-                                        <select {...formik.getFieldProps('productCategory')} id="productCategory" name="productCategory" className={inputClass} value={productCategory} onChange={(e) => {
-                                            setSubCategory([]);
-                                            formik.setFieldValue('productSubCategory', []);
-                                            setProductCategory(e.target.value);
-                                            formik.setFieldValue('productCategory', e.target.value);
-                                        }}>
-                                            <option className="text-base" value="">Select Category</option>
-                                            {Object.keys(categories).map((cat) => (
-                                                <option className="text-base" key={cat} value={cat}>
-                                                    {cat}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    {/* <div className="flex-1">
-                                        <label htmlFor="productSubCategory" className={labelClass}>Product Sub-Category*</label>
-                                        <select {...formik.getFieldProps('productSubCategory')} id="productSubCategory" name="productSubCategory" className={inputClass} value={subCategory} onChange={(e) => { setSubCategory(e.target.value); formik.setFieldValue('productSubCategory', e.target.value); }} disabled={!productCategory}>
-                                            <option className="text-base text-[#30323E] " value="">Select Sub-Category</option>
-                                            {productCategory && categories[productCategory]?.map((subCat) => (
-                                                <option className="text-base text-[#30323E] " key={subCat} value={subCat}>
-                                                    {subCat}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div> */}
-
-                                    <div className="flex-1">
-                                        <label className={labelClass}>Product Sub-Category*</label>
-                                        <div className={`${inputClass} !px-0`} id="productSubCategory" onClick={(e) => setSubCategoryOpen(true)}>
-                                            {productCategory && subCategoryOpen && <div onClick={(e) => { e.stopPropagation(); setSubCategoryOpen(false); }} className='w-full min-h-[150vh] opacity-0 bg-black absolute top-0 right-0'></div>}
-                                            <span className='flex items-center justify-between'><p className=' opacity-50 ml-3'>Select Sub-Category</p>
-                                                <MdKeyboardArrowDown className='mr-2' fontSize="20px" /></span>
-                                            {productCategory && subCategoryOpen && <div className="dropdown z-10 relative mt-2 shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] px-3 py-2 bg-white border border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none w-[22.5rem] rounded-md">
-                                                {productCategory && categories[productCategory]?.map((subCat) => (
-                                                    <div key={subCat} className="checkbox-option flex items-center ">
-                                                        <input
-                                                            type="checkbox"
-                                                            id={subCat}
-                                                            name={subCat}
-                                                            value={subCat}
-                                                            checked={subCategory.includes(subCat)}
-                                                            onChange={(e) => {
-                                                                const isChecked = e.target.checked;
-                                                                const updatedSubCategories = isChecked
-                                                                    ? [...subCategory, subCat]
-                                                                    : subCategory.filter((category: any) => category !== subCat);
-
-                                                                setSubCategory(updatedSubCategories);
-                                                                formik.setFieldValue('productSubCategory', updatedSubCategories);
-                                                            }}
-                                                        />
-                                                        <label htmlFor={subCat} className=" w-full text-base text-[#30323E] ml-2 cursor-pointer">
-                                                            {subCat}
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                            </div>}
-                                        </div>
-                                    </div>
-                                </div>
 
                                 <div className="w-full flex items-center justify-between">
                                     <div className="w-full">
@@ -711,13 +769,76 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
                                 {/* NEW LINE */}
 
                                 <div className="mt-16 flex">
-                                    <button type="submit" className="w-32 h-11 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Add Product`}</button>
+                                    <button type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
                             </div>
                             <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.3]'>
-                                <p>Collections</p>
+                                <div className="flex-1">
+                                    <label htmlFor="productCategory" className={labelClass}>Product Category*</label>
+
+                                    <select {...formik.getFieldProps('productCategory')} id="productCategory" name="productCategory" className={inputClass} value={productCategory} onChange={(e) => {
+                                        setSubCategory([]);
+                                        formik.setFieldValue('productSubCategory', []);
+                                        setProductCategory(e.target.value);
+                                        formik.setFieldValue('productCategory', e.target.value);
+                                    }}>
+                                        <option className="text-base" value="">Select Category</option>
+                                        {Object.keys(categories).map((cat) => (
+                                            <option className="text-base" key={cat} value={cat}>
+                                                {cat}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="flex-1">
+                                    <label className={labelClass}>Product Sub-Category*</label>
+                                    <div className={`mt-1 px-0 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3`} id="productSubCategory" onClick={(e) => setSubCategoryOpen(true)}>
+                                        {productCategory && subCategoryOpen && <div onClick={(e) => { e.stopPropagation(); setSubCategoryOpen(false); }} className='w-full min-h-[150vh] opacity-0 bg-black absolute top-0 right-0'></div>}
+                                        <span className='flex items-center justify-between'><p className='flex items-center opacity-50 ml-3'>{subCategory.length === 0 && "Select Sub-Category"}
+                                            {subCategory && subCategory.length > 0 && subCategory.map((subCat: any, index: number) => (
+                                                <span key={index} className='inline-block mx-1 bg-[#F12D4D] text-white text-xs px-2 py-1 rounded-md'>{subCat}</span>
+                                            ))}
+                                        </p>
+                                            <MdKeyboardArrowDown className='mr-2' fontSize="20px" /></span>
+                                        {productCategory && subCategoryOpen && <div className="dropdown z-10 relative mt-2 shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] px-3 py-2 bg-white border border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none w-[22.5rem] rounded-md">
+                                            {productCategory && categories[productCategory]?.map((subCat) => (
+                                                <div key={subCat} className="checkbox-option flex items-center ">
+                                                    <input type="checkbox" id={subCat} name={subCat} value={subCat} checked={subCategory.includes(subCat)} onChange={(e) => {
+                                                        const isChecked = e.target.checked; const updatedSubCategories = isChecked ? [...subCategory, subCat] : subCategory.filter((category: any) => category !== subCat); setSubCategory(updatedSubCategories); formik.setFieldValue('productSubCategory', updatedSubCategories);
+                                                    }} />
+                                                    <label htmlFor={subCat} className=" w-full text-base text-[#30323E] ml-2 cursor-pointer"> {subCat} </label>
+                                                </div>
+                                            ))}
+                                        </div>}
+                                    </div>
+                                </div>
+
+                                <div className="flex-1">
+                                    <label className={labelClass}>Product Collection</label>
+                                    <div className={`mt-1 px-0 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3`} id="productSubCategory" onClick={(e) => setCollectionOpen(true)}>
+                                        {collectionOpen && <div onClick={(e) => { e.stopPropagation(); setCollectionOpen(false); }} className='w-full min-h-[150vh] opacity-0 bg-black absolute top-0 right-0'></div>}
+                                        <span className='flex items-center justify-between'><p className='flex items-center opacity-50 ml-3'>{subCategory.length === 0 && "Select Collections"}
+                                            {/* {allCollectionData && allCollectionData.length > 0 && allCollectionData.map((collection: any, index: number) => (
+                                                <span key={index} className='inline-block mx-1 bg-[#F12D4D] text-white text-xs px-2 py-1 rounded-md'>{collection}</span>
+                                            ))} */}
+                                        </p>
+                                            <MdKeyboardArrowDown className='mr-2' fontSize="20px" /></span>
+                                        {collectionOpen && <div className="dropdown z-10 relative mt-2 shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] px-3 py-2 bg-white border border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none w-[22.5rem] rounded-md">
+                                            {allCollectionData && allCollectionData?.map((collection) => (
+                                                <div key={collection.id} className="checkbox-option flex items-center ">
+                                                    <input type="checkbox" id={collection.id} name={collection.collectionName} value={collection.collectionName} checked={productCollections.includes(collection.id)} onChange={(e) => {
+                                                        const isChecked = e.target.checked; const updatedCollectionIds = isChecked ? [...productCollections, collection.id] : productCollections.filter((id: any) => id !== collection.id); setProductCollections(updatedCollectionIds); formik.setFieldValue('productCollections', updatedCollectionIds);
+                                                    }} />
+                                                    <label htmlFor={collection.id} className=" w-full text-base text-[#30323E] ml-2 cursor-pointer"> {collection.collectionName} </label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -729,7 +850,7 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 }
 
 
-export async function getServerSideProps({ req }: any) {
+export async function getServerSideProps({ req, params }: any) {
     const session = await getSession({ req })
 
     if (!session) {
@@ -753,11 +874,45 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
-    // Get the brands associated with the seller using the seller id
-    const brandResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/search/${sellerData?.data?.id}`)
-    const brandData = await brandResponse.json()
+    // Get Product if its a update page
+    const { id } = params;
+    let productData = null;
+    if (id !== "new" && id !== undefined && id !== null && id !== "" && typeof (Number(id)) === 'number') {
+        const productResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData?.data?.Brands?.[0]?.id}/${sellerData.data.id}/${id}`)
+        const data = await productResponse.json();
+        if (!data.success) {
+            return {
+                redirect: {
+                    destination: '/inventory/new',
+                    permanent: false
+                }
+            }
+        }
+
+        if (data.success) {
+            productData = data;
+        }
+    }
+
+    let collecionData = null;
+    if (id === "new") {
+        const collectionResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/get/forbrand/${sellerData?.data?.Brands?.[0]?.id}?page=1&limit=10000`)
+        const collectionData = await collectionResponse.json();
+        if (!collectionData.success) {
+            return {
+                redirect: {
+                    destination: '/inventory/new',
+                    permanent: false
+                }
+            }
+        }
+
+        if (collectionData.success) {
+            collecionData = collectionData;
+        }
+    }
 
     return {
-        props: { session, sellerData, brandData },
+        props: { session, sellerData, productData, collecionData },
     }
 }
