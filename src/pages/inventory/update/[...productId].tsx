@@ -111,10 +111,6 @@ export default function ProductList({ sellerData, brandData }: { sellerData: Sel
 
     const [productData, setProductData] = useState<any>({})
 
-    ////rmchk later
-    const createdDate = productData?.data?.createdAt
-    const targetDate = new Date('2023-01-12T00:00:00.000Z');
-
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>();
     const [subCategory, setSubCategory] = useState<any>([]);
