@@ -92,7 +92,7 @@ const CustomImage = ({ objectKey, token, removeImage, size }: { objectKey: strin
     );
 };
 
-export default function index({ sellerData }: { sellerData: any }) {
+export default function Index({ sellerData }: { sellerData: any }) {
 
     const router = useRouter()
 
