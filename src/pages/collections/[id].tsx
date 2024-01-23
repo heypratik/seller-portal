@@ -46,32 +46,27 @@ const mediaEndpoint = "media/%s";
 const token = "fb507a0b75e0f62f65b798424555733f";
 
 const CustomImage = ({ objectKey, token, removeImage, size }: { objectKey: string, token: string, removeImage: any, size: string }) => {
-
-    if (objectKey?.includes('http')) {
-        return (
-            <img
-                src={objectKey}
-                alt={`custom-${objectKey}`}
-                className="w-[35px] h-[35px] rounded-md border shadow-sm border-[#DDDDDD] object-cover"
-            />
-        )
-    }
     const [imageData, setImageData] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchImage = async () => {
             try {
-                const response = await fetch(
-                    `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
+                if (objectKey?.includes('http')) {
+                    // If objectKey is a URL, directly use it as the image source
+                    setImageData(objectKey);
+                } else {
+                    const response = await fetch(
+                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        setImageData(URL.createObjectURL(blob));
                     }
-                );
-                if (response.ok) {
-                    const blob = await response.blob();
-                    setImageData(URL.createObjectURL(blob));
                 }
             } catch (error) {
                 console.log("Error fetching image:", error);
@@ -84,7 +79,7 @@ const CustomImage = ({ objectKey, token, removeImage, size }: { objectKey: strin
     return imageData ? (
         <img
             src={imageData}
-            alt={`custom-${imageData}`}
+            alt={`custom-${objectKey}`}
             className={`${size} rounded-md border shadow-sm border-[#DDDDDD] object-cover`}
         />
     ) : (
