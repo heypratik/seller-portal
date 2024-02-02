@@ -262,8 +262,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
         if (activePageNumber !== 0) {
             async function fetchData() {
                 const result = await getData()
-                if (search === '' && activePageNumber > 1) {
-                    console.log('here', activePageNumber)
+                if (activePageNumber > 1) {
                     setProductApiData((prev) => ({
                         ...prev,
                         products: [...prev.products, ...result.products],
@@ -285,7 +284,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
                 if (search.length == 1) {
                     setActivePageNumber(1)
                 }
-                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${1}&limit=${10000}`)
+                const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/search/${sellerData.data.id}?searchTerm=${search}&page=${activePageNumber}&limit=${resultNumber}`)
                 const productsData = await productsResponse.json()
                 const products = productsData.data
                 return products
