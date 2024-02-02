@@ -206,25 +206,27 @@ export default function Index({ sellerData }: { sellerData: any }) {
 
     const handleImageChange = useCallback(
         async (e: any) => {
-            const files: File[] = Array.from(e.target.files);  // Convert FileList to array
+            setLoading(true)
+            const files: File[] = Array.from(e.target.files);
+
             if (files.length > 0) {
-                const uploadedKeys: string[] = [];
-                for (const file of files) {
-                    try {
-                        const response = await uploadFile(file, token);
-                        if (response.status === 'success' && response.data.objectKey) {
-                            uploadedKeys.push(response.data.objectKey);
-                        } else {
-                            console.error("Failed to upload image:", file.name);
-                            notification(false, `Upload Failed: ${file?.name}`);
-                        }
-                    } catch (error) {
-                        console.error("Error uploading the image:", file.name, error);
+                const file = files[0]; // Take only the first file
+
+                try {
+                    const response = await uploadFile(file, token);
+                    if (response.status === 'success' && response.data.objectKey) {
+                        setObjectKeys((prevKeys) => [response.data.objectKey]); // Replace old keys with new one
+                    } else {
+                        console.error("Failed to upload image:", file.name);
                         notification(false, `Upload Failed: ${file?.name}`);
                     }
+                } catch (error) {
+                    console.error("Error uploading the image:", file.name, error);
+                    notification(false, `Upload Failed: ${file?.name}`);
                 }
-                setObjectKeys(prevKeys => [...prevKeys, ...uploadedKeys]);  // Merge old and new objectKeys
             }
+
+            setLoading(false)
         },
         [token]
     );
@@ -456,7 +458,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                         <div onClick={() => fileInputRef.current?.click()} className=' cursor-pointer border-dashed border-2 border-red-600 rounded-lg flex flex-col items-center justify-center py-4'>
                                             <p className='my-1 text-black text-sm'>Jpg, Png</p>
                                             <p className='my-2 text-gray-400 text-sm'>File not Exceed 10mb</p>
-                                            <button type='reset' className='flex text-base items-center bg-red-600 text-white py-1 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="18" className='mr-2' /> Upload </button>
+                                            <button type='reset' className='flex text-base items-center bg-red-600 text-white py-1 px-3 rounded-md my-2'> <AiOutlineCloudUpload fontSize="18" className='mr-2' />{loading ? <AiOutlineLoading3Quarters className='spinner' /> : 'Upload'}</button>
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap mt-4'>
                                             {objectKeys.map((key, index) => (
