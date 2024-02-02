@@ -367,7 +367,6 @@ export default function Products({ session, sellerData }: any) {
                                                 </thead>
                                                 <tbody>
                                                     {data && data?.products?.map((row, index) => {
-                                                        console.log(row.productName, Boolean(row?.productImagesArray))
                                                         return (
                                                             <tr key={index} className={`hover:bg-gray-50 !h-16`}>
                                                                 <td className="py-2 px-4 border-b"><input type="checkbox" value={row.id} name="childCheckbox" id="childCheckbox" /></td>

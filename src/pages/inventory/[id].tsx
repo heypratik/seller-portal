@@ -11,6 +11,7 @@ import { useRouter } from 'next/router';
 import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-icons/ai'
 import { v4 as uuidv4 } from 'uuid';
 import { MdKeyboardArrowDown } from "react-icons/md";
+import { set } from 'date-fns';
 
 interface VariantOption {
     id: number;
@@ -129,6 +130,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
     const [productCollections, setProductCollections] = useState<any[]>([]); // Collection this product belongs to
     const [allCollectionData, setAllCollectionData] = useState<any[]>([]); // All collections of a brand fetched from the API
+
+    const [tempArrForVariationOptions, setTempArrForVariationOptions] = useState<any[]>([]) // Temporary array to store the variation options id to see if we need to automatically add a new variation option input field
 
     useEffect(() => {
 
@@ -256,6 +259,22 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             return;
         }
 
+        // Remove productVariations with empty options
+        const filteredVariationValues = variationValues.filter(
+            (variation) => variation.options.length > 0
+        );
+
+        setVariationValues(filteredVariationValues);
+
+        const filteredVariantOptions = variantOptions.map((variation) => {
+            return {
+                ...variation,
+                values: variation.values.filter((value: any) => value.value !== "")
+            };
+        });
+
+        setVariantOptions(filteredVariantOptions);
+
         try {
             if (isPageUpdate) {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData?.data?.id}/${id}`, {
@@ -278,8 +297,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                         productKeywordArray: values.productKeywords.split(","),
                         productImagesArray: objectKeys,
-                        productVariations: variationValues,
-                        variantOptions: variantOptions,
+                        productVariations: filteredVariationValues,
+                        variantOptions: filteredVariantOptions,
                         productType: values.productType,
                         productCollections: productCollections
                     })
@@ -320,8 +339,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                         productKeywordArray: values.productKeywords.split(","),
                         productImagesArray: objectKeys,
-                        productVariations: variationValues,
-                        variantOptions: variantOptions,
+                        productVariations: filteredVariationValues,
+                        variantOptions: filteredVariantOptions,
                         productType: values.productType,
                         productCollections: productCollections
                     })
@@ -416,21 +435,22 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         });
     }, [variationKeys]);
 
-    function addOptions(e: any) {
-        e.preventDefault();
-        e.stopPropagation();
-        setVariantOptions([...variantOptions, { id: uuidv4(), name: "", values: [] }])
-    }
-
-    function addOptionsAttributes(id: number) {
+    function addOptionsAttributes(id: any) {
         const newVariations = variantOptions.map((variation, index) => {
             if (variation.id === id) {
-                return { ...variation, values: [...variation.values, { id: uuidv4(), value: "" }] }
+                return { ...variation, values: [...variation.values, { id: uuidv4(), value: "", hex: "" }] }
             }
             return variation;
         })
         setVariantOptions(newVariations);
     }
+
+    async function addOptions(e: any) {
+        e.preventDefault();
+        e.stopPropagation();
+        setVariantOptions([{ id: uuidv4(), name: "", values: [{ id: uuidv4(), value: "", hex: "" }] }, ...variantOptions])
+    }
+
 
 
     function deleteVariation(id: number) {
@@ -455,6 +475,12 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
     function handleInputChange(e: any, variationId: number, valueType: any, valueId: any) {
 
+        if (valueType === "value") {
+            if (!tempArrForVariationOptions.includes(valueId)) addOptionsAttributes(variationId)
+
+            if (!tempArrForVariationOptions.includes(valueId)) setTempArrForVariationOptions([...tempArrForVariationOptions, valueId])
+        }
+
         const { value } = e.target;
 
         setVariantOptions(prevVariations =>
@@ -474,7 +500,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         if (val.id !== valueId) {
                             return val;
                         }
-                        return { ...val, [valueType]: valueType === "value" ? value : parseFloat(value) };
+                        return { ...val, [valueType]: value };
                     })
                 };
             })
@@ -602,11 +628,11 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                 <div className="w-full flex items-center justify-between">
                                     <div className="w-full">
                                         <label htmlFor="variations" className={labelClass}>Product Data</label>
-                                        <div className='w-full bg-[#f7f9fa] flex border'>
-                                            <div className='flex-[0.3] flex-col border-r'>
-                                                <div onClick={() => setProductTypeTableOpen("type")} className={`w-full py-3 hover:bg-white cursor-pointer px-4 ${productTypeTableOpen == "type" && "bg-white border-gray-200 border"}`}>Product Type</div>
-                                                <div onClick={() => setProductTypeTableOpen("inventory")} className={`${productType == "Variable Product" && " pointer-events-none cursor-not-allowed"} w-full py-3 hover:bg-white cursor-pointer px-4 ${productTypeTableOpen == "inventory" && "bg-white border-gray-200 border"}`}>Inventory <span className='text-xs italic'>{productType == "Variable Product" && "(Disabled)"}</span></div>
-                                                <div onClick={() => setProductTypeTableOpen("variations")} className={`${productType == "Single Product" && " pointer-events-none cursor-not-allowed"} w-full py-3 hover:bg-white cursor-pointer px-4 ${productTypeTableOpen == "variations" && "bg-white border-gray-200 border"}`}>Variations <span className='text-xs italic'>{productType == "Single Product" && "(Disabled)"}</span></div>
+                                        <div className='w-full bg-[#f7f9fa] flex flex-col border'>
+                                            <div className='flex-[0.3] flex border-r'>
+                                                <div onClick={() => setProductTypeTableOpen("type")} className={`font-semibold border-gray-200 border w-full py-3 hover:bg-[#f23250] hover:text-white hover:font-semibold cursor-pointer px-4 ${productTypeTableOpen == "type" && "bg-[#f23250] text-white font-semibold"}`}>Product Type</div>
+                                                {productType !== "Variable Product" && <div onClick={() => setProductTypeTableOpen("inventory")} className={`font-semibold border-gray-200 border w-full py-3 hover:bg-[#f23250] hover:text-white hover:font-semibold cursor-pointer px-4 ${productTypeTableOpen == "inventory" && "bg-[#f23250] text-white font-semibold"}`}>Inventory</div>}
+                                                {productType !== "Single Product" && <div onClick={() => setProductTypeTableOpen("variations")} className={`font-semibold border-gray-200 border w-full py-3 hover:bg-[#f23250] hover:text-white hover:font-semibold cursor-pointer px-4 ${productTypeTableOpen == "variations" && "bg-[#f23250] text-white font-semibold border-gray-200 border"}`}>Variations</div>}
                                             </div>
 
 
@@ -693,64 +719,81 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
                                                 {productTypeTableOpen === "variations" && (
                                                     <div className='variations'>
-                                                        {variantOptions.length < 3 && <button onClick={(e) => addOptions(e)} className='bg-white p-4'>+ Add Variations Options</button>}
+                                                        {variantOptions.length < 3 && <button onClick={(e) => addOptions(e)} className=' px-3 py-2 bg-[#f12d4d] text-white font-semibold rounded-md text-sm'>+ Add Variations</button>}
                                                         {variantOptions.map((variation, index) => (
-                                                            <div className='variationChild' key={variation.id}>
-                                                                <div className='bg-gray-300 mt-4 p-4 flex justify-between'>
-                                                                    <span className='w-full'>
-                                                                        <p className='text-sm mb-2'>Option Name</p>
-                                                                        <input
-                                                                            type='text'
-                                                                            className=' border px-2 py-2 bg-transparent w-full'
-                                                                            value={variation.name}
-                                                                            placeholder='Color / Size / Material'
-                                                                            onChange={(e) => handleInputChange(e, variation.id, null, null)}
+                                                            <div className='variationChild bg-white mt-4 border border-gray-200 rounded-md' key={variation.id}>
+                                                                <div className=' mt-4 p-4 flex flex-col justify-between items-start border-b-2'>
+                                                                    <p className='text-sm mb-2'>Variation Name</p>
+                                                                    <div className='flex justify-between w-full'>
+                                                                        <span className='w-full'>
+                                                                            <input
+                                                                                type='text'
+                                                                                className=' border px-2 py-2 bg-transparent w-full rounded-md'
+                                                                                value={variation.name}
+                                                                                placeholder='Color / Size / Material'
+                                                                                onChange={(e) => handleInputChange(e, variation.id, null, null)}
 
-                                                                        />
-                                                                    </span>
-                                                                    <div className='p-2 flex'>
-                                                                        <AiOutlinePlusSquare onClick={(e) => addOptionsAttributes(variation.id)} className='cursor-pointer' />
-                                                                        <AiFillDelete onClick={(e) => deleteVariation(variation.id)} className='cursor-pointer ml-4' />
+                                                                            />
+                                                                        </span>
+                                                                        <div className='p-2 flex items-center justify-center'>
+                                                                            {/* <AiOutlinePlusSquare onClick={(e) => addOptionsAttributes(variation.id)} className='cursor-pointer text-base ' /> */}
+                                                                            <AiFillDelete onClick={(e) => deleteVariation(variation.id)} className='cursor-pointer ml-4 text-base' />
+                                                                        </div>
                                                                     </div>
                                                                 </div>
+                                                                <p className='text-sm mb-2 px-4 pt-4'>Variation Values</p>
                                                                 {variation.values.map((value: any) => (
-                                                                    <div className='flex bg-white p-4 justify-between' id={value.id} key={value.id}>
+                                                                    <div className='flex bg-white py-2 px-4 justify-between w-full' id={value.id} key={value.id}>
                                                                         <input
+                                                                            name='value'
                                                                             type='text'
-                                                                            className='flex-1 border p-2'
+                                                                            className='flex-1 border p-2 rounded-md h-10'
                                                                             value={value.value}
-                                                                            placeholder='Option Value'
-                                                                            onChange={(e) => handleInputChange(e, variation.id, "value", value.id)}
+                                                                            placeholder='Add Variation Value'
+                                                                            onChange={(e) => {
+                                                                                handleInputChange(e, variation.id, "value", value.id)
+                                                                            }}
                                                                         />
-                                                                        <p className='flex-1 text-sm er'><AiFillDelete onClick={(e) => deleteVariationAttribute(variation.id, value.id)} /></p>
+                                                                        {(variation.name.toLowerCase().includes('color') || variation.name.toLowerCase().includes('colour')) && <input
+                                                                            name='hex'
+                                                                            type='color'
+                                                                            className='flex-[0.1] ml-2 h-10 bg-white rounded-md'
+                                                                            value={value?.hex ? value?.hex : "#000000"}
+                                                                            placeholder='HEX Code (ex: #000000)'
+                                                                            onChange={(e) => {
+                                                                                handleInputChange(e, variation.id, "hex", value.id)
+                                                                            }}
+                                                                        />}
+                                                                        <p className='flex-[0.1] text-base flex items-center justify-end'>
+                                                                            {variation.values.length > 1 && value.value && <AiFillDelete className='cursor-pointer' onClick={(e) => deleteVariationAttribute(variation.id, value.id)} />}
+                                                                        </p>
                                                                     </div>
                                                                 ))}
                                                             </div>
                                                         ))}
                                                     </div>
                                                 )}
-                                                {variationValues.length > 0 && variationValues[0].options.length > 0 && <div className='bg-white p-2 mt-4'>
-                                                    {variationValues.length > 0 && variationValues.map((variation, index) => {
-                                                        if (variation.options && variation.options.length > 0) {
-                                                            return (
-                                                                <div key={index} className='variationKeys flex items-center justify-between p-2'>
-                                                                    <p className='flex-[0.25] text-sm'>{variation?.options?.toString().split(",").join(" / ")}</p>
-                                                                    <input className='border border-gray-300 rounded-md flex-[0.25] mx-1 px-1 py-1' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
-                                                                    <input className='border border-gray-300 rounded-md flex-[0.25] mx-1 px-1 py-1' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
-                                                                    <input className='border border-gray-300 rounded-md flex-[0.25] mx-1 px-1 py-1' type='text' placeholder='Stock' name="stock" value={variation.stock} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
-                                                                </div>
-                                                            );
-                                                        } else {
-                                                            // Render nothing if variation.options is empty
-                                                            return null;
-                                                        }
-                                                    })}
-                                                </div>}
-
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                {productType == "Variable Product" && variationValues.length > 0 && variationValues[0].options.length > 0 && <div className='bg-white p-2 mt-4 overflow-x-scroll border border-gray-200 rounded-md w-full'>
+                                    {variationValues.length > 0 && variationValues.map((variation, index) => {
+                                        if (variation.options && variation.options.length > 0) {
+                                            return (
+                                                <div key={index} className='variationKeys flex items-center justify-between p-2 w-full max-2xl'>
+                                                    <p className=' break-words text-sm mx-1 px-1 flex-1 flex-shrink-1 w-0'>{variation?.options?.toString().split(",").join(" / ")}</p>
+                                                    <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                    <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                    <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Stock' name="stock" value={variation.stock} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} /></div>
+                                            );
+                                        } else {
+                                            // Render nothing if variation.options is empty
+                                            return null;
+                                        }
+                                    })}
+                                </div>}
 
                                 {/* NEW LINE */}
 
