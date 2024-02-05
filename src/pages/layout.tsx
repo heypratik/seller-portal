@@ -59,8 +59,6 @@ export default function Layout({ children }: { children: ReactNode }) {
                     { name: 'Add Products', href: '/inventory/new', icon: AiOutlinePlus, current: isCurrentPage(`/inventory/[id]`) },
                     { name: 'Manage Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) },
                     { name: 'Collections', href: '/collections', icon: BiCollection, current: isCurrentPage(`/collections`) },
-                    { name: 'Brand Listing', href: '/inventory/brand-listing', icon: LuLayoutList, current: isCurrentPage(`/inventory/brand-listing`) },
-                    { name: 'Manage Brands', href: '/inventory/manage-brands', icon: LuListChecks, current: isCurrentPage(`/inventory/manage-brands`) }
                 ]
         },
         { name: 'Orders', href: '/orders', icon: BsBoxSeam, current: isCurrentPage(`/orders`) },

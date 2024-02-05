@@ -1,12 +1,16 @@
-import React, { useState, useCallback, useRef, useEffect } from "react"
+import React, { useState, useCallback, useRef, useEffect, memo, useMemo } from "react"
 import Layout from "./layout"
 import Breadcrums from "../../components/Breadcrums"
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
+import { CiSquarePlus } from "react-icons/ci";
 import { CountryDropdown } from 'react-country-region-selector';
 import Link from "next/link";
+import { RiDeleteBack2Fill } from "react-icons/ri";
+import { set } from "date-fns";
+
 
 
 interface SellerData {
@@ -49,12 +53,48 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
+const CustomImage = memo(function CustomImage({ objectKey, token }: { objectKey: string, token: string }) {
+    const [imageData, setImageData] = useState<string | null>(null);
+
+    useEffect(() => {
+        async function fetchImage() {
+            try {
+                const response = await fetch(`${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    setImageData(URL.createObjectURL(blob));
+                }
+            } catch (error) {
+                console.log("Error fetching image:", error);
+            }
+        }
+
+        fetchImage();
+    }, []);
+
+    return imageData ? (
+        <img
+            src={imageData}
+            alt={`custom-${imageData}`}
+            className="w-[100px] h-[100px] border-2 rounded-md border-gray-200 prod-images cursor-pointer object-cover"
+        />
+    ) : (
+        <div>
+            <AiOutlineLoading3Quarters className="spinner" />
+        </div>
+    );
+})
+
 export default function Brand({ sellerData }: { sellerData: SellerData }) {
 
     const [brand, setBrand] = useState(sellerData.data.Brands[0])
 
     const [category, setCategory] = useState(brand?.brandCategory ? brand?.brandCategory : '');
-    const [subCategory, setSubCategory] = useState(brand?.brandSubCategory ? brand?.brandSubCategory : '');
+    const [subCategory, setSubCategory] = useState(brand?.brandSubCategory ? brand?.brandSubCategory : []);
 
     const [logoObjectKey, setLogoObjectKey] = useState<any>(null);
     const [displayPictureObjectKey, setDisplayPictureObjectKey] = useState<any>(null);
@@ -66,6 +106,28 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
 
     const [shippingTimesOne, setShippingTimesOne] = useState(brand?.brandShippingTimes ? brand?.brandShippingTimes.split(' ')[0] : 1);
     const [shippingTimesTwo, setShippingTimesTwo] = useState(brand?.brandShippingTimes ? brand?.brandShippingTimes.split(' ')[2] : 3);
+
+    //Combobox v
+
+    const [inputValue, setInputValue] = useState("");
+    const [filteredOptions, setFilteredOptions] = useState<any>([]);
+    const [selectedOption, setSelectedOption] = useState<any>([]);
+    const [allOptions, setAllOptions] = useState(['']);
+    const [showCombobox, setShowCombobox] = useState(false);
+
+    useEffect(() => {
+        // Filter options based on the input value
+        const filtered = allOptions.filter((option) =>
+            option.toLowerCase().includes(inputValue.toLowerCase())
+        );
+        setFilteredOptions(filtered);
+    }, [inputValue, allOptions]);
+
+    useEffect(() => {
+        setAllOptions(categories[category] || []);
+    }, [category]);
+
+    //Combobox ^
 
     useEffect(() => {
         formik.setFieldValue('brandShippingTimes', `${shippingTimesOne} to ${shippingTimesTwo} Days`)
@@ -125,46 +187,6 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
         [token]
     );
 
-    const CustomImage = ({ objectKey, token, onClick }: { objectKey: string, token: string, onClick: any }) => {
-        const [imageData, setImageData] = useState<string | null>(null);
-
-        useEffect(() => {
-            const fetchImage = async () => {
-                try {
-                    const response = await fetch(
-                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        setImageData(URL.createObjectURL(blob));
-                    }
-                } catch (error) {
-                    console.log("Error fetching image:", error);
-                }
-            };
-
-            fetchImage();
-        }, [objectKey, token]);
-
-        return imageData ? (
-            <img
-                src={imageData}
-                alt={`custom-${imageData}`}
-                onClick={() => fileInputRef.current?.click()}
-                className="w-[100px] h-[100px] border-2 border-gray-200 prod-images cursor-pointer object-cover"
-            />
-
-        ) : (
-            <div><AiOutlineLoading3Quarters className='spinner' /></div>
-        );
-    };
-
-
     // {
     //     "id": 2,
     //     "sellerId": 2,
@@ -199,12 +221,18 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
         onSubmit
     })
 
-    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: string, brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string, brandShippingTimes: string }) {
+    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: [], brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string, brandShippingTimes: string }) {
 
         setLoading(true)
         // Check if all fields have a value
         if (!Object.values(values).every(v => v)) {
             notification(false, "Please fill out all the fields.");
+            setLoading(false)
+            return;
+        }
+
+        if (subCategory.length < 1) {
+            notification(false, "Please select at least one sub-category.");
             setLoading(false)
             return;
         }
@@ -312,10 +340,45 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
         }
     }
 
+    const handleOptionClick = (option: any) => {
+        if (!subCategory.includes(option)) {
+            const newOptions = [...subCategory, option];
+            setSubCategory(newOptions);
+            formik.setFieldValue('brandSubCategory', newOptions);
+        }
+        setAllOptions(allOptions.filter((item: any) => item !== option));
+        setInputValue('');
+        setShowCombobox(false);
+    };
+
+    const handleRemoveOption = (option: any) => {
+        setAllOptions([...allOptions, option]);
+        const newOptions = subCategory.filter((item: any) => item !== option);
+        setSubCategory(newOptions);
+        formik.setFieldValue('brandSubCategory', newOptions);
+    }
+
+
+    const renderOptions = () => (
+        <ul className="w-full border bg-white border-gray-200 rounded-b-md shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] absolute top-11 right-0 max-h-32 overflow-y-scroll">
+            {inputValue && !filteredOptions.includes(inputValue) && (
+                <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer flex items-center"
+                    onClick={() => handleOptionClick(inputValue)}>
+                    <CiSquarePlus className="mr-1" fontSize='20px' /> {inputValue}
+                </li>)
+            }
+            {filteredOptions.map((option: any, index: any) => (
+                <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer" key={index} onClick={() => handleOptionClick(option)}>
+                    {option}
+                </li>
+            ))}
+        </ul >
+    )
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
-            <div className="py-6 h-screen">
+            <div className="py-6 h-full">
                 <div className="mx-auto px-4 sm:px-6 md:px-8">
                     <Breadcrums parent={"Brands"} childarr={["Product"]} />
                 </div>
@@ -323,7 +386,6 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                     <div className="py-4">
                         <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7">
                             <h3 className="text-[#F12D4D] font-semibold text-2xl mb-3">Brand Information</h3>
-
                             <form onSubmit={formik.handleSubmit} >
                                 <div className="w-full flex items-center justify-between">
                                     <div className="flex-1">
@@ -374,7 +436,7 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                                                 onChange={(e) => handleImageChange(e, setLogoObjectKey)}
                                                 className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 mb-6 file:cursor-pointer file:border-0 file:border-gray-300  "
                                             />
-                                            {logoObjectKey && <CustomImage objectKey={logoObjectKey} token={token} onClick={sellerData} />}
+                                            {logoObjectKey && <CustomImage objectKey={logoObjectKey} token={token} />}
                                         </span>
                                     </div >
                                     <div className="flex-1">
@@ -391,18 +453,18 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                                             }}
                                             className=" w-[22.5rem] mb-6 h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4 file:py-2 file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
                                         />
-                                        {displayPictureObjectKey && <CustomImage objectKey={displayPictureObjectKey} token={token} onClick={sellerData} />}
+                                        {displayPictureObjectKey && <CustomImage objectKey={displayPictureObjectKey} token={token} />}
 
                                     </div>
                                 </div>
 
                                 {/* LINE 4 */}
 
-                                <div className="w-full flex items-center justify-between">
+                                <div className="w-full flex items-start justify-between">
                                     <div className="flex-1">
                                         <label htmlFor="category" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Category*</label>
 
-                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory(''); formik.handleChange(e); }} >
+                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); formik.setFieldValue('brandSubCategory', []); setSubCategory([]); }} >
                                             <option className="text-base" value="">Select Category</option>
                                             {Object.keys(categories).map((cat) => (
                                                 <option className="text-base" key={cat} value={cat}>
@@ -415,16 +477,21 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                                     <div className="flex-1">
                                         <label htmlFor="brandSubCategory" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Sub-Category*</label>
 
-                                        <select {...formik.getFieldProps('brandSubCategory')} id="brandSubCategory" name="brandSubCategory" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={subCategory} onChange={(e) => {
-                                            formik.handleChange(e); setSubCategory(e.target.value)
-                                        }} disabled={!category}>
-                                            <option className="text-base text-[#30323E] " value="">Select Sub-Category</option>
-                                            {category && categories[category]?.map((subCat) => (
-                                                <option className="text-base text-[#30323E] " key={subCat} value={subCat}>
-                                                    {subCat}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        {showCombobox && <div onClick={() => setShowCombobox(false)} className="absolute inset-0 bg-black opacity-0 w-full h-full"></div>}
+                                        <div className="w-[22.5rem] relative">
+                                            <input
+                                                className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-0"
+                                                type="text"
+                                                value={inputValue}
+                                                onFocus={() => setShowCombobox(true)}
+                                                onChange={(e) => setInputValue(e.target.value)}
+                                                placeholder="Search Sub-Category"
+                                            />
+                                            {(showCombobox || inputValue) && renderOptions()}
+                                            {subCategory.length > 0 && <div className="mt-1">{subCategory.map((option: any, index: any) =>
+                                                <div key={index} className="bg-gray-200 m-1 text-sm rounded-sm py-1 px-2 inline-block"><span className="flex items-center">{option}<RiDeleteBack2Fill className="ml-2 cursor-pointer" onClick={() => handleRemoveOption(option)} /></span></div>
+                                            )}</div>}
+                                        </div>
                                     </div>
                                 </div>
 
