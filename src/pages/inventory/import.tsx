@@ -87,7 +87,7 @@ export default function Import({ sellerData }: { sellerData: any }) {
             if (!productObject[handle]) {
                 productObject[handle] = {
                     sellerId: sellerData?.data?.id,
-                    brandId: 3,
+                    brandId: sellerData?.data?.Brands[0]?.id,
                     productName: item.Title || '',
                     productCategory: prodCategory || 'Not Defined',
                     productColor: 'NULL',

@@ -89,9 +89,10 @@ const CustomImage = memo(function CustomImage({ objectKey, token }: { objectKey:
     );
 })
 
-export default function Brand({ sellerData }: { sellerData: SellerData }) {
+export default function Brand({ sellerData, interestData }: { sellerData: SellerData, interestData: any }) {
 
     const [brand, setBrand] = useState(sellerData.data.Brands[0])
+
 
     const [category, setCategory] = useState(brand?.brandCategory ? brand?.brandCategory : '');
     const [subCategory, setSubCategory] = useState(brand?.brandSubCategory ? brand?.brandSubCategory : []);
@@ -107,8 +108,7 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
     const [shippingTimesOne, setShippingTimesOne] = useState(brand?.brandShippingTimes ? brand?.brandShippingTimes.split(' ')[0] : 1);
     const [shippingTimesTwo, setShippingTimesTwo] = useState(brand?.brandShippingTimes ? brand?.brandShippingTimes.split(' ')[2] : 3);
 
-    //Combobox v
-
+    //Array Combobox for Sub Category 
     const [inputValue, setInputValue] = useState("");
     const [filteredOptions, setFilteredOptions] = useState<any>([]);
     const [selectedOption, setSelectedOption] = useState<any>([]);
@@ -127,7 +127,30 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
         setAllOptions(categories[category] || []);
     }, [category]);
 
-    //Combobox ^
+    //Array Combobox for Sub Category ^
+
+    //String Combobox for Business Name 
+    const [businessNameInputValue, setBusinessNameInputValue] = useState(brand?.brandDisplayName ? brand?.brandDisplayName : "");
+    const [businessNamefilteredOptions, setBusinessNamefilteredOptions] = useState<any>([]);
+    const [businessNameSelectedOption, setBusinessNameSelectedOption] = useState<any>('');
+    const [businessNameOptions, setBusinessNameOptions] = useState(interestData.data || []);
+    const [showBusinessNameCombobox, setShowBusinessNameCombobox] = useState(false);
+    const [interestId, setInterestId] = useState(null)
+
+    useEffect(() => {
+        // Filter options based on the input value
+        const filtered = businessNameOptions.filter((option: any) => {
+            return option.name.toLowerCase().includes(businessNameInputValue.toLowerCase())
+        })
+
+        setBusinessNamefilteredOptions(filtered);
+    }, [businessNameInputValue, businessNameOptions]);
+
+    // useEffect(() => {
+    //     setBusinessNameOptions(categories[category] || []);
+    // }, [category]);
+
+    //String Combobox for Business Name ^
 
     useEffect(() => {
         formik.setFieldValue('brandShippingTimes', `${shippingTimesOne} to ${shippingTimesTwo} Days`)
@@ -204,6 +227,7 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
 
     const formik = useFormik({
         initialValues: {
+            interestId: null,
             businessName: brand?.legalBusinessName ? brand?.legalBusinessName : "",
             displayName: brand?.brandDisplayName ? brand?.brandDisplayName : "",
             category: brand?.brandCategory ? brand?.brandCategory : "",
@@ -221,11 +245,20 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
         onSubmit
     })
 
-    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: [], brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string, brandShippingTimes: string }) {
+    useEffect(() => {
+        formik.setFieldValue('businessName', brand?.legalBusinessName)
+    }, [])
+
+    async function onSubmit(values: { businessName: string; displayName: string; category: string; businessAddress: string, businessCountry: string, brandSubCategory: [], brandAvailability: string, brandType: string, brandTargetGender: string, brandTargetAgeGroup: string, brandIncomeBracket: string, brandPriceRange: string, brandShippingTimes: string, interestId?: number | null }) {
 
         setLoading(true)
         // Check if all fields have a value
-        if (!Object.values(values).every(v => v)) {
+
+        // remove interestid from values to check because it can be null
+        let valuesToCheck = { ...values }
+        delete valuesToCheck?.interestId
+
+        if (!Object.values(valuesToCheck).every(v => v)) {
             notification(false, "Please fill out all the fields.");
             setLoading(false)
             return;
@@ -246,6 +279,7 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         sellerId: sellerData?.data?.id,
+                        interestId: interestId ? interestId : null,
                         legalBusinessName: values.businessName,
                         brandDisplayName: values.displayName,
                         brandCategory: values.category,
@@ -277,6 +311,7 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                        interestId: interestId ? interestId : null,
                         sellerId: sellerData?.data?.id,
                         legalBusinessName: values.businessName,
                         brandDisplayName: values.displayName,
@@ -359,21 +394,57 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
     }
 
 
-    const renderOptions = () => (
-        <ul className="w-full border bg-white border-gray-200 rounded-b-md shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] absolute top-11 right-0 max-h-32 overflow-y-scroll">
-            {inputValue && !filteredOptions.includes(inputValue) && (
-                <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer flex items-center"
-                    onClick={() => handleOptionClick(inputValue)}>
-                    <CiSquarePlus className="mr-1" fontSize='20px' /> {inputValue}
-                </li>)
-            }
-            {filteredOptions.map((option: any, index: any) => (
-                <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer" key={index} onClick={() => handleOptionClick(option)}>
-                    {option}
-                </li>
-            ))}
-        </ul >
-    )
+    const renderOptions = (forField: any) => {
+        if (forField === 'subcategory') {
+            return (
+                <ul className="w-full border bg-white border-gray-200 rounded-b-md shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] absolute top-11 right-0 max-h-32 overflow-y-scroll">
+                    {inputValue && !filteredOptions.includes(inputValue) && (
+                        <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer flex items-center"
+                            onClick={() => handleOptionClick(inputValue)}>
+                            <CiSquarePlus className="mr-1" fontSize='20px' /> {inputValue}
+                        </li>)
+                    }
+                    {filteredOptions.map((option: any, index: any) => (
+                        <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer" key={index} onClick={() => handleOptionClick(option)}>
+                            {option}
+                        </li>
+                    ))}
+                </ul >
+            )
+        }
+
+        if (forField === 'businessName') {
+            return (
+                <ul className="w-full border bg-white border-gray-200 rounded-b-md shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] absolute top-11 right-0 max-h-32 overflow-y-scroll">
+                    {businessNameInputValue && !businessNamefilteredOptions.map((business: any) => business.name).includes(businessNameInputValue) && (
+                        <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer flex items-center"
+                            onClick={() => {
+                                setBusinessNameSelectedOption(businessNameInputValue),
+                                    setBusinessNameInputValue(businessNameInputValue),
+                                    setShowBusinessNameCombobox(false);
+                                formik.setFieldValue('displayName', businessNameInputValue)
+                                setInterestId(null)
+                                formik.setFieldValue('interestId', null)
+                            }}>
+                            <CiSquarePlus className="mr-1" fontSize='20px' /> {businessNameInputValue}
+                        </li>)
+                    }
+                    {businessNamefilteredOptions.map((option: any, index: any) => (
+                        <li className="hover:bg-blue-600 hover:text-white px-3 py-1 cursor-pointer" key={index} onClick={() => {
+                            setBusinessNameSelectedOption(option.name),
+                                setBusinessNameInputValue(option.name),
+                                formik.setFieldValue('displayName', option.name)
+                            setShowBusinessNameCombobox(false)
+                            setInterestId(option.id)
+                            formik.setFieldValue('interestId', option.id)
+                        }}>
+                            {option.name}
+                        </li>
+                    ))}
+                </ul >
+            )
+        }
+    }
 
     return (
         <Layout>
@@ -396,7 +467,19 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                                     <div className="flex-1">
                                         <label htmlFor="display" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Display Name*</label>
 
-                                        <input {...formik.getFieldProps('displayName')} type="text" id="display-name" name="displayName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" />
+                                        {showBusinessNameCombobox && <div onClick={() => setShowBusinessNameCombobox(false)} className="absolute inset-0 bg-black opacity-0 w-full h-full"></div>}
+                                        <div className="w-[22.5rem] relative">
+                                            <input
+                                                className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-0"
+                                                type="text"
+                                                value={businessNameInputValue}
+                                                onFocus={() => setShowBusinessNameCombobox(true)}
+                                                onChange={(e) => setBusinessNameInputValue(e.target.value)}
+                                                placeholder="Search Brand"
+                                            />
+                                            {(showBusinessNameCombobox) && renderOptions('businessName')}
+                                        </div>
+                                        {/* <input {...formik.getFieldProps('displayName')} type="text" id="display-name" name="displayName" className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[rgb(221,221,221)]  text-lg h-10 focus:outline-none  w-[22.5rem] rounded-md mb-6" /> */}
 
                                     </div>
                                 </div>
@@ -487,7 +570,7 @@ export default function Brand({ sellerData }: { sellerData: SellerData }) {
                                                 onChange={(e) => setInputValue(e.target.value)}
                                                 placeholder="Search Sub-Category"
                                             />
-                                            {(showCombobox || inputValue) && renderOptions()}
+                                            {(showCombobox || inputValue) && renderOptions('subcategory')}
                                             {subCategory.length > 0 && <div className="mt-1">{subCategory.map((option: any, index: any) =>
                                                 <div key={index} className="bg-gray-200 m-1 text-sm rounded-sm py-1 px-2 inline-block"><span className="flex items-center">{option}<RiDeleteBack2Fill className="ml-2 cursor-pointer" onClick={() => handleRemoveOption(option)} /></span></div>
                                             )}</div>}
@@ -644,10 +727,15 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
+    // Get all interest from interest table
+    const interestResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/interests`)
+    const interestData = await interestResponse.json()
+
     return {
         props: {
             session,
             sellerData,
+            interestData,
         }
     }
 }

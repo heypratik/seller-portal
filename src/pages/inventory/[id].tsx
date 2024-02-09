@@ -12,6 +12,18 @@ import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-i
 import { v4 as uuidv4 } from 'uuid';
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { set } from 'date-fns';
+import { CiImageOn } from 'react-icons/ci'
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import { FaCheckCircle } from "react-icons/fa";
+
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "../../../shadcn/components/ui/dialog"
 
 interface VariantOption {
     id: number;
@@ -558,6 +570,21 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         }
     }, [id])
 
+    function simulateEscapeClick() {
+        // Create a new 'KeyboardEvent' with the 'Escape' key and trigger it
+        const escapeKeyEvent = new KeyboardEvent('keydown', {
+            key: 'Escape',
+            keyCode: 27,
+            code: 'Escape',
+            which: 27,
+            bubbles: true,
+            cancelable: true
+        });
+
+        // Dispatch the event on the document
+        document.dispatchEvent(escapeKeyEvent);
+    }
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
@@ -783,6 +810,54 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                         if (variation.options && variation.options.length > 0) {
                                             return (
                                                 <div key={index} className='variationKeys flex items-center justify-between p-2 w-full max-2xl'>
+                                                    <Dialog>
+                                                        <DialogTrigger asChild>
+                                                            {variation?.mediaObjectKey && variation?.mediaObjectKey.includes('http') ? <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><img src={variation?.mediaObjectKey} alt="variation" className="w-10 h-10 rounded-md" /></div> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' fontSize="20px" /></div>}
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <div className="flex flex-col items-center justify-center">
+                                                                    <DialogTitle>Select image to add as a variation image</DialogTitle>
+                                                                </div>
+                                                            </DialogHeader>
+                                                            <div className=' max-h-64 overflow-y-scroll flex items-center justify-start flex-wrap'>
+                                                                {objectKeys?.map((key, index) => {
+                                                                    if (key?.includes("http")) {
+                                                                        return (
+                                                                            <div key={index} className="relative group w-[30%] mr-2 mt-4 ">
+                                                                                <img
+                                                                                    key={index}
+                                                                                    src={key}
+                                                                                    alt={`custom-${key}`}
+                                                                                    className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
+                                                                                />
+
+                                                                                <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                                                                                    <span onClick={() => {
+                                                                                        simulateEscapeClick(),
+                                                                                            setVariationValues((prevVariationValues: any) =>
+                                                                                                prevVariationValues.map((allvar: any) => {
+                                                                                                    if (allvar.id !== variation.id) {
+                                                                                                        return allvar;
+                                                                                                    }
+
+                                                                                                    return { ...variation, mediaObjectKey: key };
+                                                                                                })
+                                                                                            );
+                                                                                    }} className="text-white text-3xl font-bold cursor-pointer"><FaCheckCircle /></span>
+                                                                                </div>
+                                                                            </div>
+                                                                        )
+                                                                    } else if (!key.includes("https")) {
+                                                                        return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                                    } else {
+                                                                        return null
+                                                                    }
+
+                                                                })}
+                                                            </div>
+                                                        </DialogContent>
+                                                    </Dialog>
                                                     <p className=' break-words text-sm mx-1 px-1 flex-1 flex-shrink-1 w-0'>{variation?.options?.toString().split(",").join(" / ")}</p>
                                                     <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
                                                     <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
