@@ -571,7 +571,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     }, [id])
 
     function simulateEscapeClick() {
-        // Create a new 'KeyboardEvent' with the 'Escape' key and trigger it
         const escapeKeyEvent = new KeyboardEvent('keydown', {
             key: 'Escape',
             keyCode: 27,
@@ -580,8 +579,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             bubbles: true,
             cancelable: true
         });
-
-        // Dispatch the event on the document
         document.dispatchEvent(escapeKeyEvent);
     }
 
