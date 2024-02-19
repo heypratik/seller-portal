@@ -72,52 +72,60 @@ const postMediaEndpoint = "media/single";
 const mediaEndpoint = "media/%s";
 const token = "fb507a0b75e0f62f65b798424555733f";
 
-const CustomImage = ({ objectKey, token, removeImage }: { objectKey: string, token: string, removeImage: any }) => {
+const CustomImage = ({ objectKey, token, removeImage, cache, updateCache }: { objectKey: string, token: string, removeImage: any, cache: any, updateCache: any }) => {
     const [imageData, setImageData] = useState<string | null>(null);
-
     useEffect(() => {
         const fetchImage = async () => {
-            try {
-                const response = await fetch(
-                    `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
+            if (cache[objectKey]) {
+                console.log("Image already in cache:", objectKey);
+                setImageData(cache[objectKey])
+            } else {
+                try {
+                    const response = await fetch(
+                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    );
+                    if (response.ok) {
+
+                        const blob = await response.blob();
+                        const imageUrl = URL.createObjectURL(blob);
+                        setImageData(imageUrl);
+                        updateCache(objectKey, imageUrl);
                     }
-                );
-                if (response.ok) {
-                    const blob = await response.blob();
-                    setImageData(URL.createObjectURL(blob));
+                } catch (error) {
+                    updateCache(objectKey, null);
+                    console.log("Error fetching image:", error);
                 }
-            } catch (error) {
-                console.log("Error fetching image:", error);
             }
         };
 
         fetchImage();
-    }, [objectKey, token]);
+    }, [objectKey]);
 
     return imageData ? (
-        <div className="relative group w-[10%] mr-2 mt-4 ">
-            <img
-                src={imageData}
-                alt={`custom-${imageData}`}
-                className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
-            />
-
-            <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
-                <span onClick={() => removeImage(objectKey)} className="text-white text-3xl font-bold cursor-pointer">×</span>
-            </div>
-        </div>
+        <img
+            src={imageData}
+            alt={`custom-${imageData}`}
+            className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
+        />
     ) : (
-        <div>Loading image...</div>
+        <div className='text-xs'>Loading image...</div>
     );
 };
 
 export default function ProductList({ sellerData, productData, collecionData }: { sellerData: SellerData, productData: any, collecionData: any }) {
     const router = useRouter();
     const { id } = router.query;
+
+    const [cache, setCache] = useState({});
+
+    const handleCacheUpdate = (key: any, value: any) => {
+        setCache(prevCache => ({ ...prevCache, [key]: value }));
+    };
 
     const [loading, setLoading] = useState(false)
     const [productCategory, setProductCategory] = useState<string>(sellerData.data.Brands[0].brandCategory);
@@ -582,6 +590,9 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         document.dispatchEvent(escapeKeyEvent);
     }
 
+    console.log(cache, "cache")
+    console.log(objectKeys, "objectKeys")
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
@@ -637,8 +648,22 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                             </div>
                                                         </div>
                                                     )
-                                                } else if (!key.includes("https")) {
-                                                    return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                } else if (!key.includes("http")) {
+                                                    return <div className="relative group w-[10%] mr-2 mt-4 ">
+                                                        <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                        <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                                                            <span onClick={() => {
+                                                                removeImage(key),
+                                                                    setCache((prevCache: any) => {
+                                                                        const newCache = { ...prevCache };
+                                                                        delete newCache[key];
+                                                                        return newCache;
+                                                                    });
+                                                            }
+                                                            } className="text-white text-3xl font-bold cursor-pointer">×</span>
+                                                        </div>
+                                                    </div>
+
                                                 } else {
                                                     return null
                                                 }
@@ -809,7 +834,45 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                 <div key={index} className='variationKeys flex items-center justify-between p-2 w-full max-2xl'>
                                                     <Dialog>
                                                         <DialogTrigger asChild>
-                                                            {variation?.mediaObjectKey && variation?.mediaObjectKey.includes('http') ? <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><img src={variation?.mediaObjectKey} alt="variation" className="w-10 h-10 rounded-md" /></div> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' fontSize="20px" /></div>}
+                                                            {
+                                                                variation?.mediaObjectKey ?
+                                                                    (
+                                                                        variation.mediaObjectKey.includes('http') ?
+                                                                            (
+                                                                                <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                    <img src={variation?.mediaObjectKey} alt="variation" className="w-10 h-10 rounded-md" />
+                                                                                </div>
+                                                                            )
+                                                                            :
+                                                                            (
+                                                                                !variation.mediaObjectKey.includes('http') ?
+                                                                                    (
+                                                                                        // Another action for HTTPS
+                                                                                        <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                            {Object.keys(cache).length === objectKeys.length ? <CustomImage key={index} objectKey={variation?.mediaObjectKey} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} /> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                                {/* Different component or action */}
+                                                                                                <CiImageOn color='#818181' fontSize="20px" />
+                                                                                            </div>}
+                                                                                        </div>
+                                                                                    )
+                                                                                    :
+                                                                                    (
+                                                                                        // If neither HTTP nor HTTPS
+                                                                                        <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                            <CustomImage key={index} objectKey={variation?.mediaObjectKey} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                                                        </div>
+                                                                                    )
+                                                                            )
+                                                                    )
+                                                                    :
+                                                                    (
+                                                                        // Handle case when mediaObjectKey is not defined
+                                                                        <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                            {/* Different component or action */}
+                                                                            <CiImageOn color='#818181' fontSize="20px" />
+                                                                        </div>
+                                                                    )
+                                                            }
                                                         </DialogTrigger>
                                                         <DialogContent>
                                                             <DialogHeader>
@@ -846,7 +909,23 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                             </div>
                                                                         )
                                                                     } else if (!key.includes("https")) {
-                                                                        return <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                                        return <div key={index} className="relative group w-[30%] mr-2 mt-4 rrr">
+                                                                            <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                                            <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                                                                                <span onClick={() => {
+                                                                                    simulateEscapeClick(),
+                                                                                        setVariationValues((prevVariationValues: any) =>
+                                                                                            prevVariationValues.map((allvar: any) => {
+                                                                                                if (allvar.id !== variation.id) {
+                                                                                                    return allvar;
+                                                                                                }
+
+                                                                                                return { ...variation, mediaObjectKey: key };
+                                                                                            })
+                                                                                        );
+                                                                                }} className="text-white text-3xl font-bold cursor-pointer"><FaCheckCircle /></span>
+                                                                            </div>
+                                                                        </div>
                                                                     } else {
                                                                         return null
                                                                     }

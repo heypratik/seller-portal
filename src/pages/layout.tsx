@@ -63,7 +63,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         },
         { name: 'Orders', href: '/orders', icon: BsBoxSeam, current: isCurrentPage(`/orders`) },
         { name: 'Analytics', href: '/dashboard/analytics', icon: BiBarChartSquare, current: isCurrentPage(`/dashboard/analytics`) },
-        { name: 'Shipping', href: '#', icon: FiTruck, current: isCurrentPage(`/shipping`) },
+        { name: 'Shipping', href: '/shipping', icon: FiTruck, current: isCurrentPage(`/shipping`) },
         { name: 'Account Info', href: '/account', icon: FaRegUser, current: isCurrentPage(`/account`) },
     ]
 
