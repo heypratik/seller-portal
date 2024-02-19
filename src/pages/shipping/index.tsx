@@ -710,7 +710,7 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
 
                                                 {zone?.rates?.length == 0 &&
                                                     <div className='flex items-center bg-[#fff1e4] rounded-md p-2 my-4'>
-                                                        <GiHazardSign className='mr-2' color='#5e420b' /><p className='text-[#5e420b] '>No rates. Customers in this zone won't be able to complete checkout.</p>
+                                                        <GiHazardSign className='mr-2' color='#5e420b' /><p className='text-[#5e420b] '>No rates. Customers in this zone won&apos;t be able to complete checkout.</p>
                                                     </div>}
 
                                                 {zone?.rates?.length > 0 && <div className='flex items-center mt-6'>
@@ -723,8 +723,8 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                                                     </div>
                                                 </div>}
                                                 <hr className='mt-1' />
-                                                {zone?.rates?.length > 0 && zone.rates.map((rate: any) =>
-                                                    <div className='flex items-center py-2 px-2 hover:bg-gray-100'>
+                                                {zone?.rates?.length > 0 && zone.rates.map((rate: any, index: any) =>
+                                                    <div key={index} className='flex items-center py-2 px-2 hover:bg-gray-100'>
                                                         <div className='flex-1'><p>{rate.name}</p></div>
                                                         <div className='flex-1'><p>{rate.transitTime}</p></div>
                                                         <div className='flex-1'><p>{rate.price}</p></div>
