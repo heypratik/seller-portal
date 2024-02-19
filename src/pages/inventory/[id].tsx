@@ -649,7 +649,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                         </div>
                                                     )
                                                 } else if (!key.includes("http")) {
-                                                    return <div className="relative group w-[10%] mr-2 mt-4 ">
+                                                    return <div key={index} className="relative group w-[10%] mr-2 mt-4 ">
                                                         <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
                                                         <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
                                                             <span onClick={() => {
