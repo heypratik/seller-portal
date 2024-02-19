@@ -568,7 +568,7 @@ export default function Brand({ sellerData, interestData }: { sellerData: Seller
                                                 value={inputValue}
                                                 onFocus={() => setShowCombobox(true)}
                                                 onChange={(e) => setInputValue(e.target.value)}
-                                                placeholder="Search Sub-Category"
+                                                placeholder="Search/Add Sub-Category"
                                             />
                                             {(showCombobox || inputValue) && renderOptions('subcategory')}
                                             {subCategory.length > 0 && <div className="mt-1">{subCategory.map((option: any, index: any) =>
