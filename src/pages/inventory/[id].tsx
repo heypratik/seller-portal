@@ -77,7 +77,6 @@ const CustomImage = ({ objectKey, token, removeImage, cache, updateCache }: { ob
     useEffect(() => {
         const fetchImage = async () => {
             if (cache[objectKey]) {
-                console.log("Image already in cache:", objectKey);
                 setImageData(cache[objectKey])
             } else {
                 try {
@@ -179,7 +178,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     const formik = useFormik({
         initialValues: {
             productName: '',
-            productCategory: '',
+            productCategory: productCategory ? productCategory : '',
             productColor: '',
             productSize: '',
             productSizeValue: '',
@@ -200,6 +199,11 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
     function removeImage(key: string) {
         const newKeys = objectKeys.filter((k) => k !== key);
+        setCache((prevCache: any) => {
+            const newCache = { ...prevCache };
+            delete newCache[key];
+            return newCache;
+        });
         setObjectKeys(newKeys);
     }
 
@@ -399,6 +403,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     }
 
     function generateVariants(options: VariantOption[]): string[][] {
+        console.log(options);
         const result: string[][] = [];
 
         function generateCombinations(index: number, currentCombination: string[]): void {
@@ -409,7 +414,9 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
             const currentOption = options[index];
             for (const value of currentOption.values) {
-                generateCombinations(index + 1, [...currentCombination, value.value]);
+                if (value.value !== "") {
+                    generateCombinations(index + 1, [...currentCombination, value.value]);
+                }
             }
         }
 
@@ -590,8 +597,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         document.dispatchEvent(escapeKeyEvent);
     }
 
-    console.log(cache, "cache")
-    console.log(objectKeys, "objectKeys")
+    console.log(formik.values, "formik.values")
 
     return (
         <Layout>
