@@ -597,8 +597,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         document.dispatchEvent(escapeKeyEvent);
     }
 
-    console.log(formik.values, "formik.values")
-
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
