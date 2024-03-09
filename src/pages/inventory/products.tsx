@@ -53,6 +53,14 @@ export default function Products({ session, sellerData }: any) {
         totalPages: 0,
     });
 
+    function decideCountry() {
+        if (sellerData?.data?.Brands[0]?.businessCountry == 'India') {
+            return '₹'
+        } else {
+            return '$'
+        }
+    }
+
     const [search, setSearch] = useState('')
 
     const [parentCheckbox, setParentCheckbox] = useState(false)
@@ -375,7 +383,7 @@ export default function Products({ session, sellerData }: any) {
                                                                 <td className="py-2 px-4 border-b">{row.id}</td>
                                                                 <td className="py-2 px-4 border-b">{row.productName}</td>
                                                                 <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
-                                                                <td className="py-2 px-4 border-b">{checkproductDetails(row, "price")}</td>
+                                                                <td className="py-2 px-4 border-b">{decideCountry()}{checkproductDetails(row, "price")}</td>
                                                                 <td className="py-2 px-4 border-b">{row.productCost}</td>
                                                                 <td className="py-2 px-4 border-b">{row.productCategory}</td>
                                                                 <td className="py-2 px-4 border-b">

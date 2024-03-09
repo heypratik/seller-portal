@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import Layout from '../layout'
-import Breadcrums from '../../../components/Breadcrums'
+import Layout from '../layout';
+import Breadcrums from '../../../components/Breadcrums';
 import { useFormik } from 'formik';
 import toast, { Toaster } from 'react-hot-toast';
-import { getSession, useSession } from 'next-auth/react'
-import { AiOutlineLoading3Quarters } from 'react-icons/ai'
+import { getSession, useSession } from 'next-auth/react';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import Link from 'next/link';
-import { de, ro } from 'date-fns/locale';
 import { useRouter } from 'next/router';
 import { AiOutlinePlusSquare, AiFillDelete, AiOutlineCloudUpload } from 'react-icons/ai'
 import { v4 as uuidv4 } from 'uuid';
@@ -116,7 +115,17 @@ const CustomImage = ({ objectKey, token, removeImage, cache, updateCache }: { ob
     );
 };
 
+
 export default function ProductList({ sellerData, productData, collecionData }: { sellerData: SellerData, productData: any, collecionData: any }) {
+
+    function decideCountry() {
+        if (sellerData?.data?.Brands[0]?.businessCountry == 'India') {
+            return '₹'
+        } else {
+            return '$'
+        }
+    }
+
     const router = useRouter();
     const { id } = router.query;
 
@@ -751,17 +760,24 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                             <label htmlFor="business" className={labelClass}>Price*</label>
                                                             <div className='flex items-center justify-start mt-4'>
                                                                 <div>
-                                                                    <input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className='mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]' placeholder='Price' />
+                                                                    <div className='flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className='w-full focus:outline-none' placeholder='Price' />
+                                                                    </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(Price)</p>
                                                                 </div>
 
                                                                 <div>
-                                                                    <input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]' placeholder='COGS' />
+
+                                                                    <div className='flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='w-full focus:outline-none' placeholder='COGS' />
+                                                                    </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(COGS)</p>
                                                                 </div>
 
                                                                 <div>
-                                                                    <input disabled type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]' placeholder={`Margin: $${prodMargin && prodMargin}`} />
+                                                                    <div className='flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='w-full focus:outline-none' placeholder={`Margin: $${prodMargin && prodMargin}`} />
+                                                                    </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(Margin)</p>
 
                                                                 </div>
@@ -939,7 +955,9 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                         </DialogContent>
                                                     </Dialog>
                                                     <p className=' break-words text-sm mx-1 px-1 flex-1 flex-shrink-1 w-0'>{variation?.options?.toString().split(",").join(" / ")}</p>
-                                                    <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                    <div className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0 flex items-center'>
+                                                        {<p className='mr-1'>{decideCountry()}</p>}<input className='focus:outline-none w-full' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                    </div>
                                                     <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
                                                     <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Stock' name="stock" value={variation.stock} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} /></div>
                                             );

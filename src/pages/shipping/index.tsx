@@ -276,6 +276,14 @@ import { set } from 'date-fns';
 
 function ShippingZoneSelector({ accountData }: { accountData: any }) {
 
+    function decideCountry() {
+        if (accountData?.data?.brand?.businessCountry == 'India') {
+            return '₹'
+        } else {
+            return '$'
+        }
+    }
+
     const [allCountries, setAllCountries] = useState<any>({ "Asia": ["Afghanistan", "Armenia", "Azerbaijan", "Bahrain", "Bangladesh", "Bhutan", "Brunei", "Cambodia", "China", "Cyprus", "East Timor", "Georgia", "Hong Kong", "India", "Indonesia", "Iran", "Iraq", "Israel", "Japan", "Jordan", "Kazakhstan", "Kuwait", "Kyrgyzstan", "Laos", "Lebanon", "Macao", "Malaysia", "Maldives", "Mongolia", "Myanmar", "Nepal", "North Korea", "Oman", "Pakistan", "Palestine", "Philippines", "Qatar", "Saudi Arabia", "Singapore", "South Korea", "Sri Lanka", "Syria", "Tajikistan", "Thailand", "Turkey", "Turkmenistan", "United Arab Emirates", "Uzbekistan", "Vietnam", "Yemen"], "Europe": ["Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia and Herzegovina", "Bulgaria", "Croatia", "Czech Republic", "Denmark", "England", "Estonia", "Faroe Islands", "Finland", "France", "Germany", "Gibraltar", "Greece", "Holy See (Vatican City State)", "Hungary", "Iceland", "Ireland", "Italy", "Latvia", "Liechtenstein", "Lithuania", "Luxembourg", "North Macedonia", "Malta", "Moldova", "Monaco", "Montenegro", "Netherlands", "Northern Ireland", "Norway", "Poland", "Portugal", "Romania", "Russian Federation", "San Marino", "Scotland", "Serbia", "Slovakia", "Slovenia", "Spain", "Svalbard and Jan Mayen", "Sweden", "Switzerland", "Ukraine", "United Kingdom", "Wales"], "Africa": ["Algeria", "Angola", "Benin", "Botswana", "British Indian Ocean Territory", "Burkina Faso", "Burundi", "Cameroon", "Cape Verde", "Central African Republic", "Chad", "Comoros", "Congo", "Djibouti", "Egypt", "Equatorial Guinea", "Eritrea", "Ethiopia", "Gabon", "Gambia", "Ghana", "Guinea", "Guinea-Bissau", "Ivory Coast", "Kenya", "Lesotho", "Liberia", "Libyan Arab Jamahiriya", "Madagascar", "Malawi", "Mali", "Mauritania", "Mauritius", "Mayotte", "Morocco", "Mozambique", "Namibia", "Niger", "Nigeria", "Reunion", "Rwanda", "Saint Helena", "Sao Tome and Principe", "Senegal", "Seychelles", "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Swaziland", "Tanzania", "The Democratic Republic of Congo", "Togo", "Tunisia", "Uganda", "Western Sahara", "Zambia", "Zimbabwe"], "Oceania": ["American Samoa", "Australia", "Christmas Island", "Cocos (Keeling) Islands", "Cook Islands", "Fiji Islands", "French Polynesia", "Guam", "Kiribati", "Marshall Islands", "Micronesia, Federated States of", "Nauru", "New Caledonia", "New Zealand", "Niue", "Norfolk Island", "Northern Mariana Islands", "Palau", "Papua New Guinea", "Pitcairn", "Samoa", "Solomon Islands", "Tokelau", "Tonga", "Tuvalu", "United States Minor Outlying Islands", "Vanuatu", "Wallis and Futuna"], "North America": ["Anguilla", "Antigua and Barbuda", "Aruba", "Bahamas", "Barbados", "Belize", "Bermuda", "Canada", "Cayman Islands", "Costa Rica", "Cuba", "Dominica", "Dominican Republic", "El Salvador", "Greenland", "Grenada", "Guadeloupe", "Guatemala", "Haiti", "Honduras", "Jamaica", "Martinique", "Mexico", "Montserrat", "Netherlands Antilles", "Nicaragua", "Panama", "Puerto Rico", "Saint Kitts and Nevis", "Saint Lucia", "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Trinidad and Tobago", "Turks and Caicos Islands", "United States", "Virgin Islands, British", "Virgin Islands, U.S."], "Antarctica": ["Antarctica", "Bouvet Island", "French Southern territories", "Heard Island and McDonald Islands", "South Georgia and the South Sandwich Islands"], "South America": ["Argentina", "Bolivia", "Brazil", "Chile", "Colombia", "Ecuador", "Falkland Islands", "French Guiana", "Guyana", "Paraguay", "Peru", "Suriname", "Uruguay", "Venezuela"] });
 
     const [shippingZone, setShippingZone] = useState<any>([]);
@@ -566,9 +574,9 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                 })
                 const dataRes = await response.json()
                 if (dataRes.success) {
-                    toast.success('Shipping Profile Created')
+                    toast.success('Shipping Policy Created')
                 } else {
-                    toast.error('Error Creating Shipping Profile')
+                    toast.error('Error Creating Shipping Policy')
                 }
             } catch (error) {
                 console.log(error)
@@ -590,9 +598,9 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                 })
                 const dataRes = await response.json()
                 if (dataRes.success) {
-                    toast.success('Shipping Profile Updated')
+                    toast.success('Shipping Policy Updated')
                 } else {
-                    toast.error('Error Updating Shipping Profile')
+                    toast.error('Error Updating Shipping Policy')
                 }
             } catch (error) {
                 console.log(error)
@@ -605,17 +613,17 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
             <Toaster position="top-center" reverseOrder={true} />
             <div className="py-6 h-screen">
                 <div className="mx-auto px-4 sm:px-6 md:px-8 ">
-                    <Breadcrums parent={"Inventory"} childarr={["Edit Shipping Profile"]} />
+                    <Breadcrums parent={"Inventory"} childarr={["Edit Shipping Policy"]} />
                 </div>
                 <div className="mx-auto px-4 sm:px-6 md:px-8 pb-24">
                     {/* Replace with your content */}
                     <div className="py-4">
                         <div className='flex justify-center gap-4'>
                             <div className="bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7  flex-1">
-                                <h1 className=' text-[#F12D4D] text-2xl font-semibold'>Shipping Profile</h1>
+                                <h1 className=' text-[#F12D4D] text-2xl font-semibold'>Shipping Policy</h1>
                                 <div className='w-full'>
                                     <div className="flex-1">
-                                        <label htmlFor="business" className={labelClass}>Shipping Profile Name* <span className='text-gray-500 text-xs font-medium'>(Customers will not see this)</span></label>
+                                        <label htmlFor="business" className={labelClass}>Shipping Policy Name* <span className='text-gray-500 text-xs font-medium'>(Customers will not see this)</span></label>
                                         <input value={shippingProfileName} onChange={(e) => setShippingProfileName(e.target.value)} type="text" id="productName" name="productName" className={inputClass} placeholder='Enter Product Name' />
                                     </div>
 
@@ -624,11 +632,11 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                                         <textarea value={shippingProfileDescription} onChange={(e) => setShippingProfileDescription(e.target.value)} rows={3} id="productName" name="productName" className={`bg-[#f7f9fa] border shadow-sm border-[#DDDDDD] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full`} placeholder='We ship in 3-5 Days. Free Shipping on orders above $100' />
                                     </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <label htmlFor="business" className={labelClass}>Shipping Zones*</label>
+                                    <div className="flex items-start flex-col">
+                                        <label htmlFor="business" className={labelClass}>Shipping Profile*</label>
                                         <Dialog onOpenChange={(e) => handleDialogClose(e)}>
                                             <DialogTrigger asChild>
-                                                <button ref={handleEditRef} className=' border border-red-50 rounded-lg px-2 py-1 bg-[#F12D4D] text-white font-semibold'>Create Shipping Zone</button>
+                                                <button ref={handleEditRef} className=' border border-red-50 rounded-lg px-2 py-1 mb-2 bg-[#F12D4D] text-white font-semibold'>Create Shipping Zone</button>
                                             </DialogTrigger>
                                             <DialogContent>
                                                 <DialogHeader>
@@ -728,7 +736,7 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                                                     <div key={index} className='flex items-center py-2 px-2 hover:bg-gray-100'>
                                                         <div className='flex-1'><p>{rate.name}</p></div>
                                                         <div className='flex-1'><p>{rate.transitTime}</p></div>
-                                                        <div className='flex-1'><p>{rate.price}</p></div>
+                                                        <div className='flex-1'><p>{decideCountry()}{rate.price}</p></div>
                                                         <div className='flex-1 flex items-center justify-end gap-2' >
                                                             <BsTrash3Fill fontSize="18px" className='text-gray-500 cursor-pointer' onClick={(e) => removeRate(zone.id, rate.id)} />
                                                         </div>
@@ -759,8 +767,17 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                                                         <option value="Custom (No Transit Time)">Custom (No Transit Time)</option>
                                                     </select> */}
                                                             <input value={transitTime} onChange={(e) => setTransitTime(e.target.value)} type="text" id="transittime" name="transittime" className={inputClass} placeholder='Express (1 to 3 business days)' />
-                                                            <label htmlFor="price" className={`mt-2 text-base`}>Price*</label>
-                                                            <input value={price} onChange={(e) => setPrice(Number(e.target.value))} type="number" id="price" name="price" className={inputClass} placeholder='$50' />
+                                                            <div className='w-full'>
+                                                                <label htmlFor="price" className={`mt-2 text-base`}>Price*</label>
+                                                                <div className='flex items-center mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-full h-10 rounded-md mb-3'>
+                                                                    {<p className='mr-1'>{decideCountry()}</p>}<input value={price} onChange={(e) => {
+                                                                        const inputValue = Number(e.target.value);
+                                                                        if (!isNaN(inputValue)) {
+                                                                            setPrice(inputValue);
+                                                                        }
+                                                                    }} type="text" id="price" name="price" className='w-full bg-transparent focus:outline-none active:border-none' placeholder='50' />
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <div className='flex justify-end gap-2 items-center w-full'>
                                                             <button onClick={() => handleDiscard()} className=' border border-[#F12D4D] text-[#F12D4D] rounded-lg px-2 py-1'>Discard</button>
@@ -772,13 +789,12 @@ function ShippingZoneSelector({ accountData }: { accountData: any }) {
                                             </div>
 
                                         )}
+
+                                        <div className="flex justify-end">
+                                            <button type="submit" className="m-w-32 h-11 bg-[#fff] border border-[#F12D4D] text-[#F12D4D] px-5 flex items-center justify-center rounded-md text-base font-semibold mr-5 cursor-pointer" value="Add">Cancel</button>
+                                            <button onClick={(e) => submitData()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold cursor-pointer" value="Add">Save Policy</button>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.3]'>
-                                <div className="flex justify-end">
-                                    <button type="submit" className="m-w-32 h-11 bg-[#fff] border border-[#F12D4D] text-[#F12D4D] px-5 flex items-center justify-center rounded-md text-base font-semibold mr-5 cursor-pointer" value="Add">Cancel</button>
-                                    <button onClick={(e) => submitData()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold cursor-pointer" value="Add">Save Profile</button>
                                 </div>
                             </div>
                         </div>
