@@ -12,6 +12,8 @@ import { LuListChecks, LuLayoutList } from 'react-icons/lu'
 import { GrFormAdd } from 'react-icons/gr'
 import { PiStackSimpleBold } from 'react-icons/pi'
 import { IoPersonOutline } from 'react-icons/io5'
+import { MdImportExport } from "react-icons/md";
+
 import { motion, AnimatePresence } from "framer-motion"
 import {
     BellIcon,
@@ -57,6 +59,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             name: 'Inventory', href: '/inventory/products', icon: MdOutlineInventory, current: isCurrentPage(`/inventory  /products`), subNav:
                 [
                     { name: 'Add Products', href: '/inventory/new', icon: AiOutlinePlus, current: isCurrentPage(`/inventory/[id]`) },
+                    { name: 'Imports Products', href: '/inventory/import', icon: MdImportExport, current: isCurrentPage(`/inventory/import`) },
                     { name: 'Manage Products', href: '/inventory/products', icon: PiStackSimpleBold, current: isCurrentPage(`/inventory/products`) },
                     { name: 'Collections', href: '/collections', icon: BiCollection, current: isCurrentPage(`/collections`) },
                 ]

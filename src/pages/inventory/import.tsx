@@ -278,11 +278,11 @@ export default function Import({ sellerData }: { sellerData: any }) {
                                 <div>
                                     <div className="flex items-center justify-between py-4">
                                         <h1 className=' text-[#F12D4D] text-2xl mr-8 font-semibold'>Import Products</h1>
-                                        <select className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" name="importer" id="importer">
+                                        {/* <select className="mt-1 px-3 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3" name="importer" id="importer">
                                             <option key="shopify" value="shopify">Shopify</option>
                                             <option disabled key="woocommerce" value="woocommerce">WooCommerce (Coming soon)</option>
                                             <option disabled key="custom" value="custom">Custom (Coming soon)</option>
-                                        </select>
+                                        </select> */}
                                     </div>
                                     <form className="flex items-center">
                                         <input type={"file"} id={"csvFileInput"} ref={fileInputRef} accept={".csv"} onChange={handleOnChange} className=" w-[22.5rem] h-11 mr-5 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300" />
