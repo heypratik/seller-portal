@@ -1090,6 +1090,15 @@ export async function getServerSideProps({ req, params }: any) {
         }
     }
 
+    if (!sellerData?.data?.isPlanActive) {
+        return {
+            redirect: {
+                destination: '/account',
+                permanent: false
+            }
+        }
+    }
+
     // Get Product if its a update page
     const { id } = params;
     let productData = null;

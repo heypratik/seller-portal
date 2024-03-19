@@ -6,6 +6,21 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { useFormik } from 'formik';
 import { getSession, useSession } from 'next-auth/react'
 import toast, { Toaster } from 'react-hot-toast';
+import { loadStripe } from '@stripe/stripe-js';
+// import stripe from 'stripe';
+import { stripe } from '../../lib/stripe'
+import { useRouter } from 'next/router'
+import * as DialogPrimitive from "@radix-ui/react-dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "../../shadcn/components/ui/dialog"
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY || '');
 
 interface SellerData {
     data: {
@@ -14,6 +29,8 @@ interface SellerData {
         email: string;
         password: string;
         active: boolean;
+        isPlanActive: boolean;
+        stripeCustomerID: string;
         createdAt: string;
         updatedAt: string;
     };
@@ -25,7 +42,9 @@ const postMediaEndpoint = "media/single";
 const mediaEndpoint = "media/%s";
 const token = "fb507a0b75e0f62f65b798424555733f";
 
-function Account({ sellerData, accountData }: { sellerData: SellerData, accountData: any }) {
+function Account({ sellerData, accountData, session }: { sellerData: SellerData, accountData: any, session: any }) {
+
+    const router = useRouter()
 
     const sellerAccountData = accountData?.data?.seller
     const brandAccountData = accountData?.data?.brand
@@ -35,6 +54,9 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
 
     const [objectKeys, setObjectKeys] = useState<any[]>([sellerAccountData.profilePicture]);
     const fileInputRef = useRef<any>(null);
+
+    const [customerPortalUrl, setCustomerPortalUrl] = useState<any>(null);
+    const [activeSubscription, setActiveSubscription] = useState<any>(null);
 
     const formik = useFormik({
         initialValues: {
@@ -181,6 +203,117 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
         );
     };
 
+
+    async function handleSubscribe() {
+
+        const customerEmail = sellerAccountData?.email
+
+        if (customerEmail) {
+            const stripe = await stripePromise;
+            const response = await fetch('/api/stripe/createCheckoutSession', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ planId: process.env.NEXT_PUBLIC_PRODUCTID, customerEmail, stripeCustomerId: sellerAccountData?.stripeCustomerID })
+            });
+            const session = await response.json();
+
+            if (session && stripe) {
+                const result = await stripe.redirectToCheckout({ sessionId: session.sessionId });
+                if (result.error) {
+                    console.error(result.error);
+                }
+            }
+
+        } else {
+            router.push('/auth/register')
+        }
+    }
+
+
+    useEffect(() => {
+        async function fetchCustomerPortalUrl() {
+            const customerId = sellerAccountData?.stripeCustomerID
+            const response = await fetch('/api/stripe/createCustomerPortalSession', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ customerId })
+            });
+
+            const { url } = await response.json();
+
+            setCustomerPortalUrl(url);
+        }
+
+        if (sellerAccountData?.stripeCustomerID) {
+            fetchCustomerPortalUrl();
+        }
+
+
+    }, []);
+
+    useEffect(() => {
+        async function getCustomerIdByEmail(email: any) {
+            const customers = sellerAccountData.stripeCustomerID
+            const customer = customers
+            const subscriptions = await stripe.subscriptions.list({
+                customer: customer,
+                status: 'active',
+                limit: 3
+            });
+
+
+            if (subscriptions.data.length !== 0) {
+                const activeSubscription = subscriptions.data.filter(sub => sub.metadata.platform === 'mybranz')[0]
+                setActiveSubscription(activeSubscription)
+            }
+
+            if (subscriptions.data.length === 0) {
+                const trialSubscriptions = await stripe.subscriptions.list({
+                    customer: customers,
+                    status: 'trialing',
+                    limit: 3
+                });
+
+                const activeSubscription = trialSubscriptions.data.filter(sub => sub.metadata.platform === 'mybranz')[0]
+                setActiveSubscription(activeSubscription)
+            }
+        }
+        if (sellerAccountData?.stripeCustomerID) {
+            getCustomerIdByEmail(sellerAccountData?.email)
+        }
+    }, []);
+
+    // async function handleUpgrade() {
+
+    //     const stripe = await stripePromise;
+    //     const response = await fetch('/api/stripe/createCheckoutSession', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json'
+    //         },
+    //         body: JSON.stringify({
+    //             planId: process.env.NEXT_PUBLIC_PRODUCTID,
+    //             customerEmail: sellerAccountData?.email,
+    //         })
+    //     });
+
+    //     const { sessionId } = await response.json();
+
+    //     const result = await stripe.redirectToCheckout({
+    //         sessionId: sessionId
+    //     });
+
+    //     if (result.error) {
+    //         console.log(result.error.message);
+    //     }
+    // }
+
+    const [showPopup, setShowPopup] = useState(!sellerData.data.isPlanActive);
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
@@ -246,6 +379,61 @@ function Account({ sellerData, accountData }: { sellerData: SellerData, accountD
                                 </div>
 
                                 <button type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Save`}</button>
+
+                                <div className='mt-16 flex items-center'>
+                                    <h2 className='mr-5 font-semibold text-xl text-[#f33653]'>Billing</h2>
+                                    <hr className='flex-1 border-[#f23250]' />
+                                </div>
+
+                                <div className="mt-2">
+                                    <div className="py-4">
+                                        <div className="border flex flex-col justify-center border-gray-200 rounded-lg p-4">
+                                            {activeSubscription && <h2 className='text-3xl font-bold'>$29.99</h2>}
+                                            <p className='text-lg font-bold'>Subscription {`${activeSubscription ? 'Active' : 'Inactive'}`}</p>
+                                            {activeSubscription?.items?.data[0]?.plan?.metadata &&
+                                                <div>
+                                                    {Object.entries(activeSubscription?.items?.data[0]?.plan?.metadata).map(([key, value]) => (
+                                                        <div key={key} className='flex my-3'><p className='mr-2'>{key}</p>:<p className='ml-3  font-semibold '>{typeof value === 'string' || typeof value === 'number' ? value : ''}</p></div>))}
+                                                    <p className='text-sm text-gray-600'>Plan renews on {new Date(activeSubscription?.current_period_end * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} </p>
+                                                </div>}
+                                        </div>
+                                        {/* <button disabled className='bg-black p-3 text-white rounded-md my-4 text-base disabled:bg-gray-400 ' onClick={handleUpgrade}>Upgrade plan</button> */}
+                                        <a href={customerPortalUrl || ""} target='_blank'><button type='button' disabled={!customerPortalUrl} className='bg-[#f23250] font-semibold p-3 text-white rounded-md mt-6 text-base disabled:bg-gray-400 '>Manage billing</button></a>
+                                    </div>
+                                    {showPopup && (
+                                        <div className="fixed z-10 inset-0 overflow-y-auto">
+                                            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                                                <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+                                                    <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                                                </div>
+
+                                                <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                                                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+                                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                                        <div className="sm:flex sm:items-start">
+                                                            <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                                                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                                                                    MyBranz Subscription
+                                                                </h3>
+                                                                <div className="mt-2">
+                                                                    <p className="text-sm text-gray-500">
+                                                                        Please purchase a subscription to start using MyBranz seller platform.
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                        <button type="button" onClick={() => handleSubscribe()} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#f23150] text-base font-medium text-white hover:bg-[#f23150] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f23150] sm:ml-3 sm:w-auto sm:text-sm">
+                                                            Starts at $29.99/m
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         {/* /End replace */}

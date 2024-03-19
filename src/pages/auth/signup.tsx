@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { BiError } from 'react-icons/bi'
 import toast, { Toaster } from 'react-hot-toast';
+import { createCustomer } from '../../../lib/createCustomer'
 
 export default function SignUp() {
 
@@ -40,10 +41,11 @@ export default function SignUp() {
         // Add Button loading state
         // Add Error icon for Error messages
         setLoading(true)
+        const stripeCustomerID = await createCustomer(values.name, values.email)
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/signup`, {
             method: 'POST',
             headers: { "Content-Type": "application/json", },
-            body: JSON.stringify({ name: values.name.trim(), email: values.email, password: values.password })
+            body: JSON.stringify({ name: values.name.trim(), email: values.email, password: values.password, stripeCustomerID: stripeCustomerID })
         })
         const data = await response.json()
         // {

@@ -318,6 +318,15 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
+    if (!sellerData?.data?.isPlanActive) {
+        return {
+            redirect: {
+                destination: '/account',
+                permanent: false
+            }
+        }
+    }
+
     const { url } = req
 
     const productId = url.split('/').pop()

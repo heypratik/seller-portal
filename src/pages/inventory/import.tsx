@@ -366,6 +366,15 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
+    if (!sellerData?.data?.isPlanActive) {
+        return {
+            redirect: {
+                destination: '/account',
+                permanent: false
+            }
+        }
+    }
+
 
     return {
         props: { session, sellerData },
