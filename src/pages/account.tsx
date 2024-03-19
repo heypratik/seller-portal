@@ -398,7 +398,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
                                                 </div>}
                                         </div>
                                         {/* <button disabled className='bg-black p-3 text-white rounded-md my-4 text-base disabled:bg-gray-400 ' onClick={handleUpgrade}>Upgrade plan</button> */}
-                                        <a href={customerPortalUrl || ""} target='_blank'><button type='button' disabled={!customerPortalUrl} className='bg-[#f23250] font-semibold p-3 text-white rounded-md mt-6 text-base disabled:bg-gray-400 '>Manage billing</button></a>
+                                        <a href={customerPortalUrl || ""} target='_blank' rel="noreferrer"><button type='button' disabled={!customerPortalUrl} className='bg-[#f23250] font-semibold p-3 text-white rounded-md mt-6 text-base disabled:bg-gray-400 '>Manage billing</button></a>
                                     </div>
                                     {showPopup && (
                                         <div className="fixed z-10 inset-0 overflow-y-auto">
