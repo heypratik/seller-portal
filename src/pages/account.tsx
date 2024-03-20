@@ -209,7 +209,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
 
         const customerEmail = sellerAccountData?.email
 
-        console.log(customerEmail)
+        console.log(sellerAccountData)
 
         if (customerEmail) {
             const stripe = await stripePromise;
