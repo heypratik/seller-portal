@@ -52,7 +52,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
     const [loading, setLoading] = useState(false)
     const [editingInput, setEditingInput] = useState<string>("")
 
-    const [objectKeys, setObjectKeys] = useState<any[]>([sellerAccountData.profilePicture]);
+    const [objectKeys, setObjectKeys] = useState<any[]>([sellerAccountData?.profilePicture]);
     const fileInputRef = useRef<any>(null);
 
     const [customerPortalUrl, setCustomerPortalUrl] = useState<any>(null);
