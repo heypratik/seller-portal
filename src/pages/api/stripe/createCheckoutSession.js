@@ -24,8 +24,8 @@ export default async function handler(req, res) {
             }],
             mode: 'subscription',
             subscription_data: { metadata: { 'platform': 'mybranz' } },
-            success_url: `${'https://www.mybranz.com'}/account`,
-            cancel_url: `${'https://www.mybranz.com'}/account`,
+            success_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/account`,
+            cancel_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/account`,
             customer: stripeCustId
         });
         res.status(200).json({ sessionId: session.id });
