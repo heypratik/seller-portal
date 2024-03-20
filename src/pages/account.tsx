@@ -208,6 +208,8 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
 
         const customerEmail = sellerAccountData?.email
 
+        console.log(customerEmail)
+
         if (customerEmail) {
             const stripe = await stripePromise;
             const response = await fetch('/api/stripe/createCheckoutSession', {
@@ -227,7 +229,9 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
             }
 
         } else {
-            router.push('/auth/register')
+            // router.push('/auth/signup')
+            console.log(customerEmail)
+            console.log(sellerAccountData)
         }
     }
 
