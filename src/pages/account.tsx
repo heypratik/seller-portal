@@ -31,6 +31,7 @@ interface SellerData {
         active: boolean;
         isPlanActive: boolean;
         stripeCustomerID: string;
+        profilePicture: string;
         createdAt: string;
         updatedAt: string;
     };
@@ -46,7 +47,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
 
     const router = useRouter()
 
-    const sellerAccountData = accountData?.data?.seller
+    const sellerAccountData = sellerData?.data
     const brandAccountData = accountData?.data?.brand
 
     const [loading, setLoading] = useState(false)
@@ -229,10 +230,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
             }
 
         } else {
-            // router.push('/auth/signup')
-            console.log(customerEmail)
-            console.log(sellerAccountData)
-            console.log(accountData)
+            router.push('/auth/signup')
         }
     }
 
@@ -474,13 +472,9 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
-    console.log(sellerData, "sellerData")
-
     // Get the seller data using the email that the user is logged in with
     const accountResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/account/${sellerData?.data?.id}`)
     const accountData = await accountResponse.json()
-
-    console.log(accountData, "accountData")
 
     if (!accountData.success) {
         return {
