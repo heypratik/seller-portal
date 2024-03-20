@@ -232,6 +232,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
             // router.push('/auth/signup')
             console.log(customerEmail)
             console.log(sellerAccountData)
+            console.log(accountData)
         }
     }
 
