@@ -474,9 +474,14 @@ export async function getServerSideProps({ req }: any) {
         }
     }
 
+    console.log(sellerData, "sellerData")
+
     // Get the seller data using the email that the user is logged in with
     const accountResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/account/${sellerData?.data?.id}`)
     const accountData = await accountResponse.json()
+
+    console.log(accountData, "accountData")
+
     if (!accountData.success) {
         return {
             props: {
