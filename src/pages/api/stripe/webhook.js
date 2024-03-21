@@ -32,6 +32,9 @@ export default async (req, res) => {
                 },
                 body: JSON.stringify(event)
               })
+            const createdJson = await responseNewSub.json()
+            console.log(createdJson)
+            console.log(event)
           // Handle new subscription
         break
         case 'customer.subscription.deleted':
@@ -42,6 +45,9 @@ export default async (req, res) => {
                 },
                 body: JSON.stringify(event)
               })
+          const deletedJson = await responseSubDelete.json()
+          console.log(deletedJson)
+          console.log(event)
           // Handle subscription cancellation
         break
         case 'customer.subscription.updated':
@@ -52,6 +58,9 @@ export default async (req, res) => {
                 },
                 body: JSON.stringify(event)
               })
+          const updatedJson = await responseUpdate.json()
+          console.log(updatedJson)
+          console.log(event)
           // Handle subscription update
         break
         default:
