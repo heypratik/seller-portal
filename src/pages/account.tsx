@@ -9,6 +9,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { loadStripe } from '@stripe/stripe-js';
 // import stripe from 'stripe';
 import { stripe } from '../../lib/stripe'
+import { createCustomer } from '../../lib/createCustomer'
 import { useRouter } from 'next/router'
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import {
@@ -206,33 +207,68 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
 
 
     async function handleSubscribe() {
+        if (sellerAccountData?.stripeCustomerID) {
+            setLoading(true)
+            const customerEmail = sellerAccountData?.email
 
-        const customerEmail = sellerAccountData?.email
+            if (customerEmail) {
+                const stripe = await stripePromise;
+                const response = await fetch('/api/stripe/createCheckoutSession', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ planId: process.env.NEXT_PUBLIC_PRODUCTID, customerEmail, stripeCustomerId: sellerAccountData?.stripeCustomerID })
+                });
+                const session = await response.json();
 
-        console.log(sellerAccountData)
-
-        if (customerEmail) {
-            const stripe = await stripePromise;
-            const response = await fetch('/api/stripe/createCheckoutSession', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ planId: process.env.NEXT_PUBLIC_PRODUCTID, customerEmail, stripeCustomerId: sellerAccountData?.stripeCustomerID })
-            });
-            const session = await response.json();
-
-            if (session && stripe) {
-                const result = await stripe.redirectToCheckout({ sessionId: session.sessionId });
-                if (result.error) {
-                    console.error(result.error);
+                if (session && stripe) {
+                    const result = await stripe.redirectToCheckout({ sessionId: session.sessionId });
+                    if (result.error) {
+                        console.error(result.error);
+                    }
                 }
-            }
 
-        } else {
-            router.push('/auth/signup')
+            } else {
+                router.push('/auth/signup')
+            }
         }
     }
+
+    // const [hasEffectRun, setHasEffectRun] = useState(false);
+
+
+    // useEffect(() => {
+    //     if (!hasEffectRun) {
+    //         async function createCust(email: any) {
+    //             if (!sellerAccountData?.stripeCustomerID) {
+    //                 const stripeCustomerID = await createCustomer(sellerAccountData.name, sellerAccountData.email);
+
+    //                 const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/account/update`, {
+    //                     method: 'PATCH',
+    //                     headers: {
+    //                         'Content-Type': 'application/json'
+    //                     },
+    //                     body: JSON.stringify({
+    //                         sellerId: sellerData?.data?.id,
+    //                         stripeCustomerID: stripeCustomerID
+    //                     })
+    //                 });
+
+    //                 const data = await response.json();
+    //                 // reload page
+    //                 if (data.success) {
+    //                     router.reload();
+    //                 }
+
+    //                 setHasEffectRun(true);
+    //             }
+    //         }
+
+    //         createCust(sellerAccountData?.email);
+    //     }
+    // }, [hasEffectRun]);
+
 
 
     useEffect(() => {
@@ -254,7 +290,6 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
         if (sellerAccountData?.stripeCustomerID) {
             fetchCustomerPortalUrl();
         }
-
 
     }, []);
 
@@ -427,9 +462,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
                                                         </div>
                                                     </div>
                                                     <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                                        <button type="button" onClick={() => handleSubscribe()} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#f23150] text-base font-medium text-white hover:bg-[#f23150] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f23150] sm:ml-3 sm:w-auto sm:text-sm">
-                                                            Starts at $29.99/m
-                                                        </button>
+                                                        {loading ? <button type="button" onClick={() => handleSubscribe()} className="gap-3 items-center w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#f23150] text-base font-medium text-white hover:bg-[#f23150] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f23150] sm:ml-3 sm:w-auto sm:text-sm"><AiOutlineLoading3Quarters className='spinner' /> Starts at $29.99/m </button> : <button disabled={!sellerAccountData.stripeCustomerID} type="button" onClick={() => handleSubscribe()} className="gap-3 items-center w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-[#f23150] text-base font-medium text-white hover:bg-[#f23150] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f23150] sm:ml-3 sm:w-auto sm:text-sm">Starts at $29.99/m </button>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -470,6 +503,21 @@ export async function getServerSideProps({ req }: any) {
                 permanent: false
             }
         }
+    }
+
+    if (sellerData?.data.stripeCustomerID == null || sellerData?.data.stripeCustomerID == "") {
+        const stripeId = await createCustomer(sellerData?.data.name, sellerData?.data.email)
+        sellerData.data.stripeCustomerID = stripeId
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/account/update`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sellerId: sellerData?.data.id,
+                stripeCustomerID: stripeId
+            })
+        });
     }
 
     // Get the seller data using the email that the user is logged in with
