@@ -23,6 +23,7 @@ export default async function handler(req, res) {
                 quantity: 1,
             }],
             mode: 'subscription',
+            discounts: [{ coupon: 'DCD7vrIp' }],
             subscription_data: { metadata: { 'platform': 'mybranz' } },
             success_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/account`,
             cancel_url: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/account`,
@@ -31,7 +32,7 @@ export default async function handler(req, res) {
         res.status(200).json({ sessionId: session.id });
 
     } catch (error) {
-        console.log('error')
+        console.log(error)
         res.status(500).json({ error: { message: error.message } });
     }
 }
