@@ -45,6 +45,8 @@ export default function Orders({ session, ordersData, sellerData }: any) {
     totalPages: 0,
   });
 
+  console.log(data)
+
   const [search, setSearch] = useState('')
 
   const [parentCheckbox, setParentCheckbox] = useState(false)
@@ -90,10 +92,10 @@ export default function Orders({ session, ordersData, sellerData }: any) {
       setPaymentFilter(prevState => prevState.filter((item: any) => item !== event.target.name))
     } else {
       if (event.target.name == "all") {
-        if (paymentFilter.includes("Paid") && paymentFilter.includes("Unpaid")) {
+        if (paymentFilter.includes("Paid") && paymentFilter.includes("FAILED")) {
           setPaymentFilter([])
         } else {
-          setPaymentFilter(["Paid", "Unpaid"])
+          setPaymentFilter(["Paid", "FAILED"])
         }
       } else {
         setPaymentFilter(prevState => [...prevState, event.target.name])
@@ -114,21 +116,13 @@ export default function Orders({ session, ordersData, sellerData }: any) {
   }, [parentCheckbox])
 
   useEffect(() => {
-    let mounted = true;
-
     async function fetchData() {
       const result = await getData();
-      if (mounted) {
-        setData(result);
-      }
+      setData({ orders: result.orders, currentPage: result.pagination.currentPage, totalPages: result.pagination.totalPages });
     }
-
     fetchData();
 
-    return () => {
-      mounted = false;
-    }
-  }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search, paymentFilter, getData]);
+  }, [resultNumber, activePageNumber, categoryFilter, statusFilter, search, paymentFilter]);
 
   async function getData() {
     if (search) {
@@ -137,7 +131,12 @@ export default function Orders({ session, ordersData, sellerData }: any) {
         if (search.length == 1) {
           setActivePageNumber(1)
         }
-        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/search/${sellerData?.data?.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
+
+        // `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/user/${sellerData?.data?.id}?page=1&limit=20`
+
+        // const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/search/${sellerData?.data?.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
+
+        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/seller/search/1?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
         const productsData = await productsResponse.json()
         const products = productsData.data
         return products
@@ -147,10 +146,9 @@ export default function Orders({ session, ordersData, sellerData }: any) {
 
     } else {
       try {
-        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/limited/seller/${sellerData?.data?.id}?fulfillmentStatus=${statusFilter.join(',')}&paymentStatus=${paymentFilter.join(',')}&page=${activePageNumber}&limit=${resultNumber}`)
+        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/seller/1?fulfillmentStatus=${statusFilter.join(',')}&paymentStatus=${paymentFilter.join(',')}&page=${activePageNumber}&limit=${resultNumber}`)
         const productsData = await productsResponse.json()
-        const products = productsData.data
-        return products
+        return productsData
       } catch (error) {
         return { currentPage: 1, totalPages: 1, orders: [] }
       }
@@ -209,7 +207,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
 
                                 <div className="mt-2 flex items-center w-full"><p className="font-bold text-base my-2">Payment Status</p></div>
                                 <div className="mt-1 flex items-center w-full"><label><input type="checkbox" checked={paymentFilter.includes("Paid")} name="Paid" onChange={(e) => handlePaymentFilter(e)} /> Paid</label></div>
-                                <div className="mt-1 flex items-center w-full"><label><input type="checkbox" checked={paymentFilter.includes("Unpaid")} name="Unpaid" onChange={(e) => handlePaymentFilter(e)} /> Unpaid</label></div>
+                                <div className="mt-1 flex items-center w-full"><label><input type="checkbox" checked={paymentFilter.includes("FAILED")} name="FAILED" onChange={(e) => handlePaymentFilter(e)} /> Failed</label></div>
                               </div>
                             </PopoverContent>
                           </Popover>
@@ -233,19 +231,19 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                         </thead>
                         <tbody>
                           {data && data?.orders?.map((row, index) => (
-                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => handleClick(row.customerOrderId)}>
+                            <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => handleClick(row.id)}>
                               <td className="py-2 px-4 border-b"><input type="checkbox" value={row.customerOrderId} name="childCheckbox" id="childCheckbox" /></td>
-                              <td className="py-2 px-4 border-b">#{row.customerOrderId}</td>
-                              <td className="py-2 px-4 border-b">{`${new Date(row.orderDate).toLocaleDateString('en-US', {
+                              <td className="py-2 px-4 border-b">#{row.id.split("-")[0].toUpperCase()}</td>
+                              <td className="py-2 px-4 border-b">{`${new Date(row.createdAt).toLocaleDateString('en-US', {
                                 // weekday: 'short', 
                                 month: 'short',
                                 day: 'numeric',
                                 year: 'numeric'
                               })}`}</td>
-                              <td className="py-2 px-4 border-b">{row.customerName}</td>
-                              <td className="py-2 px-4 border-b">{row.productPaymentStatus}</td>
-                              <td className="py-2 px-4 border-b">{row.fulfillmentStatus}</td>
-                              <td className="py-2 px-4 border-b">${row.productTotal}</td>
+                              <td className="py-2 px-4 border-b">{row.billing_address.name}</td>
+                              <td className="py-2 px-4 border-b">{row.paymentStatus}</td>
+                              <td className="py-2 px-4 border-b">{row.status.toUpperCase()}</td>
+                              <td className="py-2 px-4 border-b">${row.finalAmount}</td>
                               {/* <Dialog>
                                  <DialogTrigger asChild>
                                    <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" />
@@ -326,7 +324,7 @@ export async function getServerSideProps({ req }: any) {
   }
 
   // Get the seller data using the email that the user is logged in with
-  const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/limited/seller/${sellerData?.data?.id}`)
+  const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/user/${sellerData?.data?.id}?page=1&limit=20`)
   const ordersData = await orderResponse.json()
   if (!ordersData.success) {
     return {
