@@ -118,7 +118,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
   useEffect(() => {
     async function fetchData() {
       const result = await getData();
-      setData({ orders: result.orders, currentPage: result.pagination.currentPage, totalPages: result.pagination.totalPages });
+      setData({ orders: result?.orders, currentPage: result?.pagination?.currentPage, totalPages: result?.pagination?.totalPages });
     }
     fetchData();
 

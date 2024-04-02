@@ -100,7 +100,7 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
         onSubmit
     })
 
-    async function onSubmit(values: { orderNotes: string, customerName: string, customerEmail: string, customerPhone: string, customerShippingAddress: string, customerShippingCountry: string, customerPincode: string, customerBillingAddress: string, customerBillingCountry: string, customerBillingPincode: string, customerShippingName: string }) {
+    async function onSubmit(values: { orderNotes: string, customerName: string, customerEmail: string, customerPhone: string, customerShippingAddress: string, customerShippingCountry: string, customerPincode: string, customerBillingAddress: string, customerBillingCountry: string, customerBillingPincode: string, customerShippingName: string, customerShippingEmail: string }) {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/update-details/${sellerData?.data?.id}/${router?.query?.orderId?.[0]}`, {
                 method: 'PUT',
@@ -465,7 +465,7 @@ export async function getServerSideProps({ req }: any) {
 
     const productId = url.split('/').pop()
 
-    // Get the seller data using the email that the user is logged in with
+    // Get the order data using the brandid that the user is logged in with
     const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/1/${productId}`)
     const orderData = await orderResponse.json()
     if (!orderData.success) {
