@@ -135,7 +135,7 @@ export default function Brand({ sellerData, interestData }: { sellerData: Seller
     const [businessNameSelectedOption, setBusinessNameSelectedOption] = useState<any>('');
     const [businessNameOptions, setBusinessNameOptions] = useState(interestData.data || []);
     const [showBusinessNameCombobox, setShowBusinessNameCombobox] = useState(false);
-    const [interestId, setInterestId] = useState(null)
+    const [interestId, setInterestId] = useState(brand?.interestId ? brand?.interestId : null)
 
     useEffect(() => {
         // Filter options based on the input value
@@ -257,6 +257,8 @@ export default function Brand({ sellerData, interestData }: { sellerData: Seller
         // remove interestid from values to check because it can be null
         let valuesToCheck = { ...values }
         delete valuesToCheck?.interestId
+
+        console.log(valuesToCheck)
 
         if (!Object.values(valuesToCheck).every(v => v)) {
             notification(false, "Please fill out all the fields.");
@@ -547,7 +549,7 @@ export default function Brand({ sellerData, interestData }: { sellerData: Seller
                                     <div className="flex-1">
                                         <label htmlFor="category" className="mt-4 block text-base font-medium text-[#30323E] mb-2"> Brand Category*</label>
 
-                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); formik.setFieldValue('brandSubCategory', []); setSubCategory([]); }} >
+                                        <select {...formik.getFieldProps('category')} id="category" name="category" className="mt-1 px-4  bg-[#F7F9FA] border shadow-sm border-[#DDDDDD]  text-base focus:outline-none  w-[22.5rem] rounded-md h-10 mb-6" value={category} onChange={(e) => { setCategory(e.target.value); formik.setFieldValue('category', e.target.value), formik.setFieldValue('brandSubCategory', []); setSubCategory([]); }} >
                                             <option className="text-base" value="">Select Category</option>
                                             {Object.keys(categories).map((cat) => (
                                                 <option className="text-base" key={cat} value={cat}>
@@ -728,14 +730,14 @@ export async function getServerSideProps({ req }: any) {
     }
 
 
-    if (!sellerData?.data?.isPlanActive) {
-        return {
-            redirect: {
-                destination: '/account',
-                permanent: false
-            }
-        }
-    }
+    // if (!sellerData?.data?.isPlanActive) {
+    //     return {
+    //         redirect: {
+    //             destination: '/account',
+    //             permanent: false
+    //         }
+    //     }
+    // }
 
     // Get all interest from interest table
     const interestResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/interests`)

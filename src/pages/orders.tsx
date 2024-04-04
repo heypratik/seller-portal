@@ -45,8 +45,6 @@ export default function Orders({ session, ordersData, sellerData }: any) {
     totalPages: 0,
   });
 
-  console.log(data)
-
   const [search, setSearch] = useState('')
 
   const [parentCheckbox, setParentCheckbox] = useState(false)
@@ -230,11 +228,11 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                           </tr>
                         </thead>
                         <tbody>
-                          {data && data?.orders?.map((row, index) => (
+                          {data && data?.orders?.map((row: any, index: any) => (
                             <tr key={index} className="hover:bg-gray-50 cursor-pointer" onClick={(e) => handleClick(row.id)}>
                               <td className="py-2 px-4 border-b"><input type="checkbox" value={row.customerOrderId} name="childCheckbox" id="childCheckbox" /></td>
-                              <td className="py-2 px-4 border-b">#{row.id.split("-")[0].toUpperCase()}</td>
-                              <td className="py-2 px-4 border-b">{`${new Date(row.createdAt).toLocaleDateString('en-US', {
+                              <td className="py-2 px-4 border-b">#{row?.id?.split("-")[0].toUpperCase()}</td>
+                              <td className="py-2 px-4 border-b">{`${new Date(row?.createdAt).toLocaleDateString('en-US', {
                                 // weekday: 'short', 
                                 month: 'short',
                                 day: 'numeric',
@@ -324,19 +322,19 @@ export async function getServerSideProps({ req }: any) {
   }
 
   // Get the seller data using the email that the user is logged in with
-  const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/user/${sellerData?.data?.id}?page=1&limit=20`)
-  const ordersData = await orderResponse.json()
-  if (!ordersData.success) {
-    return {
-      redirect: {
-        destination: '/auth/signup',
-        permanent: false
-      }
-    }
-  }
+  // const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/user/${sellerData?.data?.Brands[0]?.id}?page=1&limit=20`)
+  // const ordersData = await orderResponse.json()
+  // if (!ordersData.success) {
+  //   return {
+  //     redirect: {
+  //       destination: '/auth/signup',
+  //       permanent: false
+  //     }
+  //   }
+  // }
 
 
   return {
-    props: { session, ordersData, sellerData },
+    props: { session, sellerData },
   }
 }

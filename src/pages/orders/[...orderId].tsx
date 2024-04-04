@@ -70,13 +70,12 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
         setCache(prevCache => ({ ...prevCache, [key]: value }));
     };
 
-    const orderDetails = orderData.orders[0]
-
-    console.log(orderDetails)
+    const orderDetails = orderData
 
     // console.log(sellerData.data.Brands[0])
 
     const [editingField, setEditingField] = useState<string>();
+
     const [loading, setLoading] = useState(false)
 
     const router = useRouter()
@@ -102,10 +101,10 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
     async function onSubmit(values: { orderNotes: string, customerName: string, customerEmail: string, customerPhone: string, customerShippingAddress: string, customerShippingCountry: string, customerPincode: string, customerBillingAddress: string, customerBillingCountry: string, customerBillingPincode: string, customerShippingName: string, customerShippingEmail: string }) {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/update-details/${sellerData?.data?.id}/${router?.query?.orderId?.[0]}`, {
-                method: 'PUT',
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/update-order-notes/${orderDetails.id}`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(values)
+                body: JSON.stringify({ notes: values.orderNotes })
             })
 
             const data = await response.json();
@@ -135,6 +134,63 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
         }
 
     }
+
+    function returnPrice(item: any) {
+        if (item?.productVariationId) {
+            return item?.ordered_products[0]?.productVariations.find((variation: any) => variation.id === item?.productVariationId)?.price
+        } else {
+            return item?.ordered_products[0]?.productPrice
+        }
+    }
+
+    function returnVariations(item: any) {
+
+        if (item?.productVariationId) {
+            let finalObject = []
+            const names = [];
+            for (let i = 0; i < item?.ordered_products[0]?.variantOptions.length; i++) {
+                names.push(item?.ordered_products[0]?.variantOptions[i].name);
+            }
+            const variations = item?.ordered_products[0]?.productVariations.find((variation: any) => variation.id === item?.productVariationId)?.options
+
+            for (let i = 0; i < names.length; i++) {
+                let obj = { name: names[i], value: variations[i] };
+                finalObject.push(obj);
+            }
+
+            return finalObject.map((variation: any, index: any) => {
+                return `${variation.name}: ${variation.value}`
+            }).join(', ')
+        } else {
+            return "No Variations"
+        }
+    }
+
+    function returnImage(item: any) {
+        if (item?.ordered_products[0]?.productImagesArray) {
+            if (item?.ordered_products[0]?.productImagesArray[0].includes('http')) {
+                return <img width="40px" height="80px" className='rounded-md border shadow-sm border-[#DDDDDD]' src={item?.ordered_products[0]?.productImagesArray} />
+            } else {
+                return <CustomImage objectKey={item?.ordered_products[0]?.productImagesArray[0]} token={token} removeImage={null} cache={cache} updateCache={handleCacheUpdate} />
+            }
+        } else {
+            return <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                <CiImageOn color='#818181' fontSize="20px" />
+            </div>
+        }
+    }
+
+    function hasMultipleItemsWithTracking() {
+        if (!orderDetails || !orderDetails.orderItems) {
+            return false;
+        }
+        if (orderDetails.orderItems.length > 1) {
+            return orderDetails.orderItems.some((item: any) => item.shipmentTrackingNo);
+        } else {
+            return false;
+        }
+    }
+
 
     return (
         <Layout>
@@ -186,14 +242,10 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
                                             <div className='parentdiv flex items-start'>
                                                 <div className='flex-1 mr-6'>
-                                                    <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
-                                                        {orderDetails?.status === 'Unfulfilled' ? <span className='mb-5 flex items-center'>
-                                                            <HiOutlineExclamationCircle filter='drop-shadow(0px 0px 5px rgb(255 19 3 / 0.6)' fontSize='24px' fill='#fff' color='red' />
-                                                            <p className='font-semibold ml-4'>{orderDetails?.status}</p>
-                                                        </span> : <span className='mb-5 flex items-center'>
-                                                            <HiOutlineCheckCircle filter='drop-shadow(0px 0px 5px rgb(35 138 87 / 0.6)' fontSize='24px' fill='#fff' color='#238a57' />
-                                                            <p className='font-semibold ml-4'>{orderDetails?.status}</p>
-                                                        </span>}
+
+                                                    {hasMultipleItemsWithTracking() && <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
+                                                        <div className='flex items-center mb-4'><HiOutlineCheckCircle filter='drop-shadow(0px 0px 5px rgb(35 138 87 / 0.6)' fontSize='24px' fill='#fff' color='#238a57' />
+                                                            <p className='font-semibold ml-4'>Fulfilled</p></div>
                                                         {/* Product Card  */}
                                                         <div className="grid grid-cols-6 gap-4">
                                                             <div className="col-span-4 font-semibold text-gray-700">Product Name</div>
@@ -201,54 +253,40 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                             <div className="col-span-1 font-semibold text-gray-700">Total</div>
                                                         </div>
                                                         {orderDetails?.orderItems?.map((item: any, index: any) => {
-                                                            function returnPrice(item: any) {
-                                                                if (item?.productVariationId) {
-                                                                    return item?.ordered_products[0]?.productVariations.find((variation: any) => variation.id === item?.productVariationId)?.price
-                                                                } else {
-                                                                    return item?.ordered_products[0]?.productPrice
-                                                                }
-                                                            }
-
-                                                            function returnVariations(item: any) {
-
-                                                                if (item?.productVariationId) {
-                                                                    let finalObject = []
-                                                                    const names = [];
-                                                                    for (let i = 0; i < item?.ordered_products[0]?.variantOptions.length; i++) {
-                                                                        names.push(item?.ordered_products[0]?.variantOptions[i].name);
-                                                                    }
-                                                                    const variations = item?.ordered_products[0]?.productVariations.find((variation: any) => variation.id === item?.productVariationId)?.options
-
-                                                                    for (let i = 0; i < names.length; i++) {
-                                                                        let obj = { name: names[i], value: variations[i] };
-                                                                        finalObject.push(obj);
-                                                                    }
-
-                                                                    return finalObject.map((variation: any, index: any) => {
-                                                                        return `${variation.name}: ${variation.value}`
-                                                                    }).join(', ')
-                                                                } else {
-                                                                    return "No Variations"
-                                                                }
-                                                            }
-
-                                                            function returnImage(item: any) {
-                                                                if (item?.ordered_products[0]?.productImagesArray) {
-                                                                    if (item?.ordered_products[0]?.productImagesArray[0].includes('http')) {
-                                                                        return <img width="40px" height="80px" className='rounded-md border shadow-sm border-[#DDDDDD]' src={item?.ordered_products[0]?.productImagesArray} />
-                                                                    } else {
-                                                                        return <CustomImage objectKey={item?.ordered_products[0]?.productImagesArray[0]} token={token} removeImage={null} cache={cache} updateCache={handleCacheUpdate} />
-                                                                    }
-                                                                } else {
-                                                                    return <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                        <CiImageOn color='#818181' fontSize="20px" />
+                                                            if (item.shipmentTrackingNo) {
+                                                                return (
+                                                                    <div key={index} className="mt-4 grid grid-cols-6 gap-4 items-center">
+                                                                        <div className="col-span-4 flex items-center">
+                                                                            <div>{returnImage(item)}</div>
+                                                                            <div className="ml-4">
+                                                                                <p className="font-normal text-gray-700 truncate">{item?.ordered_products[0]?.productName}</p>
+                                                                                <p className="text-sm font-normal text-gray-400">{`SKU: ${item?.ordered_products[0]?.productSku}`}</p>
+                                                                                <p className="text-sm font-normal text-gray-400">{`Tracking Number: ${item?.shipmentTrackingNo}`}</p>
+                                                                                {item?.productVariationId && <p className="text-sm font-normal text-gray-400">{`Variation: ${returnVariations(item)}`}</p>}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="col-span-1 font-normal text-gray-700">{`$${returnPrice(item)} X ${Number(item?.quantity)}`}</div>
+                                                                        <div className="col-span-1 font-normal text-gray-700">{`$${Number(returnPrice(item)) * Number(item?.quantity)}`}</div>
                                                                     </div>
-                                                                }
+                                                                )
                                                             }
+                                                        })}
+                                                    </div>}
 
-                                                            return (
-                                                                <>
-
+                                                    <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
+                                                        <span className='mb-5 flex items-center'>
+                                                            <HiOutlineExclamationCircle filter='drop-shadow(0px 0px 5px rgb(255 19 3 / 0.6)' fontSize='24px' fill='#fff' color='red' />
+                                                            <p className='font-semibold ml-4'>Unfulfilled</p>
+                                                        </span>
+                                                        {/* Product Card  */}
+                                                        <div className="grid grid-cols-6 gap-4">
+                                                            <div className="col-span-4 font-semibold text-gray-700">Product Name</div>
+                                                            <div className="col-span-1 font-semibold text-gray-700">Price</div>
+                                                            <div className="col-span-1 font-semibold text-gray-700">Total</div>
+                                                        </div>
+                                                        {orderDetails?.orderItems?.map((item: any, index: any) => {
+                                                            if (!item.shipmentTrackingNo) {
+                                                                return (
                                                                     <div key={index} className="mt-4 grid grid-cols-6 gap-4 items-center">
                                                                         <div className="col-span-4 flex items-center">
                                                                             <div>{returnImage(item)}</div>
@@ -261,8 +299,8 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                                         <div className="col-span-1 font-normal text-gray-700">{`$${returnPrice(item)} X ${Number(item?.quantity)}`}</div>
                                                                         <div className="col-span-1 font-normal text-gray-700">{`$${Number(returnPrice(item)) * Number(item?.quantity)}`}</div>
                                                                     </div>
-                                                                </>
-                                                            )
+                                                                )
+                                                            }
                                                         })}
 
 
@@ -271,20 +309,20 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                             <>
                                                                 <hr className='my-4' />
                                                                 <div className='flex justify-end'>
-                                                                    <Link href={`/orders/fulfill/${orderDetails?.id}`}> <button className='bg-[#f12d4d] text-white font-medium py-3 px-4 rounded-md border border-[#f12d4d] '>Mark As Fulfilled</button></Link>
+                                                                    <Link href={`/orders/fulfill/${orderDetails?.id}`}><button className='bg-[#f12d4d] text-white font-medium py-3 px-4 rounded-md border border-[#f12d4d] '>Mark As Fulfilled</button></Link>
                                                                 </div>
                                                             </>}
                                                     </div>
 
                                                     {/* Payment Card */}
                                                     <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
-                                                        {orderDetails?.productPaymentStatus === "Paid" ? <span className='mb-5 flex items-center'>
+                                                        {/* {orderDetails?.productPaymentStatus === "Paid" ? <span className='mb-5 flex items-center'>
                                                             <HiOutlineCheckCircle filter='drop-shadow(0px 0px 5px rgb(35 138 87 / 0.6)' fontSize='24px' fill='#fff' color='#238a57' />
                                                             <p className='font-semibold ml-4'>{orderDetails?.productPaymentStatus}</p>
                                                         </span> : <span className='mb-5 flex items-center'>
                                                             <HiOutlineExclamationCircle filter='drop-shadow(0px 0px 5px rgb(255 19 3 / 0.6)' fontSize='24px' fill='#fff' color='red' />
                                                             <p className='font-semibold ml-4'>{orderDetails?.productPaymentStatus}</p>
-                                                        </span>}
+                                                        </span>} */}
 
                                                         <div className='flex justify-between mb-3'>
                                                             <div className='flex w-full'>
@@ -298,9 +336,9 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                         <div className='flex justify-between mb-3'>
                                                             <div className='flex w-full'>
                                                                 <p className='flex-[0.3] font-normal text-gray-700'>Shipping</p>
-                                                                <p className='flex-1 font-normal text-gray-700'>US Global</p>
+                                                                <p className='flex-1 font-normal text-gray-700'>{orderDetails?.shippingData?.name ? orderDetails?.shippingData?.name : '-'}</p>
                                                             </div>
-                                                            <p className=' font-normal text-gray-700'>{`$${orderDetails?.productShipping}`}</p>
+                                                            <p className=' font-normal text-gray-700'>${orderDetails?.shippingData?.price ? orderDetails?.shippingData?.price : '0'}</p>
                                                         </div>
 
                                                         {/* <div className='flex justify-between mb-3'>
@@ -353,10 +391,10 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                     <div className='bg-gray-100 rounded-lg  p-4 '>
                                                         <section className='mb-4'>
                                                             <span className='flex items-center justify-between'><p className='font-semibold'>Customer</p>
-                                                                {editingField == "customer" ? <div className='flex items-center'>
+                                                                {/* {editingField == "customer" ? <div className='flex items-center'>
                                                                     <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
                                                                     <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
-                                                                </div> : <BsPencil onClick={() => setEditingField("customer")} className=' cursor-pointer' />}
+                                                                </div> : <BsPencil onClick={() => setEditingField("customer")} className=' cursor-pointer' />} */}
                                                             </span>
                                                             {editingField !== "customer" && <p className='font-normal text-sm mt-2 text-gray-700'>{formik?.values?.customerName ? formik.values.customerName : "No Name"}</p>}
                                                             {editingField == "customer" && <input type="text" {...formik.getFieldProps('customerName')} name="customerName" id="customerName" placeholder='John Doe' className='border border-gray-300 rounded-md w-full mt-2 p-2' />}
@@ -364,10 +402,11 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
                                                         <section className='mb-6'>
                                                             <span className='flex items-center justify-between'><p className='font-semibold'>Contact Information</p>
-                                                                {editingField == "contact" ? <div className='flex items-center'>
+                                                                {/* {editingField == "contact" ? <div className='flex items-center'>
                                                                     <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
                                                                     <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
-                                                                </div> : <BsPencil onClick={() => setEditingField("contact")} className=' cursor-pointer' />}
+                                                                </div> : <BsPencil onClick={() => setEditingField("contact")} className=' cursor-pointer' />
+                                                                } */}
                                                             </span>
                                                             {editingField !== "contact" && <p className='font-normal text-sm mt-2 text-gray-700'>{formik?.values?.customerEmail ? formik.values.customerEmail : "No Email"}</p>}
                                                             {editingField == "contact" && <input type="text" {...formik.getFieldProps('customerEmail')} name="customerEmail" id="customerEmail" placeholder='John Doe' className='border border-gray-300 rounded-md w-full mt-2 p-2' />}
@@ -378,38 +417,40 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
                                                         <section className='mb-6'>
                                                             <span className='flex items-center justify-between'><p className='font-semibold'>Shipping Address</p>
-                                                                {editingField == "shipping" ? <div className='flex items-center'>
+                                                                {/* {editingField == "shipping" ? <div className='flex items-center'>
                                                                     <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
                                                                     <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
-                                                                </div> : <BsPencil onClick={() => setEditingField("shipping")} className=' cursor-pointer' />}
+                                                                </div> : <BsPencil onClick={() => setEditingField("shipping")} className=' cursor-pointer' />
+                                                                } */}
                                                             </span>
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerShippingName}</p>
                                                             {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerShippingAddress')} name="customerShippingAddress" id="customerShippingAddress" placeholder='123 Main St.' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerShippingAddress}</p>}
 
-                                                            {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerPincode')} name="customerPincode" id="customerPincode" placeholder='Pincode 9001' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerPincode}</p>}
+                                                            {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerPincode')} name="customerPincode" id="customerPincode" placeholder='Pincode 9001' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{orderDetails.shipping_address.city}, {orderDetails.shipping_address.state}, {formik?.values?.customerPincode}</p>}
 
                                                             {editingField == "shipping" ? <input type="text" {...formik.getFieldProps('customerShippingCountry')} name="customerShippingCountry" id="customerShippingCountry" placeholder='USA' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerShippingCountry}</p>}
 
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerPhone}</p>
-                                                            <a target='_blank' rel='noreferrer' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerShippingAddress}+${formik?.values?.customerPincode},${formik?.values?.customerShippingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
+                                                            <a target='_blank' rel='noreferrer' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerShippingAddress}+${orderDetails.shipping_address.city}+${orderDetails.shipping_address.state}+${formik?.values?.customerPincode}+${formik?.values?.customerShippingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
                                                         </section>
 
                                                         <section className='mb-6'>
                                                             <span className='flex items-center justify-between'><p className='font-semibold'>Billing Address</p>
-                                                                {editingField == "billing" ? <div className='flex items-center'>
-                                                                    <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
-                                                                    <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
-                                                                </div> : <BsPencil onClick={() => setEditingField("billing")} className=' cursor-pointer' />}
+                                                                {/* {editingField == "billing" ? <div className='flex items-center'>
+                                                                        <button type='submit'><AiOutlineCheckCircle className='cursor-pointer mr-2' fontSize="20px" /></button>
+                                                                        <RxCrossCircled onClick={() => setEditingField('')} className='cursor-pointer' fontSize="20px" />
+                                                                    </div> : <BsPencil onClick={() => setEditingField("billing")} className=' cursor-pointer' />
+                                                                    } */}
                                                             </span>
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerName}</p>
                                                             {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingAddress')} name="customerBillingAddress" id="customerBillingAddress" placeholder='123 Main St.' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingAddress}</p>}
 
-                                                            {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingPincode')} name="customerBillingPincode" id="customerBillingPincode" placeholder='Pincode 9001' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingPincode}</p>}
+                                                            {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingPincode')} name="customerBillingPincode" id="customerBillingPincode" placeholder='Pincode 9001' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{orderDetails.shipping_address.city}, {orderDetails.shipping_address.state}, {formik?.values?.customerBillingPincode}</p>}
 
                                                             {editingField == "billing" ? <input type="text" {...formik.getFieldProps('customerBillingCountry')} name="customerBillingCountry" id="customerBillingCountry" placeholder='USA' className='border border-gray-300 rounded-md w-full mt-2 p-2' /> : <p className='mt-1 text-sm'>{formik?.values?.customerBillingCountry}</p>}
 
                                                             <p className='mt-1 text-sm'>{formik?.values?.customerPhone}</p>
-                                                            <a target='_blank' rel='noreferrer' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerBillingAddress}+${formik?.values?.customerBillingPincode},${formik?.values?.customerBillingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
+                                                            <a target='_blank' rel='noreferrer' href={`https://www.google.com/maps/search/?api=1&query=${formik?.values?.customerBillingAddress}+${orderDetails.shipping_address.city}+${orderDetails.shipping_address.state}+${formik?.values?.customerBillingPincode}+${formik?.values?.customerBillingCountry}`}><p className='mt-1 text-sm underline'>View map</p></a>
                                                         </section>
                                                     </div>
                                                 </div>
@@ -463,12 +504,12 @@ export async function getServerSideProps({ req }: any) {
 
     const { url } = req
 
-    const productId = url.split('/').pop()
+    const orderId = url.split('/').pop()
 
     // Get the order data using the brandid that the user is logged in with
-    const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/1/${productId}`)
-    const orderData = await orderResponse.json()
-    if (!orderData.success) {
+    const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/${sellerData?.data?.Brands[0]?.id}/${orderId}`)
+    const orderDataJson = await orderResponse.json()
+    if (orderDataJson?.orders?.length == 0) {
         return {
             redirect: {
                 destination: '/orders',
@@ -476,6 +517,8 @@ export async function getServerSideProps({ req }: any) {
             }
         }
     }
+
+    const orderData = orderDataJson.orders[0]
 
     return {
         props: { session, orderData, sellerData },
