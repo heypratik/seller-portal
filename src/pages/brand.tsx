@@ -730,14 +730,14 @@ export async function getServerSideProps({ req }: any) {
     }
 
 
-    // if (!sellerData?.data?.isPlanActive) {
-    //     return {
-    //         redirect: {
-    //             destination: '/account',
-    //             permanent: false
-    //         }
-    //     }
-    // }
+    if (!sellerData?.data?.isPlanActive) {
+        return {
+            redirect: {
+                destination: '/account',
+                permanent: false
+            }
+        }
+    }
 
     // Get all interest from interest table
     const interestResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/brands/interests`)
