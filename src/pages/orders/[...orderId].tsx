@@ -10,56 +10,7 @@ import { getSession, useSession } from 'next-auth/react'
 import Link from 'next/link';
 import { useRouter } from 'next/router'
 import { CiImageOn } from 'react-icons/ci'
-
-// API Configurations
-const baseURL = "https://dev.mybranzapi.link";
-const postMediaEndpoint = "media/single";
-const mediaEndpoint = "media/%s";
-const token = "fb507a0b75e0f62f65b798424555733f";
-
-const CustomImage = ({ objectKey, token, removeImage, cache, updateCache }: { objectKey: string, token: string, removeImage: any, cache: any, updateCache: any }) => {
-    const [imageData, setImageData] = useState<string | null>(null);
-    useEffect(() => {
-        const fetchImage = async () => {
-            if (cache[objectKey]) {
-                setImageData(cache[objectKey])
-            } else {
-                try {
-                    const response = await fetch(
-                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                    if (response.ok) {
-
-                        const blob = await response.blob();
-                        const imageUrl = URL.createObjectURL(blob);
-                        setImageData(imageUrl);
-                        updateCache(objectKey, imageUrl);
-                    }
-                } catch (error) {
-                    updateCache(objectKey, null);
-                    console.log("Error fetching image:", error);
-                }
-            }
-        };
-
-        fetchImage();
-    }, [objectKey]);
-
-    return imageData ? (
-        <img
-            src={imageData}
-            alt={`custom-${imageData}`}
-            className="w-[40px] h-[40px] border-2 object-cover border-gray-200 rounded-md prod-images"
-        />
-    ) : (
-        <div className='text-xs'>Loading image...</div>
-    );
-};
+import CustomImage from "../../../utlis/CustomImage";
 
 
 function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any }) {
@@ -171,7 +122,7 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
             if (item?.ordered_products[0]?.productImagesArray[0].includes('http')) {
                 return <img width="40px" height="80px" className='rounded-md border shadow-sm border-[#DDDDDD]' src={item?.ordered_products[0]?.productImagesArray} />
             } else {
-                return <CustomImage objectKey={item?.ordered_products[0]?.productImagesArray[0]} token={token} removeImage={null} cache={cache} updateCache={handleCacheUpdate} />
+                return <CustomImage objectKey={item?.ordered_products[0]?.productImagesArray[0]} removeImage={null} cache={cache} updateCache={handleCacheUpdate} width="40px" height="40px" />
             }
         } else {
             return <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>

@@ -23,6 +23,7 @@ import {
 } from "../../../shadcn/components/ui/popover"
 
 import { BsPencil, BsTrash3Fill } from 'react-icons/bs'
+import CustomImage from "../../../utlis/CustomImage";
 
 
 interface Data {
@@ -51,6 +52,11 @@ export default function Products({ session, sellerData }: any) {
 
     const [statusFilter, setStatusFilter] = useState<string[]>([])
     const [categoryFilter, setCategoryFilter] = useState<string[]>([])
+    const [cache, setCache] = useState({});
+
+    const handleCacheUpdate = (key: any, value: any) => {
+        setCache(prevCache => ({ ...prevCache, [key]: value }));
+    };
 
     const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (categoryFilter.includes(event.target.name)) {
@@ -156,58 +162,9 @@ export default function Products({ session, sellerData }: any) {
 
     }
 
-    function ProductImage({ objKey }: any) {
-        const [imageData, setImageData] = useState<string | null>(null);
-        const baseURL = "https://dev.mybranzapi.link";
-        const mediaEndpoint = "media/%s";
-        const token = "fb507a0b75e0f62f65b798424555733f";
-
-        useEffect(() => {
-            const fetchImage = async () => {
-                try {
-                    const response = await fetch(
-                        `${baseURL}/${mediaEndpoint.replace(/%s/, objKey)}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        const url = URL.createObjectURL(blob);
-                        setImageData(url);
-                    }
-                } catch (error) {
-                    console.log("Error fetching image:", error);
-                }
-            };
-
-            if (objKey && !objKey.includes("http")) {
-                fetchImage();
-            } else {
-                // Handle the case where objKey includes "http" if needed
-            }
-        }, [objKey]);
-
-        if (objKey && objKey.includes("http")) {
-            return null;
-        }
-
-        return imageData ? (
-            <img
-                src={imageData}
-                alt={`custom-${imageData}`}
-                className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images"
-            />
-        ) : (
-            <div><AiOutlineLoading3Quarters className='spinner' /></div>
-        );
-    }
-
     function renderProductImage(row: any) {
         if (row?.collectionImageObjectKey && !row?.collectionImageObjectKey.includes("http")) {
-            return <ProductImage objKey={row?.collectionImageObjectKey} />;
+            return <CustomImage objectKey={row?.collectionImageObjectKey} removeImage={null} width="50px" height="50px" cache={cache} updateCache={handleCacheUpdate} />;
         } else if (row?.collectionImageObjectKey && row?.collectionImageObjectKey.includes("http")) {
             return <img src={row?.collectionImageObjectKey} alt="product image" className="w-[50px] h-[50px] border-2 border-gray-200 rounded-md prod-images" />
         } else {

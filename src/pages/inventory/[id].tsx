@@ -22,6 +22,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "../../../shadcn/components/ui/dialog"
+import CustomImage from '../../../utlis/CustomImage';
 
 interface VariantOption {
     id: number;
@@ -69,51 +70,6 @@ const baseURL = "https://dev.mybranzapi.link";
 const postMediaEndpoint = "media/single";
 const mediaEndpoint = "media/%s";
 const token = "fb507a0b75e0f62f65b798424555733f";
-
-const CustomImage = ({ objectKey, token, removeImage, cache, updateCache }: { objectKey: string, token: string, removeImage: any, cache: any, updateCache: any }) => {
-    const [imageData, setImageData] = useState<string | null>(null);
-    useEffect(() => {
-        const fetchImage = async () => {
-            if (cache[objectKey]) {
-                setImageData(cache[objectKey])
-            } else {
-                try {
-                    const response = await fetch(
-                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                    if (response.ok) {
-
-                        const blob = await response.blob();
-                        const imageUrl = URL.createObjectURL(blob);
-                        setImageData(imageUrl);
-                        updateCache(objectKey, imageUrl);
-                    }
-                } catch (error) {
-                    updateCache(objectKey, null);
-                    console.log("Error fetching image:", error);
-                }
-            }
-        };
-
-        fetchImage();
-    }, [objectKey]);
-
-    return imageData ? (
-        <img
-            src={imageData}
-            alt={`custom-${imageData}`}
-            className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
-        />
-    ) : (
-        <div className='text-xs'>Loading image...</div>
-    );
-};
-
 
 export default function ProductList({ sellerData, productData, collecionData }: { sellerData: SellerData, productData: any, collecionData: any }) {
 
@@ -662,7 +618,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                     )
                                                 } else if (!key.includes("http")) {
                                                     return <div key={index} className="relative group w-[10%] mr-2 mt-4 ">
-                                                        <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                        <CustomImage key={index} objectKey={key} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} width='full' height='full' />
                                                         <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
                                                             <span onClick={() => {
                                                                 removeImage(key),
@@ -868,7 +824,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                                     (
                                                                                         // Another action for HTTPS
                                                                                         <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                                            {Object.keys(cache).length === objectKeys.length ? <CustomImage key={index} objectKey={variation?.mediaObjectKey} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} /> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                            {Object.keys(cache).length === objectKeys.length ? <CustomImage key={index} objectKey={variation?.mediaObjectKey} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} width='full' height='full' /> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
                                                                                                 {/* Different component or action */}
                                                                                                 <CiImageOn color='#818181' fontSize="20px" />
                                                                                             </div>}
@@ -878,7 +834,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                                     (
                                                                                         // If neither HTTP nor HTTPS
                                                                                         <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                                            <CustomImage key={index} objectKey={variation?.mediaObjectKey} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                                                            <CustomImage key={index} objectKey={variation?.mediaObjectKey}
+                                                                                                width='full' height='full' removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
                                                                                         </div>
                                                                                     )
                                                                             )
@@ -929,7 +886,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                         )
                                                                     } else if (!key.includes("https")) {
                                                                         return <div key={index} className="relative group w-[30%] mr-2 mt-4 rrr">
-                                                                            <CustomImage key={index} objectKey={key} token={token} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                                            <CustomImage key={index} objectKey={key} width='full' height='full' removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
                                                                             <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
                                                                                 <span onClick={() => {
                                                                                     simulateEscapeClick(),

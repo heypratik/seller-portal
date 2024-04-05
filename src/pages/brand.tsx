@@ -10,6 +10,7 @@ import { CountryDropdown } from 'react-country-region-selector';
 import Link from "next/link";
 import { RiDeleteBack2Fill } from "react-icons/ri";
 import { set } from "date-fns";
+import CustomImage from "../../utlis/CustomImage";
 
 
 
@@ -53,45 +54,15 @@ const categories: CategoryType = {
     "Bags": ["Cross-body bags", "Shoulder bags", "Wallets", "Handbags", "Clutches", "Purse", "Tote Bags"],
 };
 
-const CustomImage = memo(function CustomImage({ objectKey, token }: { objectKey: string, token: string }) {
-    const [imageData, setImageData] = useState<string | null>(null);
-
-    useEffect(() => {
-        async function fetchImage() {
-            try {
-                const response = await fetch(`${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                if (response.ok) {
-                    const blob = await response.blob();
-                    setImageData(URL.createObjectURL(blob));
-                }
-            } catch (error) {
-                console.log("Error fetching image:", error);
-            }
-        }
-
-        fetchImage();
-    }, []);
-
-    return imageData ? (
-        <img
-            src={imageData}
-            alt={`custom-${imageData}`}
-            className="w-[100px] h-[100px] border-2 rounded-md border-gray-200 prod-images cursor-pointer object-cover"
-        />
-    ) : (
-        <div>
-            <AiOutlineLoading3Quarters className="spinner" />
-        </div>
-    );
-})
 
 export default function Brand({ sellerData, interestData }: { sellerData: SellerData, interestData: any }) {
 
     const [brand, setBrand] = useState(sellerData.data.Brands[0])
+    const [cache, setCache] = useState({});
+
+    const handleCacheUpdate = (key: any, value: any) => {
+        setCache(prevCache => ({ ...prevCache, [key]: value }));
+    };
 
 
     const [category, setCategory] = useState(brand?.brandCategory ? brand?.brandCategory : '');
@@ -521,7 +492,7 @@ export default function Brand({ sellerData, interestData }: { sellerData: Seller
                                                 onChange={(e) => handleImageChange(e, setLogoObjectKey)}
                                                 className=" w-[22.5rem] h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4  file:h-full file:mr-5 mb-6 file:cursor-pointer file:border-0 file:border-gray-300  "
                                             />
-                                            {logoObjectKey && <CustomImage objectKey={logoObjectKey} token={token} />}
+                                            {logoObjectKey && <CustomImage objectKey={logoObjectKey} removeImage={null} cache={cache} updateCache={handleCacheUpdate} width="100px" height="100px" />}
                                         </span>
                                     </div >
                                     <div className="flex-1">
@@ -538,7 +509,7 @@ export default function Brand({ sellerData, interestData }: { sellerData: Seller
                                             }}
                                             className=" w-[22.5rem] mb-6 h-10 text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50  focus:outline-none   file:bg-[#F12D4D] file:text-sm file:font-semibold file:text-gray-200 file:px-4 file:py-2 file:h-full file:mr-5 file:cursor-pointer file:border-0 file:border-gray-300  "
                                         />
-                                        {displayPictureObjectKey && <CustomImage objectKey={displayPictureObjectKey} token={token} />}
+                                        {displayPictureObjectKey && <CustomImage objectKey={displayPictureObjectKey} width="100px" height="100px" removeImage={null} cache={cache} updateCache={handleCacheUpdate} />}
 
                                     </div>
                                 </div>

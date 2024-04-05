@@ -8,6 +8,7 @@ import { AiOutlineLoading3Quarters, AiOutlineCloudUpload } from 'react-icons/ai'
 import { useInView } from "react-intersection-observer";
 import { CiImageOn, CiShoppingTag, CiCircleRemove } from "react-icons/ci";
 import { useRouter } from 'next/router'
+import CustomImage from '../../../utlis/CustomImage';
 
 import {
     Sheet,
@@ -45,48 +46,6 @@ const postMediaEndpoint = "media/single";
 const mediaEndpoint = "media/%s";
 const token = "fb507a0b75e0f62f65b798424555733f";
 
-const CustomImage = ({ objectKey, token, removeImage, size }: { objectKey: string, token: string, removeImage: any, size: string }) => {
-    const [imageData, setImageData] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchImage = async () => {
-            try {
-                if (objectKey?.includes('http')) {
-                    // If objectKey is a URL, directly use it as the image source
-                    setImageData(objectKey);
-                } else {
-                    const response = await fetch(
-                        `${baseURL}/${mediaEndpoint.replace(/%s/, objectKey)}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    );
-                    if (response.ok) {
-                        const blob = await response.blob();
-                        setImageData(URL.createObjectURL(blob));
-                    }
-                }
-            } catch (error) {
-                console.log("Error fetching image:", error);
-            }
-        };
-
-        fetchImage();
-    }, [objectKey, token]);
-
-    return imageData ? (
-        <img
-            src={imageData}
-            alt={`custom-${objectKey}`}
-            className={`${size} rounded-md border shadow-sm border-[#DDDDDD] object-cover`}
-        />
-    ) : (
-        <div className=' bg-gray-50 rounded-md h-[35px] w-[35px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'><CiImageOn color='#818181' /></div>
-    );
-};
-
 export default function Index({ sellerData }: { sellerData: any }) {
 
     const router = useRouter()
@@ -101,6 +60,11 @@ export default function Index({ sellerData }: { sellerData: any }) {
     const [objectKeys, setObjectKeys] = useState<any[]>([]);
     const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
     const [isPageUpdate, setIsPageUpdate] = useState(false)
+    const [cache, setCache] = useState({});
+
+    const handleCacheUpdate = (key: any, value: any) => {
+        setCache(prevCache => ({ ...prevCache, [key]: value }));
+    };
 
     const [productApiData, setProductApiData] = useState<Data>({
         categories: [], // Initialize with an empty array for categories
@@ -393,7 +357,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                                 {selectedProductsData.map((product: any, index: number) => (
                                                     <div key={index} className=" hover:bg-[#f6f6f6] checkbox-option justify-between flex items-center px-5 py-4 border-b border-[#DDDDDD]">
                                                         <div className='flex items-center justify-start'>
-                                                            <CustomImage size={"w-[35px] h-[35px]"} objectKey={product?.productImagesArray?.[0]} token={token} removeImage={removeImage} />
+                                                            <CustomImage width='35px' height='35px' objectKey={product?.productImagesArray?.[0]} cache={cache} updateCache={handleCacheUpdate} removeImage={null} />
                                                             <label htmlFor={product.id} className=" text-sm font-semibold text-black ml-2 cursor-pointer">
                                                                 {product.productName}<p className='text-sm text-[#b9b9b9]'>{product.productCategory}</p>
                                                             </label>
@@ -431,7 +395,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                             {productApiData?.products?.length > 0 && productApiData?.products?.map((product: any, index: number) => (
                                                 <div key={index} className="checkbox-option flex items-center py-4 border-b border-[#DDDDDD]">
                                                     <input checked={selectedProducts.includes(product.id)} onChange={(e) => handleSelectedProduct(e)} type="checkbox" name={product.id} id={product.id} className='mr-2' />
-                                                    <CustomImage size={"w-[35px] h-[35px]"} objectKey={product?.productImagesArray?.[0]} token={token} removeImage={removeImage} />
+                                                    <CustomImage objectKey={product?.productImagesArray?.[0]} cache={cache} updateCache={handleCacheUpdate} removeImage={null} width='35px' height='35px' />
                                                     <label htmlFor={product.id} className=" text-sm font-semibold text-black ml-2 cursor-pointer">
                                                         {product.productName}<p className='text-sm text-[#b9b9b9]'>{product.productCategory}</p>
                                                     </label>
@@ -462,7 +426,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                         </div>
                                         <div className='flex items-center justify-start flex-wrap mt-4'>
                                             {objectKeys.map((key, index) => (
-                                                <CustomImage size={"w-[200px] h-[200px]"} key={index} objectKey={key} token={token} removeImage={removeImage} />
+                                                <CustomImage key={index} objectKey={key} cache={cache} updateCache={handleCacheUpdate} removeImage={null} width='200px' height='200px' />
                                             ))}
                                         </div>
 

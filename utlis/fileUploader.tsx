@@ -28,7 +28,7 @@ const uploadFile = (file: any, token: string) => {
 };
 
 const handleImageChange = useCallback(
-    async (e, imgObj: any) => {
+    async (e: any, imgObj: any) => {
         const files: File[] = Array.from(e.target.files);  // Convert FileList to array
         if (files.length > 0) {
             const uploadedKeys: string[] = [];
@@ -44,7 +44,7 @@ const handleImageChange = useCallback(
                     console.error("Error uploading the image:", file.name, error);
                 }
             }
-            imgObj(prevKeys => [...prevKeys, ...uploadedKeys]);  // Merge old and new objectKeys
+            imgObj((prevKeys: any) => [...prevKeys, ...uploadedKeys]);  // Merge old and new objectKeys
         }
     },
     [token]
