@@ -134,17 +134,16 @@ export default function Orders({ session, ordersData, sellerData }: any) {
 
         // const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/search/${sellerData?.data?.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
 
-        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/seller/search/1?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
+        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/search/${sellerData?.data?.Brands[0]?.id}?searchTerm=${search}&page=${searchPage}&limit=${resultNumber}&productPaymentStatus=${paymentFilter.join(',')}&fulfillmentStatus=${statusFilter.join(',')}`)
         const productsData = await productsResponse.json()
-        const products = productsData.data
-        return products
+        return productsData
       } catch (error) {
-        return { currentPage: 1, totalPages: 1, products: [] }
+        return { orders: [], currentPage: "1", totalPages: 1 }
       }
 
     } else {
       try {
-        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/seller/1?fulfillmentStatus=${statusFilter.join(',')}&paymentStatus=${paymentFilter.join(',')}&page=${activePageNumber}&limit=${resultNumber}`)
+        const productsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/brand/${sellerData?.data?.Brands[0]?.id}?fulfillmentStatus=${statusFilter.join(',')}&paymentStatus=${paymentFilter.join(',')}&page=${activePageNumber}&limit=${resultNumber}`)
         const productsData = await productsResponse.json()
         return productsData
       } catch (error) {
@@ -219,12 +218,12 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                         <thead>
                           <tr>
                             <th className="py-2 px-4 bg-gray-100 border-b text-left"><input type="checkbox" checked={parentCheckbox} onChange={(e) => setParentCheckbox(prevState => !prevState)} name="parentCheckbox" id="parentCheckbox" /></th>
-                            <th className="py-2 px-4 bg-gray-100 border-b text-left">Order ID</th>
-                            <th className="py-2 px-4 bg-gray-100 border-b text-left">Order Date</th>
-                            <th className="py-2 px-4 bg-gray-100 border-b text-left">Buyer</th>
-                            <th className="py-2 px-4 bg-gray-100 border-b text-left">Payment Status </th>
-                            <th className="py-2 px-4 bg-gray-100 border-b text-left">Fullfillment Status  </th>
-                            <th className="py-2 px-4 bg-gray-100 border-b text-left">Total</th>
+                            <th className="py-3 px-4 bg-gray-100 border-b text-left">Order ID</th>
+                            <th className="py-3 px-4 bg-gray-100 border-b text-left">Order Date</th>
+                            <th className="py-3 px-4 bg-gray-100 border-b text-left">Buyer</th>
+                            <th className="py-3 px-4 bg-gray-100 border-b text-left">Fullfillment Status  </th>
+                            <th className="py-3 px-4 bg-gray-100 border-b text-left">Payment Status </th>
+                            <th className="py-3 px-4 bg-gray-100 border-b text-left">Total</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -238,10 +237,10 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                                 day: 'numeric',
                                 year: 'numeric'
                               })}`}</td>
-                              <td className="py-2 px-4 border-b">{row.billing_address.name}</td>
-                              <td className="py-2 px-4 border-b">{row.paymentStatus}</td>
-                              <td className="py-2 px-4 border-b">{row.status.toUpperCase()}</td>
-                              <td className="py-2 px-4 border-b">${row.finalAmount}</td>
+                              <td className="py-4 px-4 border-b">{row.customerName}</td>
+                              <td className="py-4 px-4 border-b"><span className={`${row.status.toUpperCase() === 'UNFULFILLED' ? 'bg-yellow-500' : 'bg-gray-400'} text-white px-4 py-1 text-sm rounded-xl`}>{row.status.toUpperCase()}</span></td>
+                              <td className="py-4 px-4 border-b"><span className={`${row.paymentStatus.toUpperCase() === 'PAID' ? 'bg-green-500' : 'bg-red-500'} text-white px-4 py-1 text-sm rounded-xl`}>{row.paymentStatus.toUpperCase()}</span></td>
+                              <td className="py-4 px-4 border-b">${row.finalAmount}</td>
                               {/* <Dialog>
                                  <DialogTrigger asChild>
                                    <BsTrash3Fill fontSize={"16px"} className="cursor-pointer" />
