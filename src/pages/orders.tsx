@@ -138,7 +138,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
         const productsData = await productsResponse.json()
         return productsData
       } catch (error) {
-        return { orders: [], currentPage: "1", totalPages: 1 }
+        return { orders: [], currentPage: 1, totalPages: 1 }
       }
 
     } else {
