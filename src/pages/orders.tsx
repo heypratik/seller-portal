@@ -320,6 +320,15 @@ export async function getServerSideProps({ req }: any) {
     }
   }
 
+  if (!sellerData?.data?.isPlanActive) {
+    return {
+        redirect: {
+            destination: '/account',
+            permanent: false
+        }
+    }
+}
+
   // Get the seller data using the email that the user is logged in with
   // const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/user/${sellerData?.data?.Brands[0]?.id}?page=1&limit=20`)
   // const ordersData = await orderResponse.json()

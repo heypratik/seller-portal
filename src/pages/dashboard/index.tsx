@@ -3,7 +3,7 @@ import Layout from "../layout";
 import toast, { Toaster } from 'react-hot-toast';
 import { getSession, useSession } from 'next-auth/react'
 import { useRouter } from "next/router";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts"
 import { TbActivityHeartbeat } from "react-icons/tb";
 import { BsCreditCard2Back, BsCurrencyDollar } from 'react-icons/bs'
 import Link from "next/link";
@@ -46,7 +46,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="custom-tooltip bg-white p-2 rounded-md">
         <p className="intro">{getIntroOfPage(label)}</p>
         <p className="label">{`Total Orders : ${payload[0].value}`}</p>
-        <p className="label">{`Total Revenue : ${payload[1].value}`}</p>
+        {/* <p className="label">{`Total Revenue : ${payload[1].value}`}</p> */}
       </div>
     );
   }
@@ -100,6 +100,75 @@ export default function Dashboard({ session, sellerData }: any) {
     }
   ]
 
+  const demoData = {
+    totalRevenue: 5000,
+    salesCount: 25,
+    barChartData: [
+      {
+        name: "2024-04-01",
+        orders: 5,
+        total: 0,
+      },
+      {
+        name: "2024-04-02",
+        orders: 8,
+        total: 0,
+      },
+      {
+        name: "2024-04-03",
+        orders: 6,
+        total: 0,
+      },
+      {
+        name: "2024-04-04",
+        orders: 4,
+        total: 0,
+      },
+      {
+        name: "2024-04-05",
+        orders: 2,
+        total: 0,
+      },
+      {
+        name: "2024-04-06",
+        orders: 0,
+        total: 0,
+      },
+      {
+        name: "2024-04-07",
+        orders: 0,
+        total: 0,
+      },
+    ],
+    recentSales: [
+      {
+        customer_name: "John Doe",
+        product_total: 0,
+      },
+      {
+        customer_name: "Jane Smith",
+        product_total: 0,
+      },
+      {
+        customer_name: "Alice Johnson",
+        product_total: 0,
+      },
+      {
+        customer_name: "Bob Brown",
+        product_total: 0,
+      },
+      {
+        customer_name: "Emma Davis",
+        product_total: 0,
+      },
+      {
+        customer_name: "Emma Davis",
+        product_total: 0,
+      },
+    ],
+  };
+
+
   const [timeFrame, setTimeFrame] = useState('last7days')
   const [data, setData] = useState<Data>()
 
@@ -115,7 +184,7 @@ export default function Dashboard({ session, sellerData }: any) {
 
   async function getData() {
     try {
-      const dashboardResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/orders/dashboard/${sellerData?.data?.id}/${timeFrame}`)
+      const dashboardResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/dashboard/${sellerData?.data?.Brands?.[0]?.id}/${timeFrame}`)
       const dashboardData = await dashboardResponse.json()
       return dashboardData
     } catch (error) {
@@ -203,11 +272,12 @@ export default function Dashboard({ session, sellerData }: any) {
                                 fontSize={12}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `$${value}`}
+                                tickFormatter={(value) => `${value}`}
                               />
+                              <Legend />
                               <Tooltip content={<CustomTooltip />} />
                               <Bar dataKey="orders" stackId="a" fill="#f12c4d" radius={[4, 4, 0, 0]} />
-                              <Bar dataKey="total" stackId="a" fill="#f12c4d" radius={[4, 4, 0, 0]} />
+                              {/* <Bar dataKey="total" stackId="a" fill="#f12c4d" radius={[4, 4, 0, 0]} /> */}
                             </BarChart>
                           </ResponsiveContainer> : <div className=" z-10 pointer-events-none absolute w-full h-full bg-white opacity-50 flex items-center justify-center">No Data</div>}
 
