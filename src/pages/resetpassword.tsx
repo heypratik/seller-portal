@@ -6,12 +6,15 @@ import signupValidate from '../../forms/signupValidate';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router'
 import { FaCheckCircle } from "react-icons/fa";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 export default function Resetpassword({ token, data }: any) {
 
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState("")
     const [emailSent, setEmailSent] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+
     const router = useRouter();
 
     const formik = useFormik({
@@ -129,8 +132,14 @@ export default function Resetpassword({ token, data }: any) {
 
                             <div className='w-full mt-12 max-w-xl flex justify-center m-auto flex-col'>
                                 <form onSubmit={formik.handleSubmit}>
-                                    <input {...formik.getFieldProps('password')} name='password' type="password" placeholder="New Password: Atleast 6 Characters" className={`${inputStyles} ${passwordValidErr && 'border-red-500'}`} />
-                                    <input {...formik.getFieldProps('cpassword')} name='cpassword' type="password" placeholder="Confirm Password" className={`${inputStyles} ${cpasswordValidErr && 'border-red-500'}`} />
+                                    <span className={`${inputStyles} ${passwordValidErr && 'border-red-500'} bg-white flex justify-between items-center`}>
+                                        <input {...formik.getFieldProps('password')} name='password' type={showPassword ? 'text' : 'password'} placeholder="New Password: Atleast 6 Characters" className='w-full outline-none' />
+                                        {showPassword ? <IoEyeOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' /> : <IoEyeOffOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' />}
+                                    </span>
+                                    <span className={`${inputStyles} ${passwordValidErr && 'border-red-500'} bg-white flex justify-between items-center`}>
+                                        <input {...formik.getFieldProps('cpassword')} name='cpassword' type={showPassword ? 'text' : 'password'} placeholder="Confirm Password" className='w-full outline-none' />
+                                        {showPassword ? <IoEyeOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' /> : <IoEyeOffOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' />}
+                                    </span>
                                     <button disabled={formDisabled || Object.keys(formik.errors).length > 0} type="submit" className='h-12 flex justify-center items-center text-white bg-[#f12d4d] w-full rounded-md text-xl font-semibold mt-10'>{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Reset Password`}</button>
                                 </form>
                             </div>

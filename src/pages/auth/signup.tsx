@@ -7,6 +7,8 @@ import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { BiError } from 'react-icons/bi'
 import toast, { Toaster } from 'react-hot-toast';
 import { createCustomer } from '../../../lib/createCustomer'
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+
 
 export default function SignUp() {
 
@@ -15,6 +17,8 @@ export default function SignUp() {
     const [signUpSuccessfull, setSignUpSuccessfull] = useState(false)
     const [signupErrors, setSignupErrors] = useState("")
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showPassReq, setShowPassReq] = useState(false)
 
     const formik = useFormik({
         initialValues: {
@@ -41,6 +45,13 @@ export default function SignUp() {
         // Add Button loading state
         // Add Error icon for Error messages
         setLoading(true)
+
+        if (!isStrongPassword(values.password)) {
+            notification(false, "Password must contain at least 8 characters, one special character, one letter and one number")
+            setLoading(false)
+            return
+        }
+
         const stripeCustomerID = await createCustomer(values.name, values.email)
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/sellers/signup`, {
             method: 'POST',
@@ -83,6 +94,28 @@ export default function SignUp() {
 
     }
 
+    function isStrongPassword(password: any) {
+        if (password.length < 8) {
+            return false;
+        }
+
+        // Check if the password contains at least one special character
+        const specialCharacters = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/;
+        if (!specialCharacters.test(password)) {
+            return false;
+        }
+
+        // Check if the password contains both letters and numbers
+        const containsLetters = /[a-zA-Z]+/;
+        const containsNumbers = /[0-9]+/;
+        if (!containsLetters.test(password) || !containsNumbers.test(password)) {
+            return false;
+        }
+
+        // If all conditions are met, the password is strong
+        return true;
+    }
+
     return (
         <div className='w-full h-screen flex items-center justify-center'>
             <Toaster position="top-center" reverseOrder={true} />
@@ -112,12 +145,12 @@ export default function SignUp() {
                             <div className='flex items-center justify-between mt-10'>
                                 <label className='flex-1 mr-2'>
                                     <p className='text-md font-medium'>Password</p>
-                                    <input {...formik.getFieldProps('password')} name='password' type="password" placeholder="Atleast 6 Characters" className={`${inputStyles} ${passwordValidErr && 'border-red-500'}`} />
+                                    <span className={`${inputStyles} ${passwordValidErr && 'border-red-500'} bg-white flex justify-between items-center`}><input {...formik.getFieldProps('password')} name='password' type={showPassword ? 'text' : 'password'} placeholder="Atleast 6 Characters" className='w-full outline-none' />{showPassword ? <IoEyeOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' /> : <IoEyeOffOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' />}</span>
                                 </label>
 
                                 <label className='flex-1 ml-2'>
                                     <p className='text-md font-medium'>Confirm Password</p>
-                                    <input {...formik.getFieldProps('cpassword')} name='cpassword' type="password" placeholder="Confirm Password" className={`${inputStyles} ${cpasswordValidErr && 'border-red-500'}`} />
+                                    <span className={`${inputStyles} ${passwordValidErr && 'border-red-500'} bg-white flex justify-between items-center`}><input {...formik.getFieldProps('cpassword')} name='cpassword' type={showPassword ? 'text' : 'password'} placeholder="Confirm Password" className='w-full outline-none' />{showPassword ? <IoEyeOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' /> : <IoEyeOffOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' />}</span>
                                 </label>
                             </div>
 

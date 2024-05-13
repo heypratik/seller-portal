@@ -91,7 +91,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     };
 
     const [loading, setLoading] = useState(false)
-    const [productCategory, setProductCategory] = useState<string>(sellerData.data.Brands[0].brandCategory);
+    const [productCategory, setProductCategory] = useState<string>(sellerData?.data?.Brands[0]?.brandCategory);
     const [subCategory, setSubCategory] = useState<any>([]);
     const [subCategoryOpen, setSubCategoryOpen] = useState(false);
     const [collectionOpen, setCollectionOpen] = useState(false);
@@ -648,8 +648,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                         <div className='w-full bg-[#f7f9fa] flex flex-col border'>
                                             <div className='flex-[0.3] flex border-r'>
                                                 <div onClick={() => setProductTypeTableOpen("type")} className={`font-semibold border-gray-200 border w-full py-3 hover:bg-[#f23250] hover:text-white hover:font-semibold cursor-pointer px-4 ${productTypeTableOpen == "type" && "bg-[#f23250] text-white font-semibold"}`}>Product Type</div>
-                                                {productType !== "Variable Product" && <div onClick={() => setProductTypeTableOpen("inventory")} className={`font-semibold border-gray-200 border w-full py-3 hover:bg-[#f23250] hover:text-white hover:font-semibold cursor-pointer px-4 ${productTypeTableOpen == "inventory" && "bg-[#f23250] text-white font-semibold"}`}>Inventory</div>}
-                                                {productType !== "Single Product" && <div onClick={() => setProductTypeTableOpen("variations")} className={`font-semibold border-gray-200 border w-full py-3 hover:bg-[#f23250] hover:text-white hover:font-semibold cursor-pointer px-4 ${productTypeTableOpen == "variations" && "bg-[#f23250] text-white font-semibold border-gray-200 border"}`}>Variations</div>}
                                             </div>
 
 
@@ -663,7 +661,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                     </div>
                                                 )}
 
-                                                {productTypeTableOpen === "inventory" && (
+
+                                                {productType == 'Single Product' && (
                                                     <>
                                                         <div className="flex-1">
                                                             <label htmlFor="business" className={labelClass}>Product Options*</label>
@@ -741,7 +740,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                     </>
                                                 )}
 
-                                                {productTypeTableOpen === "variations" && (
+
+                                                {productType == 'Variable Product' && (
                                                     <div className='variations'>
                                                         {variantOptions.length < 3 && <button onClick={(e) => addOptions(e)} className=' px-3 py-2 bg-[#f12d4d] text-white font-semibold rounded-md text-sm'>+ Add Variations</button>}
                                                         {variantOptions.map((variation, index) => (
@@ -797,6 +797,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                         ))}
                                                     </div>
                                                 )}
+
+
                                             </div>
                                         </div>
                                     </div>
@@ -1046,17 +1048,19 @@ export async function getServerSideProps({ req, params }: any) {
         }
     }
 
+
     if (!sellerData?.data?.isPlanActive) {
-        return {
-            redirect: {
-                destination: '/account',
-                permanent: false
-            }
-        }
+        // return {
+        //     redirect: {
+        //         destination: '/account',
+        //         permanent: false
+        //     }
+        // }
     }
 
     // Get Product if its a update page
     const { id } = params;
+
     let productData = null;
     if (id !== "new" && id !== undefined && id !== null && id !== "" && typeof (Number(id)) === 'number') {
         const productResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData?.data?.Brands?.[0]?.id}/${sellerData.data.id}/${id}`)
@@ -1079,15 +1083,6 @@ export async function getServerSideProps({ req, params }: any) {
     if (id === "new") {
         const collectionResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/collections/get/forbrand/${sellerData?.data?.Brands?.[0]?.id}?page=1&limit=10000`)
         const collectionData = await collectionResponse.json();
-        if (!collectionData.success) {
-            return {
-                redirect: {
-                    destination: '/inventory/new',
-                    permanent: false
-                }
-            }
-        }
-
         if (collectionData.success) {
             collecionData = collectionData;
         }

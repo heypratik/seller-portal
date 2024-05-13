@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react"
 import { useRouter } from 'next/router'
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import toast, { Toaster } from 'react-hot-toast';
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 
 export default function Login() {
@@ -11,6 +12,7 @@ export default function Login() {
     const router = useRouter();
 
     const [loading, setLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
 
     function handlepagechange() {
         router.push('/resetpassword')
@@ -69,7 +71,7 @@ export default function Login() {
 
                         <label>
                             <p className=' mt-6 text-md font-medium'>Password</p>
-                            <input onChange={(e) => setPassword(e.target.value)} value={password} className=' outline-none shadow-[0px_3px_0px_0px_#00000024] w-full border border-brand-border-sec rounded-md px-4 py-3 mt-2' type="password" placeholder="Atleast 6 Characters" />
+                            <span className='flex justify-between items-center bg-white outline-none shadow-[0px_3px_0px_0px_#00000024] w-full border border-brand-border-sec rounded-md px-4 py-3 mt-2'><input onChange={(e) => setPassword(e.target.value)} value={password} className='w-full outline-none' type={showPassword ? 'text' : 'password'} placeholder="Atleast 6 Characters" />{showPassword ? <IoEyeOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' /> : <IoEyeOffOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' />}</span>
                         </label>
 
                         <p onClick={() => handlepagechange()} className=' cursor-pointer text-right underline text-[#646464c8] mt-7'>Forgot your password?</p>
