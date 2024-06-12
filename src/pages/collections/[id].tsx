@@ -344,14 +344,14 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                         <label htmlFor="business" className={labelClass}>Collection Name*</label>
 
                                         <input {...formik.getFieldProps('collectionName')} type="text" id="collectionName" name="collectionName" className={`${inputClass} ${collectionNameError && '!border-red-500 border'}`} placeholder='Collection Name' />
-                                        {collectionNameError && <p className='text-red-500 text-xs absolute'> {formik.errors.collectionNameError}</p>}
+                                        {collectionNameError && <p className='text-red-500 text-xs absolute'> {formik.errors.collectionName}</p>}
 
                                     </div>
 
                                     <div className="flex-1">
                                         <label htmlFor="business" className={labelClass}>Collection Description*</label>
                                         <textarea {...formik.getFieldProps('collectionDescription')} rows={3} id="collectionDescription" name="collectionDescription" className={`bg-[#f7f9fa] border shadow-sm border-[#DDDDDD] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full ${collectionDescriptionError && '!border-red-500 border'}`} placeholder='Collection Description' />
-                                        {collectionDescriptionError && <p className='text-red-500 text-xs absolute'> {formik.errors.collectionDescriptionError}</p>}
+                                        {collectionDescriptionError && <p className='text-red-500 text-xs absolute'> {formik.errors.collectionDescription}</p>}
                                     </div>
 
                                     <div className="flex-1 mt-6">
