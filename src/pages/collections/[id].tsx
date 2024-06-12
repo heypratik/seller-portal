@@ -9,6 +9,7 @@ import { useInView } from "react-intersection-observer";
 import { CiImageOn, CiShoppingTag, CiCircleRemove } from "react-icons/ci";
 import { useRouter } from 'next/router'
 import CustomImage from '../../../utlis/CustomImage';
+import collectionValidate from '../../../forms/collectionValidate';
 
 import {
     Sheet,
@@ -80,8 +81,12 @@ export default function Index({ sellerData }: { sellerData: any }) {
             collectionName: '',
             collectionDescription: '',
         },
-        onSubmit
+        onSubmit,
+        validate: collectionValidate
     })
+
+    const collectionNameError = formik.errors.collectionName && formik.touched.collectionName
+    const collectionDescriptionError = formik.errors.collectionDescription && formik.touched.collectionDescription
 
     async function onSubmit(values: any) {
 
@@ -94,8 +99,8 @@ export default function Index({ sellerData }: { sellerData: any }) {
                     },
                     body: JSON.stringify({
                         brandId: sellerData?.data?.Brands?.[0]?.id,
-                        collectionName: values.collectionName,
-                        collectionDescription: values.collectionDescription,
+                        collectionName: values.collectionName.trim(),
+                        collectionDescription: values.collectionDescription.trim(),
                         collectionImageObjectKey: objectKeys?.[0],
                         collectionProductsId: selectedProducts
                     })
@@ -172,9 +177,14 @@ export default function Index({ sellerData }: { sellerData: any }) {
         async (e: any) => {
             setLoading(true)
             const files: File[] = Array.from(e.target.files);
-
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
             if (files.length > 0) {
+
                 const file = files[0]; // Take only the first file
+
+                if (file.size > maxSize) {
+                    return notification(false, `${file.name} larger than 10mb (skipped)`);
+                }
 
                 try {
                     const response = await uploadFile(file, token);
@@ -333,13 +343,15 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                     <div className='flex-1'>
                                         <label htmlFor="business" className={labelClass}>Collection Name*</label>
 
-                                        <input {...formik.getFieldProps('collectionName')} type="text" id="collectionName" name="collectionName" className={inputClass} placeholder='Collection Name' />
+                                        <input {...formik.getFieldProps('collectionName')} type="text" id="collectionName" name="collectionName" className={`${inputClass} ${collectionNameError && '!border-red-500 border'}`} placeholder='Collection Name' />
+                                        {collectionNameError && <p className='text-red-500 text-xs absolute'> {formik.errors.collectionNameError}</p>}
 
                                     </div>
 
                                     <div className="flex-1">
                                         <label htmlFor="business" className={labelClass}>Collection Description*</label>
-                                        <textarea {...formik.getFieldProps('collectionDescription')} rows={3} id="collectionDescription" name="collectionDescription" className="bg-[#f7f9fa] border shadow-sm border-[#DDDDDD] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full" placeholder='Collection Description' />
+                                        <textarea {...formik.getFieldProps('collectionDescription')} rows={3} id="collectionDescription" name="collectionDescription" className={`bg-[#f7f9fa] border shadow-sm border-[#DDDDDD] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full ${collectionDescriptionError && '!border-red-500 border'}`} placeholder='Collection Description' />
+                                        {collectionDescriptionError && <p className='text-red-500 text-xs absolute'> {formik.errors.collectionDescriptionError}</p>}
                                     </div>
 
                                     <div className="flex-1 mt-6">
@@ -411,7 +423,7 @@ export default function Index({ sellerData }: { sellerData: any }) {
                                     </Sheet>
                                 </div>
 
-                                <button type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update" : "Save"}`}</button>
+                                <button disabled={Object.keys(formik.errors).length > 0} type="submit" className="w-32 h-11 mt-16 bg-[#F12D4D] flex items-center justify-center  disabled:cursor-not-allowed rounded-md text-white text-base font-semibold mr-10 cursor-pointer" value="Next">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update" : "Save"}`}</button>
                             </div>
 
                             <div className="sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] p-7 rounded-lg flex-[0.3]">

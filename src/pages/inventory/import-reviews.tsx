@@ -33,6 +33,9 @@ export default function Import({ sellerData }: { sellerData: any }) {
     };
 
     async function handleOnSubmit(e: any) {
+
+        // if (loading) return;
+
         e.preventDefault();
 
         if (file && typeof window !== "undefined") {

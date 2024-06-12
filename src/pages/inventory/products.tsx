@@ -338,7 +338,9 @@ export default function Products({ session, sellerData }: any) {
                                                                 <td className="py-2 px-4 border-b">{checkProductStatus(row)}</td>
                                                                 <td className="py-2 px-4 border-b">{renderProductImage(row)}</td>
                                                                 <td className="py-2 px-4 border-b">{row.id}</td>
-                                                                <td className="py-2 px-4 border-b">{row.productName}</td>
+                                                                <td className="py-2 px-4 border-b">
+                                                                    {row.productName.length > 60 ? row.productName.substring(0, 40) + '...' : row.productName}
+                                                                </td>
                                                                 <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
                                                                 <td className="py-2 px-4 border-b">{decideCountry()}{checkproductDetails(row, "price")}</td>
                                                                 <td className="py-2 px-4 border-b">{row.productCost}</td>

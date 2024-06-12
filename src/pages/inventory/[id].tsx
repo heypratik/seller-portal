@@ -14,6 +14,7 @@ import { set } from 'date-fns';
 import { CiImageOn } from 'react-icons/ci'
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { FaCheckCircle } from "react-icons/fa";
+import inventoryValidate from '../../../forms/inventoryValidate';
 import {
     Dialog,
     DialogContent,
@@ -97,7 +98,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     const [collectionOpen, setCollectionOpen] = useState(false);
     const [prodMargin, setProdMargin] = useState<number>(0)
     const [isPageUpdate, setIsPageUpdate] = useState(false)
-    // const [productVariations, setProductVariations] = useState<any[]>([])
 
     const [variantOptions, setVariantOptions] = useState<any[]>([])
     const [variationValues, setVariationValues] = useState<any[]>([]);
@@ -157,8 +157,20 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             productType: productType ? productType : '',
             productCollections: productCollections ? productCollections : []
         },
+        validate: inventoryValidate,
         onSubmit
     })
+
+    const productNameError = formik.errors.productName && formik.touched.productName
+    const skuError = formik.errors.productSku && formik.touched.productSku
+    const productKeywordsError = formik.errors.productKeywords && formik.touched.productKeywords
+    const productPriceError = formik.errors.productPrice && formik.touched.productPrice
+    const productSizeValueError = formik.errors.productSizeValue && formik.touched.productSizeValue
+    const productQuantityError = formik.errors.productQuantity && formik.touched.productQuantity
+    const productCostError = formik.errors.productCost && formik.touched.productCost
+
+    console.log("HELLO", formik.errors)
+
     const { values, setFieldValue } = formik;
 
     function removeImage(key: string) {
@@ -194,12 +206,30 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
     const handleImageChange = useCallback(
         async (e: any) => {
-            const files: File[] = Array.from(e.target.files);  // Convert FileList to array
+            const files: File[] = Array.from(e.target.files);  // Convert FileList to Array
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
             if (files.length > 0) {
                 const uploadedKeys: string[] = [];
                 for (const file of files) {
+                    if (file.size > maxSize) {
+                        notification(false, `${file.name} larger than 10mb (skipped)`);
+                        continue; // Skip this file
+                    }
+
                     try {
-                        const response = await uploadFile(file, token);
+
+                        const uploadPromise = uploadFile(file, token);
+
+                        toast.promise(
+                            uploadPromise,
+                            {
+                                loading: 'Uploading...',
+                                success: `Uploaded ${file.name} successfully!`,
+                                error: `Failed to upload ${file.name}`
+                            }
+                        );
+
+                        const response = await uploadPromise;
                         if (response.status === 'success' && response.data.objectKey) {
                             uploadedKeys.push(response.data.objectKey);
                         } else {
@@ -230,15 +260,30 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: any, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productSizeValue: string, productType: string }) {
         setLoading(true)
 
+        if (objectKeys.length === 0) {
+            notification(false, "Please upload at least one product image.");
+            setLoading(false);
+            return;
+        }
+
+        if (subCategory.length === 0) {
+            notification(false, "Please select at least one product subcategory.");
+            setLoading(false);
+            return;
+        }
+
         // Create a copy of values excluding the optional fields
         const requiredValues: { [key: string]: any } = { ...values };
-        delete requiredValues.productColor;
-        delete requiredValues.productQuantity;
-        delete requiredValues.productMargin;
-        delete requiredValues.productCost;
-        delete requiredValues.productPrice;
-        delete requiredValues.productSize;
-        delete requiredValues.productSizeValue;
+
+        if (productType != "Single Product") {
+            delete requiredValues.productColor;
+            delete requiredValues.productQuantity;
+            delete requiredValues.productMargin;
+            delete requiredValues.productCost;
+            delete requiredValues.productPrice;
+            delete requiredValues.productSize;
+            delete requiredValues.productSizeValue;
+        }
 
         // Check if all other fields have a value
         if (!Object.values(requiredValues).every(v => v)) {
@@ -278,7 +323,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productSizeValue: values.productSizeValue ? values.productSizeValue : 0,
                         productQuantity: values.productQuantity ? values.productQuantity : 0,
                         productDescription: values.productDescription ? values.productDescription : 'NULL',
-                        productSku: values.productSku,
+                        productSku: values.productSku.trim(),
                         productSubCategory: values.productSubCategory,
                         productPrice: values.productPrice ? values.productPrice : 0,
                         productCost: values.productCost ? values.productCost : 0,
@@ -320,7 +365,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productSizeValue: values.productSizeValue ? values.productSizeValue : 0,
                         productQuantity: values.productQuantity ? values.productQuantity : 0,
                         productDescription: values.productDescription ? values.productDescription : 'NULL',
-                        productSku: values.productSku,
+                        productSku: values.productSku.trim(),
                         productSubCategory: values.productSubCategory,
                         productPrice: values.productPrice ? values.productPrice : 0,
                         productCost: values.productCost ? values.productCost : 0,
@@ -561,6 +606,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         document.dispatchEvent(escapeKeyEvent);
     }
 
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
@@ -579,12 +625,14 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                     <div className="flex-1">
                                         <label htmlFor="business" className={labelClass}>Product Name*</label>
 
-                                        <input {...formik.getFieldProps('productName')} type="text" id="productName" name="productName" className={inputClass} placeholder='Enter Product Name' />
+                                        <input {...formik.getFieldProps('productName')} type="text" id="productName" name="productName" className={`${inputClass} ${productNameError && '!border-red-500'}`} placeholder='Enter Product Name' />
+                                        {productNameError && <p className='text-red-500 text-xs absolute'> {formik.errors.productName}</p>}
                                     </div>
                                     <div className="flex-1">
                                         <label htmlFor="business" className={labelClass}>Product SKU*</label>
 
-                                        <input {...formik.getFieldProps('productSku')} type="text" id="productSku" name="productSku" className={inputClass} placeholder='Enter Product SKU' />
+                                        <input {...formik.getFieldProps('productSku')} type="text" id="productSku" name="productSku" className={`${inputClass} ${skuError && '!border-red-500'}`} placeholder='Enter Product SKU' />
+                                        {skuError && <p className='text-red-500 text-xs absolute'> {formik.errors.productSku}</p>}
                                     </div>
                                 </div>
 
@@ -680,9 +728,9 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
                                                                 <>
                                                                     <div>
-                                                                        <input type='number' {...formik.getFieldProps('productSizeValue')} name='productSizeValue' placeholder='Size Value' id="productSizeValue" className="mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]" />
+                                                                        <input type='number' {...formik.getFieldProps('productSizeValue')} name='productSizeValue' placeholder='Size Value' id="productSizeValue" className={`mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]  ${productSizeValueError && 'border !border-red-500'}`} />
                                                                         <p className='text-center text-sm italic text-gray-600'>(Size Value)</p>
-
+                                                                        {productSizeValueError && <p className='text-red-500 text-xs absolute'> {formik.errors.productSizeValue}</p>}
                                                                     </div>
                                                                     <div>
                                                                         <select {...formik.getFieldProps('productSize')} name='productSize' id="productSize" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
@@ -702,8 +750,9 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                 </>
 
                                                                 <div>
-                                                                    <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' placeholder='Quantity' id="productQuantity" className="mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]" />
+                                                                    <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' placeholder='Quantity' id="productQuantity" className={`mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productQuantityError && 'border !border-red-500'}`} />
                                                                     <p className='text-center text-sm italic text-gray-600'>(Quantity)</p>
+                                                                    {productQuantityError && <p className='text-red-500 text-xs absolute'> {formik.errors.productQuantity}</p>}
 
                                                                 </div>
                                                             </div>
@@ -714,18 +763,21 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                             <label htmlFor="business" className={labelClass}>Price*</label>
                                                             <div className='flex items-center justify-start mt-4'>
                                                                 <div>
-                                                                    <div className='flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
-                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className='w-full focus:outline-none' placeholder='Price' />
+                                                                    <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productPriceError && 'border !border-red-500'}`}>
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className={`w-full focus:outline-none`} placeholder='Price' />
+
                                                                     </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(Price)</p>
+                                                                    {productPriceError && <p className='text-red-500 text-xs absolute'> {formik.errors.productPrice}</p>}
                                                                 </div>
 
                                                                 <div>
 
-                                                                    <div className='flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
+                                                                    <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productCostError && 'border !border-red-500'}`}>
                                                                         {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='w-full focus:outline-none' placeholder='COGS' />
                                                                     </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(COGS)</p>
+                                                                    {productCostError && <p className='text-red-500 text-xs absolute'> {formik.errors.productPrice}</p>}
                                                                 </div>
 
                                                                 <div>
@@ -936,17 +988,20 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                     <div className="flex-1">
                                         <label htmlFor="business" className={labelClass}>Product Keywords*</label>
 
-                                        <textarea {...formik.getFieldProps('productKeywords')} rows={3} id="productKeywords" name="productKeywords" className="bg-[#f7f9fa] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full" placeholder='Enter Product Description' />
+                                        <textarea {...formik.getFieldProps('productKeywords')} rows={3} id="productKeywords" name="productKeywords" className={`bg-[#f7f9fa] outline-none focus:outline-none mt-4 rounded-md px-5 py-4 w-full ${productKeywordsError && '!border-red-500 border'}`} placeholder='Enter Product Description' />
+                                        {productKeywordsError && <p className='text-red-500 text-xs absolute'> {formik.errors.productKeywords}</p>}
                                     </div>
                                 </div>
 
                                 {/* NEW LINE */}
 
+
                                 <div className="mt-16 flex">
-                                    <button type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
+                                    <button disabled={Object.keys(formik.errors).length > 0} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
+                                {Object.keys(formik.errors).length > 0 && <p className='text-red-500 mt-2 text-sm'>Solve the above errors to add product</p>}
                             </div>
                             <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.3]'>
                                 <div className="flex-1">
@@ -994,13 +1049,15 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                     <label className={labelClass}>Product Collection</label>
                                     <div className={`mt-1 px-0 py-2 bg-[#F7F9FA] border shadow-sm border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none  w-[22.5rem] h-10 rounded-md mb-3`} id="productSubCategory" onClick={(e) => setCollectionOpen(true)}>
                                         {collectionOpen && <div onClick={(e) => { e.stopPropagation(); setCollectionOpen(false); }} className='w-full min-h-[150vh] opacity-0 bg-black absolute top-0 right-0'></div>}
-                                        <span className='flex items-center justify-between'><p className='flex items-center opacity-50 ml-3'>{subCategory.length === 0 && "Select Collections"}
-                                            {/* {allCollectionData && allCollectionData.length > 0 && allCollectionData.map((collection: any, index: number) => (
+                                        <span className='flex items-center justify-between'>
+                                            <p className='flex items-center opacity-50 ml-3'>{"Select Collections"}
+                                                {/* {allCollectionData && allCollectionData.length > 0 && allCollectionData.map((collection: any, index: number) => (
                                                 <span key={index} className='inline-block mx-1 bg-[#F12D4D] text-white text-xs px-2 py-1 rounded-md'>{collection}</span>
                                             ))} */}
-                                        </p>
+                                            </p>
                                             <MdKeyboardArrowDown className='mr-2' fontSize="20px" /></span>
                                         {collectionOpen && <div className="dropdown z-10 relative mt-2 shadow-[rgba(0,_0,_0,_0.2)_0px_20px_20px_-7px] px-3 py-2 bg-white border border-[#DDDDDD] placeholder-[#9F9F9F] text-base focus:outline-none w-[22.5rem] rounded-md">
+                                            {allCollectionData.length === 0 && <p className='text-center text-sm text-gray-400'>No Collections Available.<br></br><Link href="/collections/new" className='text-black text-sm underline'>Add Collections</Link></p>}
                                             {allCollectionData && allCollectionData?.map((collection) => (
                                                 <div key={collection.id} className="checkbox-option flex items-center ">
                                                     <input type="checkbox" id={collection.id} name={collection.collectionName} value={collection.collectionName} checked={productCollections.includes(collection.id)} onChange={(e) => {

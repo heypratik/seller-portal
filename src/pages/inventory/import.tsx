@@ -52,6 +52,12 @@ export default function Import({ sellerData }: { sellerData: any }) {
     };
 
     async function handleOnSubmit(e: any) {
+
+        if (sellerData.data.Brands.length < 1) {
+            notification(false, "Please add a brand before importing products.")
+            return;
+        }
+
         e.preventDefault();
 
         if (file && typeof window !== "undefined") {
