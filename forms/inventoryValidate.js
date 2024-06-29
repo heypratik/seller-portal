@@ -23,6 +23,18 @@ export default function inventoryValidate(values) {
             errors.productPrice = 'Invalid price';
           } 
 
+        if (!values.compareAtPrice) {
+            errors.compareAtPrice = 'Required';
+        } else if (isNaN(values.compareAtPrice)) {
+            errors.compareAtPrice = 'Price should be a number';
+        } else if (values.compareAtPrice < 0) {
+            errors.compareAtPrice = 'Price should be a positive number';
+        } else if (values.compareAtPrice > 1000000) {
+            errors.compareAtPrice = 'Price should be less than 1000000';
+        } else if (String(values.compareAtPrice).includes(" ")) {
+            errors.compareAtPrice = 'Invalid price';
+        }
+
         if (!values.productSizeValue) {
             errors.productSizeValue = 'Required';
         } else if (values.productSizeValue < 0) {

@@ -138,7 +138,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
     }
 
-
     const formik = useFormik({
         initialValues: {
             productName: '',
@@ -151,6 +150,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             productSku: '',
             productSubCategory: subCategory ? subCategory : [],
             productPrice: '',
+            compareAtPrice: '',
             productCost: '',
             productMargin: "",
             productKeywords: '',
@@ -168,6 +168,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     const productSizeValueError = formik.errors.productSizeValue && formik.touched.productSizeValue
     const productQuantityError = formik.errors.productQuantity && formik.touched.productQuantity
     const productCostError = formik.errors.productCost && formik.touched.productCost
+    const compareAtPriceError = formik.errors.compareAtPrice && formik.touched.compareAtPrice
 
     console.log("HELLO", formik.errors)
 
@@ -257,7 +258,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     }, [values.productCost, values.productPrice, setFieldValue]);
 
 
-    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: any, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productSizeValue: string, productType: string }) {
+    async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: any, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productSizeValue: string, productType: string, compareAtPrice: string }) {
         setLoading(true)
 
         if (objectKeys.length === 0) {
@@ -326,6 +327,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productSku: values.productSku.trim(),
                         productSubCategory: values.productSubCategory,
                         productPrice: values.productPrice ? values.productPrice : 0,
+                        compareAtPrice: values.compareAtPrice ? values.compareAtPrice : 0,
                         productCost: values.productCost ? values.productCost : 0,
                         productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                         productKeywordArray: values.productKeywords.split(","),
@@ -368,6 +370,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productSku: values.productSku.trim(),
                         productSubCategory: values.productSubCategory,
                         productPrice: values.productPrice ? values.productPrice : 0,
+                        compareAtPrice: values.compareAtPrice ? values.compareAtPrice : 0,
                         productCost: values.productCost ? values.productCost : 0,
                         productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                         productKeywordArray: values.productKeywords.split(","),
@@ -461,6 +464,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         options: variation[0] == "" ? [] : variation,
                         price: 0,
                         stock: 0,
+                        compareAtPrice: 0,
                         sku: "",
                         mediaObjectKey: "",
                     };
@@ -566,6 +570,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         setFieldValue("productSku", product.productSku || "");
                         setFieldValue("productSubCategory", product.productSubCategory || "");
                         setFieldValue("productPrice", product.productPrice || 0);
+                        setFieldValue("compareAtPrice", product.compareAtPrice || 0);
                         setFieldValue("productCost", product.productCost || 0);
                         setFieldValue("productMargin", product.productMargin || "");
                         setFieldValue("productKeywords", product.productKeywordArray.join(",") || '');
@@ -763,6 +768,14 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                             <label htmlFor="business" className={labelClass}>Price*</label>
                                                             <div className='flex items-center justify-start mt-4'>
                                                                 <div>
+                                                                    <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${compareAtPriceError && 'border !border-red-500'}`}>
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('compareAtPrice')} name='compareAtPrice' id="compareAtPrice" className={`w-full focus:outline-none`} placeholder='Compare Price' />
+
+                                                                    </div>
+                                                                    <p className='text-center text-sm italic text-gray-600'>(Compare At Price)</p>
+                                                                    {compareAtPriceError && <p className='text-red-500 text-xs absolute'>{formik.errors.compareAtPrice}</p>}
+                                                                </div>
+                                                                <div>
                                                                     <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productPriceError && 'border !border-red-500'}`}>
                                                                         {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className={`w-full focus:outline-none`} placeholder='Price' />
 
@@ -856,72 +869,103 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                     </div>
                                 </div>
 
-                                {productType == "Variable Product" && variationValues.length > 0 && variationValues[0].options.length > 0 && <div className='bg-white p-2 mt-4 overflow-x-scroll border border-gray-200 rounded-md w-full'>
-                                    {variationValues.length > 0 && variationValues.map((variation, index) => {
-                                        if (variation.options && variation.options.length > 0) {
-                                            return (
-                                                <div key={index} className='variationKeys flex items-center justify-between p-2 w-full max-2xl'>
-                                                    <Dialog>
-                                                        <DialogTrigger asChild>
-                                                            {
-                                                                variation?.mediaObjectKey ?
-                                                                    (
-                                                                        variation.mediaObjectKey.includes('http') ?
-                                                                            (
-                                                                                <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                                    <img src={variation?.mediaObjectKey} alt="variation" className="w-10 h-10 rounded-md" />
+                                {productType == "Variable Product" && variationValues.length > 0 && variationValues[0].options.length > 0 && <>
+                                    <div className='bg-white p-2 mt-4 overflow-x-scroll border border-gray-200 rounded-md w-full'>
+                                        <div className="variationKeys border-b border-gray-300 flex items-center justify-between px-2 w-full max-2xl">
+                                            <div className=" bg-gray-50 rounded-md h-[30px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center invisible">
+                                            </div>
+                                            <p className=" break-words text-sm mx-1 px-1 flex-1 flex-shrink-1 w-0 invisible">Red</p>
+
+                                            <p className="rounded-md mx-2 text-gray-400 flex-1 flex-shrink-1 w-0 text-sm text-center">Compare At Price</p>
+                                            <p className="rounded-md mx-2 text-gray-400 flex-1 flex-shrink-1 w-0 text-sm text-center">Price</p>
+                                            <p className="rounded-md mx-2 text-gray-400 flex-1 flex-shrink-1 w-0 text-sm text-center">SKU</p>
+                                            <p className="rounded-md mx-2 text-gray-400 flex-1 flex-shrink-1 w-0 text-sm text-center">Stock</p>
+
+                                        </div>
+                                        {variationValues.length > 0 && variationValues.map((variation, index) => {
+                                            if (variation.options && variation.options.length > 0) {
+                                                return (
+                                                    <div key={index} className='variationKeys mt-4 flex items-center justify-between p-2 w-full max-2xl'>
+                                                        <Dialog>
+                                                            <DialogTrigger asChild>
+                                                                {
+                                                                    variation?.mediaObjectKey ?
+                                                                        (
+                                                                            variation.mediaObjectKey.includes('http') ?
+                                                                                (
+                                                                                    <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                        <img src={variation?.mediaObjectKey} alt="variation" className=" cursor-pointer w-10 h-10 rounded-md" />
+                                                                                    </div>
+                                                                                )
+                                                                                :
+                                                                                (
+                                                                                    !variation.mediaObjectKey.includes('http') ?
+                                                                                        (
+                                                                                            // Another action for HTTPS
+                                                                                            <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                                {Object.keys(cache).length === objectKeys.length ? <CustomImage key={index} objectKey={variation?.mediaObjectKey} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} width='full' height='full' /> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                                    {/* Different component or action */}
+                                                                                                    <CiImageOn color='#818181' fontSize="20px" className='cursor-pointer' />
+                                                                                                </div>}
+                                                                                            </div>
+                                                                                        )
+                                                                                        :
+                                                                                        (
+                                                                                            // If neither HTTP nor HTTPS
+                                                                                            <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                                <CustomImage key={index} objectKey={variation?.mediaObjectKey}
+                                                                                                    width='full' height='full' removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
+                                                                                            </div>
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                        :
+                                                                        (
+                                                                            // Handle case when mediaObjectKey is not defined
+                                                                            <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
+                                                                                {/* Different component or action */}
+                                                                                <CiImageOn color='#818181' fontSize="20px" className='cursor-pointer' />
+                                                                            </div>
+                                                                        )
+                                                                }
+                                                            </DialogTrigger>
+                                                            <DialogContent>
+                                                                <DialogHeader>
+                                                                    <div className="flex flex-col items-center justify-center">
+                                                                        <DialogTitle>Select image to add as a variation image</DialogTitle>
+                                                                    </div>
+                                                                </DialogHeader>
+                                                                <div className=' max-h-64 overflow-y-scroll flex items-center justify-start flex-wrap'>
+                                                                    {objectKeys?.map((key, index) => {
+                                                                        if (key?.includes("http")) {
+                                                                            return (
+                                                                                <div key={index} className="relative group w-[30%] mr-2 mt-4 ">
+                                                                                    <img
+                                                                                        key={index}
+                                                                                        src={key}
+                                                                                        alt={`custom-${key}`}
+                                                                                        className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
+                                                                                    />
+
+                                                                                    <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
+                                                                                        <span onClick={() => {
+                                                                                            simulateEscapeClick(),
+                                                                                                setVariationValues((prevVariationValues: any) =>
+                                                                                                    prevVariationValues.map((allvar: any) => {
+                                                                                                        if (allvar.id !== variation.id) {
+                                                                                                            return allvar;
+                                                                                                        }
+
+                                                                                                        return { ...variation, mediaObjectKey: key };
+                                                                                                    })
+                                                                                                );
+                                                                                        }} className="text-white text-3xl font-bold cursor-pointer"><FaCheckCircle /></span>
+                                                                                    </div>
                                                                                 </div>
                                                                             )
-                                                                            :
-                                                                            (
-                                                                                !variation.mediaObjectKey.includes('http') ?
-                                                                                    (
-                                                                                        // Another action for HTTPS
-                                                                                        <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                                            {Object.keys(cache).length === objectKeys.length ? <CustomImage key={index} objectKey={variation?.mediaObjectKey} removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} width='full' height='full' /> : <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                                                {/* Different component or action */}
-                                                                                                <CiImageOn color='#818181' fontSize="20px" />
-                                                                                            </div>}
-                                                                                        </div>
-                                                                                    )
-                                                                                    :
-                                                                                    (
-                                                                                        // If neither HTTP nor HTTPS
-                                                                                        <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                                            <CustomImage key={index} objectKey={variation?.mediaObjectKey}
-                                                                                                width='full' height='full' removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
-                                                                                        </div>
-                                                                                    )
-                                                                            )
-                                                                    )
-                                                                    :
-                                                                    (
-                                                                        // Handle case when mediaObjectKey is not defined
-                                                                        <div className=' bg-gray-50 rounded-md h-[40px] w-[40px] border shadow-sm border-[#DDDDDD] flex items-center justify-center'>
-                                                                            {/* Different component or action */}
-                                                                            <CiImageOn color='#818181' fontSize="20px" />
-                                                                        </div>
-                                                                    )
-                                                            }
-                                                        </DialogTrigger>
-                                                        <DialogContent>
-                                                            <DialogHeader>
-                                                                <div className="flex flex-col items-center justify-center">
-                                                                    <DialogTitle>Select image to add as a variation image</DialogTitle>
-                                                                </div>
-                                                            </DialogHeader>
-                                                            <div className=' max-h-64 overflow-y-scroll flex items-center justify-start flex-wrap'>
-                                                                {objectKeys?.map((key, index) => {
-                                                                    if (key?.includes("http")) {
-                                                                        return (
-                                                                            <div key={index} className="relative group w-[30%] mr-2 mt-4 ">
-                                                                                <img
-                                                                                    key={index}
-                                                                                    src={key}
-                                                                                    alt={`custom-${key}`}
-                                                                                    className="w-full h-full border-2 border-gray-200 rounded-md prod-images"
-                                                                                />
-
+                                                                        } else if (!key.includes("https")) {
+                                                                            return <div key={index} className="relative group w-[30%] mr-2 mt-4 rrr">
+                                                                                <CustomImage key={index} objectKey={key} width='full' height='full' removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
                                                                                 <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
                                                                                     <span onClick={() => {
                                                                                         simulateEscapeClick(),
@@ -937,46 +981,31 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                                     }} className="text-white text-3xl font-bold cursor-pointer"><FaCheckCircle /></span>
                                                                                 </div>
                                                                             </div>
-                                                                        )
-                                                                    } else if (!key.includes("https")) {
-                                                                        return <div key={index} className="relative group w-[30%] mr-2 mt-4 rrr">
-                                                                            <CustomImage key={index} objectKey={key} width='full' height='full' removeImage={removeImage} cache={cache} updateCache={handleCacheUpdate} />
-                                                                            <div className="absolute inset-0 bg-gray-500 opacity-0 rounded-md group-hover:opacity-50 flex justify-center items-center">
-                                                                                <span onClick={() => {
-                                                                                    simulateEscapeClick(),
-                                                                                        setVariationValues((prevVariationValues: any) =>
-                                                                                            prevVariationValues.map((allvar: any) => {
-                                                                                                if (allvar.id !== variation.id) {
-                                                                                                    return allvar;
-                                                                                                }
+                                                                        } else {
+                                                                            return null
+                                                                        }
 
-                                                                                                return { ...variation, mediaObjectKey: key };
-                                                                                            })
-                                                                                        );
-                                                                                }} className="text-white text-3xl font-bold cursor-pointer"><FaCheckCircle /></span>
-                                                                            </div>
-                                                                        </div>
-                                                                    } else {
-                                                                        return null
-                                                                    }
-
-                                                                })}
-                                                            </div>
-                                                        </DialogContent>
-                                                    </Dialog>
-                                                    <p className=' break-words text-sm mx-1 px-1 flex-1 flex-shrink-1 w-0'>{variation?.options?.toString().split(",").join(" / ")}</p>
-                                                    <div className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0 flex items-center'>
-                                                        {<p className='mr-1'>{decideCountry()}</p>}<input className='focus:outline-none w-full' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
-                                                    </div>
-                                                    <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
-                                                    <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Stock' name="stock" value={variation.stock} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} /></div>
-                                            );
-                                        } else {
-                                            // Render nothing if variation.options is empty
-                                            return null;
-                                        }
-                                    })}
-                                </div>}
+                                                                    })}
+                                                                </div>
+                                                            </DialogContent>
+                                                        </Dialog>
+                                                        <p className=' break-words text-sm mx-1 px-1 flex-1 flex-shrink-1 w-0'>{variation?.options?.toString().split(",").join(" / ")}</p>
+                                                        <div className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0 flex items-center'>
+                                                            {<p className='mr-1'>{decideCountry()}</p>}<input className='focus:outline-none w-full' type='text' placeholder='Compare at Price' name="compareAtPrice" value={variation.compareAtPrice} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                        </div>
+                                                        <div className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0 flex items-center'>
+                                                            {<p className='mr-1'>{decideCountry()}</p>}<input className='focus:outline-none w-full' type='text' placeholder='Price' name="price" value={variation.price} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                        </div>
+                                                        <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='SKU' name="sku" value={variation.sku} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} />
+                                                        <input className='border border-gray-300 rounded-md  mx-1 px-1 py-1 flex-1 flex-shrink-1 w-0' type='text' placeholder='Stock' name="stock" value={variation.stock} id={variation.id} onChange={(e) => handleVariationChange(e, variation.id)} /></div>
+                                                );
+                                            } else {
+                                                // Render nothing if variation.options is empty
+                                                return null;
+                                            }
+                                        })}
+                                    </div>
+                                </>}
 
                                 {/* NEW LINE */}
 
