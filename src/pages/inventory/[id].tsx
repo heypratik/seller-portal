@@ -309,6 +309,18 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
         setVariantOptions(filteredVariantOptions);
 
+        let onSale = false;
+        if (Number(values.compareAtPrice) > 0) onSale = true;
+
+        if (onSale == false && productType != "Single Product") {
+            for (let i = 0; i < filteredVariationValues.length; i++) {
+                if (filteredVariationValues[i].compareAtPrice > 0) {
+                    onSale = true;
+                    break;
+                }
+            }
+        }
+
         try {
             if (isPageUpdate) {
                 const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inventory/products/${sellerData?.data?.id}/${id}`, {
@@ -332,17 +344,18 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productMargin: Number(values.productMargin) ? Number(values.productMargin) : 0,
                         productKeywordArray: values.productKeywords.split(","),
                         productImagesArray: objectKeys,
-                        productVariations: filteredVariationValues,
-                        variantOptions: filteredVariantOptions,
+                        productVariations: filteredVariationValues, // This is the variation values like red, blue etc
+                        variantOptions: filteredVariantOptions, // This is the variation options like color, size etc
                         productType: values.productType,
-                        productCollections: productCollections
+                        productCollections: productCollections,
+                        onSale: onSale
                     })
                 })
                 const data = await response.json();
 
                 if (data.success) {
                     notification(true, "Product Updated successfully.");
-                    router.push('/inventory/products');
+                    // router.push('/inventory/products');
                     setLoading(false);
                 } else {
                     if (data.message) {
@@ -378,7 +391,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                         productVariations: filteredVariationValues,
                         variantOptions: filteredVariantOptions,
                         productType: values.productType,
-                        productCollections: productCollections
+                        productCollections: productCollections,
+                        onSale: onSale
                     })
                 })
                 const data = await response.json();
@@ -640,7 +654,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             .replace(/([A-Z])/g, ' $1') // Insert a space before each uppercase letter
             .replace(/^./, (str: any) => str.toUpperCase()); // Capitalize the first letter
     };
-
 
     return (
         <Layout>
