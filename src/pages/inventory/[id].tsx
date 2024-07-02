@@ -257,6 +257,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
 
     async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: any, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productSizeValue: string, productType: string, compareAtPrice: string }) {
+        console.log("sending form...")
         setLoading(true)
 
         if (objectKeys.length === 0) {
@@ -645,7 +646,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
             <div className="py-6 h-screen">
-                <button onClick={(e) => checkFormikErrors()}>CHECK</button>
                 <div className="mx-auto px-4 sm:px-6 md:px-8 ">
                     <Breadcrums parent={"Inventory"} childarr={[`${isPageUpdate ? "Update Product" : "Add Product"}`]} />
                 </div>
@@ -1056,7 +1056,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
 
                                 <div className="mt-16 flex">
-                                    <button disabled={!checkFormikErrors()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
+                                    <button onClick={() => onSubmit(values)} disabled={!checkFormikErrors()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
