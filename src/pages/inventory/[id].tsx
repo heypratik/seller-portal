@@ -282,6 +282,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             delete requiredValues.productPrice;
             delete requiredValues.productSize;
             delete requiredValues.productSizeValue;
+            delete requiredValues.compareAtPrice;
         }
 
         // Check if all other fields have a value
