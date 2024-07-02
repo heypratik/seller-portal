@@ -610,10 +610,41 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     }
 
 
+    function checkFormikErrors() {
+        const toSkip = [
+            "productPrice",
+            "compareAtPrice",
+            "productSizeValue",
+            "productQuantity",
+            "productCost"
+        ]
+        if (productType == "Variable Product") {
+            // check if formik errors are present
+            if (Object.keys(formik.errors).length > 0) {
+                // check if all keys are present in to skip & if yes return true else false
+                const keys = Object.keys(formik.errors);
+                const isAllKeysPresent = keys.every((key) => toSkip.includes(key));
+                if (isAllKeysPresent) {
+                    return true
+                } else {
+                    return false
+                }
+            }
+        }
+    }
+
+    const formatKey = (key: any) => {
+        return key
+            .replace(/([A-Z])/g, ' $1') // Insert a space before each uppercase letter
+            .replace(/^./, (str: any) => str.toUpperCase()); // Capitalize the first letter
+    };
+
+
     return (
         <Layout>
             <Toaster position="top-center" reverseOrder={true} />
             <div className="py-6 h-screen">
+                <button onClick={(e) => checkFormikErrors()}>CHECK</button>
                 <div className="mx-auto px-4 sm:px-6 md:px-8 ">
                     <Breadcrums parent={"Inventory"} childarr={[`${isPageUpdate ? "Update Product" : "Add Product"}`]} />
                 </div>
@@ -1024,16 +1055,16 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
 
                                 <div className="mt-16 flex">
-                                    <button disabled={Object.keys(formik.errors).length > 0} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
+                                    <button disabled={!checkFormikErrors()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
-                                {Object.keys(formik.errors).length > 0 && (
+                                {!checkFormikErrors() && (
                                     <>
                                         <p className='text-red-500 mt-2 text-sm'>Solve the above errors to add product</p>
                                         <ul className='list-disc list-inside text-red-500'>
                                             {Object.entries(formik.errors).map(([key, error]: [key: any, error: any]) => (
-                                                <li key={key}>{error}</li>
+                                                <li className='text-red-500 mt-2 text-sm' key={key}>{`${formatKey(key)}: ${error}`}</li>
                                             ))}
                                         </ul>
                                     </>

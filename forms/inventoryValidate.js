@@ -1,12 +1,13 @@
 export default function inventoryValidate(values) {
     const errors = {}
-    const specialCharPattern = /[^a-zA-Z0-9\s]/;
+    const specialCharPattern = /[^a-zA-Z0-9\s\-|]/;
 
-    const keywordPattern = /[^a-zA-Z0-9,\s]/;
+    const keywordPattern = /[^a-zA-Z0-9\s\-|]/;
 
         if (!values.productName) {
           errors.productName = 'Required';
         } else if (specialCharPattern.test(values.productName)) {
+          
           errors.productName = 'Name should not contain special characters';
         }
 
