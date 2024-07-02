@@ -170,8 +170,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     const productCostError = formik.errors.productCost && formik.touched.productCost
     const compareAtPriceError = formik.errors.compareAtPrice && formik.touched.compareAtPrice
 
-    console.log("HELLO", formik.errors)
-
     const { values, setFieldValue } = formik;
 
     function removeImage(key: string) {
@@ -1030,7 +1028,17 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
-                                {Object.keys(formik.errors).length > 0 && <p className='text-red-500 mt-2 text-sm'>Solve the above errors to add product</p>}
+                                {Object.keys(formik.errors).length > 0 && (
+                                    <>
+                                        <p className='text-red-500 mt-2 text-sm'>Solve the above errors to add product</p>
+                                        <ul className='list-disc list-inside text-red-500'>
+                                            {Object.entries(formik.errors).map(([key, error]: [key: any, error: any]) => (
+                                                <li key={key}>{error}</li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )}
+
                             </div>
                             <div className='sidebar bg-white shadow-[0_2px_8px_rgb(0,0,0,0.1)] rounded-lg p-7 flex-[0.3]'>
                                 <div className="flex-1">
