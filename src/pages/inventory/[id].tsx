@@ -646,6 +646,14 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                     return false
                 }
             }
+        } else {
+            if (productType == "Single Product") {
+                if (Object.keys(formik.errors).length > 0) {
+                    return false
+                } else {
+                    return true
+                }
+            }
         }
     }
 
