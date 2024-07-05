@@ -429,7 +429,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
     }
 
     function generateVariants(options: VariantOption[]): string[][] {
-        console.log(options);
         const result: string[][] = [];
 
         function generateCombinations(index: number, currentCombination: string[]): void {
@@ -635,7 +634,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
             "productCost"
         ]
         if (productType == "Variable Product") {
-            // check if formik errors are present
+
             if (Object.keys(formik.errors).length > 0) {
                 // check if all keys are present in to skip & if yes return true else false
                 const keys = Object.keys(formik.errors);
@@ -645,6 +644,8 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                 } else {
                     return false
                 }
+            } else {
+                return true
             }
         } else {
             if (productType == "Single Product") {
@@ -1077,7 +1078,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
 
                                 <div className="mt-16 flex">
-                                    <button onClick={() => onSubmit(values)} disabled={!checkFormikErrors()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
+                                    <button disabled={!checkFormikErrors()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
