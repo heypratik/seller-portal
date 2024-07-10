@@ -206,7 +206,6 @@ export default function Products({ session, sellerData }: any) {
     function checkproductDetails(row: any, type: string) {
         if (type == "quantity") {
             if (row.productType === "Single Product") {
-                console.log(row.productQuantity)
                 return row.productQuantity;
             }
 
@@ -343,7 +342,7 @@ export default function Products({ session, sellerData }: any) {
                                                                 </td>
                                                                 <td className="py-2 px-4 border-b">{checkproductDetails(row, "quantity")}</td>
                                                                 <td className="py-2 px-4 border-b">{decideCountry()}{checkproductDetails(row, "price")}</td>
-                                                                <td className="py-2 px-4 border-b">{row.productCost}</td>
+                                                                <td className="py-2 px-4 border-b">{checkproductDetails(row, "price") * 6 / 100}</td>
                                                                 <td className="py-2 px-4 border-b">{row.productCategory}</td>
                                                                 <td className="py-2 px-4 border-b">
                                                                     <div className="flex items-center">

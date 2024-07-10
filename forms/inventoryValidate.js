@@ -48,19 +48,19 @@ export default function inventoryValidate(values) {
             errors.productSizeValue = 'Invalid size';
         } 
 
-        if (!values.productQuantity) {
-            errors.productQuantity = 'Required';
-        } else if (values.productQuantity < 0) {
-            errors.productQuantity = 'Quantity cannot be negative';
-        } else if (values.productQuantity > 1000000) {
-            errors.productQuantity = 'Quantity should be less than 1000000';
-        } else if (String(values.productQuantity).includes(" ")) { 
-            errors.productQuantity = 'Invalid quantity';
-        } else if (isNaN(values.productQuantity)) {
-            errors.productQuantity = 'Quantity should be a number';
-        } else if (String(values.productQuantity).includes(".")) {
-            errors.productQuantity = 'Quantity should be a whole number';
-        } 
+        if (values.productQuantity === undefined || values.productQuantity === null) {
+          errors.productQuantity = 'Required';
+      } else if (values.productQuantity < 0) {
+          errors.productQuantity = 'Quantity cannot be negative';
+      } else if (values.productQuantity > 1000000) {
+          errors.productQuantity = 'Quantity should be less than 1000000';
+      } else if (String(values.productQuantity).includes(" ")) { 
+          errors.productQuantity = 'Invalid quantity';
+      } else if (isNaN(values.productQuantity)) {
+          errors.productQuantity = 'Quantity should be a number';
+      } else if (String(values.productQuantity).includes(".")) {
+          errors.productQuantity = 'Quantity should be a whole number';
+      }
 
         if (!values.productCost) {
             errors.productCost = 'Required';

@@ -23,6 +23,8 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
     const orderDetails = orderData
 
+    console.log(orderDetails)
+
     // console.log(sellerData.data.Brands[0])
 
     const [editingField, setEditingField] = useState<string>();
@@ -35,14 +37,14 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
         initialValues: {
             orderNotes: orderDetails?.orderNotes ? orderDetails?.orderNotes : "No Notes",
             customerShippingName: orderDetails?.shipping_address?.name ? orderDetails?.shipping_address?.name : "No Name",
-            customerShippingEmail: orderDetails?.shipping_address?.email ? orderDetails?.shipping_address?.email : "No Email",
+            customerShippingEmail: orderDetails?.user?.email ? orderDetails?.user?.email : "No Email",
             customerShippingAddress: orderDetails?.shipping_address?.address ? orderDetails?.shipping_address?.address : "No Address",
             customerShippingCountry: orderDetails?.shipping_address?.country ? orderDetails?.shipping_address?.country : "No Country",
             customerPincode: orderDetails?.shipping_address?.pincode ? orderDetails?.shipping_address?.pincode : "No Pincode",
 
-            customerEmail: orderDetails?.billing_address?.email ? orderDetails?.billing_address?.email : "No Email",
+            customerEmail: orderDetails?.user?.email ? orderDetails?.user?.email : "No Email",
             customerName: orderDetails?.billing_address?.name ? orderDetails?.billing_address?.name : "No Name",
-            customerPhone: orderDetails?.billing_address?.mobileNumber ? orderDetails?.billing_address?.mobileNumber : "No Phone Number",
+            customerPhone: orderDetails?.userProfile?.contactNumber ? orderDetails?.userProfile?.contactNumber : "No Phone Number",
             customerBillingAddress: orderDetails?.billing_address?.address ? orderDetails?.billing_address?.address : "No Address",
             customerBillingCountry: orderDetails?.billing_address?.country ? orderDetails?.billing_address?.country : "No Country",
             customerBillingPincode: orderDetails?.billing_address?.pincode ? orderDetails?.billing_address?.pincode : "No Pincode",
@@ -468,7 +470,6 @@ export async function getServerSideProps({ req }: any) {
             }
         }
     }
-
     const orderData = orderDataJson.orders[0]
 
     return {

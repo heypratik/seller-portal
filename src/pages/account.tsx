@@ -410,7 +410,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
                                         </div>
 
                                         <h3 className=' text-xl font-medium mt-6'>Mobile No*</h3>
-                                        <div className={`${editingInput == "mobileNumber" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('mobileNumber')} disabled={editingInput !== "mobileNumber"} type="email" id="mobileNumber" name="mobileNumber" className={`${editingInput == "mobileNumber" && "bg-white"} bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='+91 987456321' />
+                                        <div className={`${editingInput == "mobileNumber" && "bg-white"} flex items-center justify-between bg-[#f7f9fa] outline-none focus:outline-none mt-4 border border-[#DDDDDD] rounded-md px-5 py-4 w-[470px]`}><input {...formik.getFieldProps('mobileNumber')} disabled={editingInput !== "mobileNumber"} pattern="^\+?(\d{1,4}[-.\s]?)?(\(?\d{1,4}\)?[-.\s]?)?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$" type="tel" id="mobileNumber" name="mobileNumber" className={`${editingInput == "mobileNumber" && "bg-white"}  bg-[#f7f9fa] outline-none focus:outline-none w-full`} placeholder='eg: +1 222-22-2222' />
                                             <GoPencil fontSize={20} onClick={() => setEditingInput("mobileNumber")} className=' cursor-pointer' />
                                         </div>
                                     </div>
@@ -437,7 +437,7 @@ function Account({ sellerData, accountData, session }: { sellerData: SellerData,
                                         </div>
                                         <a href={customerPortalUrl || ""} target='_blank' rel="noreferrer"><button type='button' disabled={!customerPortalUrl} className='bg-[#f23250] font-semibold p-3 text-white rounded-md mt-6 text-base disabled:bg-gray-400 '>Manage billing</button></a>
                                     </div>
-                                    {showPopup && (
+                                    {showPopup && !activeSubscription && (
                                         <div className="fixed z-10 inset-0 overflow-y-auto">
                                             <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                                                 <div className="fixed inset-0 transition-opacity" aria-hidden="true">

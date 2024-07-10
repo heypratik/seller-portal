@@ -257,7 +257,6 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
 
     async function onSubmit(values: { productName: string, productCategory: string, productColor: string, productSize: string, productQuantity: string, productDescription: string, productSku: string, productSubCategory: any, productPrice: string, productCost: string, productMargin: string, productKeywords: string, productSizeValue: string, productType: string, compareAtPrice: string }) {
-        console.log("sending form...")
         setLoading(true)
 
         if (objectKeys.length === 0) {
@@ -274,9 +273,9 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
         // Create a copy of values excluding the optional fields
         const requiredValues: { [key: string]: any } = { ...values };
+        delete requiredValues.productColor;
 
         if (productType != "Single Product") {
-            delete requiredValues.productColor;
             delete requiredValues.productQuantity;
             delete requiredValues.productMargin;
             delete requiredValues.productCost;
@@ -774,18 +773,19 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
                                                             <div className='flex items-center justify-start'>
                                                                 <div>
-                                                                    <select {...formik.getFieldProps('productColor')} name='productColor' id="productColor" className='mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
-                                                                        <option value="English">Color</option>
-                                                                        <option value="Spanish">Sub Category 1</option>
-                                                                        <option value="Spanish">Sub Category 2</option>
-                                                                        <option value="Spanish">Sub Category 3</option>
-                                                                    </select>
+                                                                    <input
+                                                                        type="color"
+                                                                        {...formik.getFieldProps('productColor')}
+                                                                        name="productColor"
+                                                                        id="productColor"
+                                                                        className='mr-3 w-[128px] h-16 bg-transparent rounded-md'
+                                                                    />
                                                                     <p className='text-center text-sm italic text-gray-600'>(Color)</p>
                                                                 </div>
 
                                                                 <>
                                                                     <div>
-                                                                        <input type='number' {...formik.getFieldProps('productSizeValue')} name='productSizeValue' placeholder='Size Value' id="productSizeValue" className={`mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]  ${productSizeValueError && 'border !border-red-500'}`} />
+                                                                        <input type='number' {...formik.getFieldProps('productSizeValue')} name='productSizeValue' placeholder='Size Value' id="productSizeValue" className={`no-spin mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px]  ${productSizeValueError && 'border !border-red-500'}`} />
                                                                         <p className='text-center text-sm italic text-gray-600'>(Size Value)</p>
                                                                         {productSizeValueError && <p className='text-red-500 text-xs absolute'> {formik.errors.productSizeValue}</p>}
                                                                     </div>
@@ -807,7 +807,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                 </>
 
                                                                 <div>
-                                                                    <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' placeholder='Quantity' id="productQuantity" className={`mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productQuantityError && 'border !border-red-500'}`} />
+                                                                    <input type='number' {...formik.getFieldProps('productQuantity')} name='productQuantity' placeholder='Quantity' id="productQuantity" className={`no-spin mr-3 outline-none focus:outline-none border-brand-border rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productQuantityError && 'border !border-red-500'}`} />
                                                                     <p className='text-center text-sm italic text-gray-600'>(Quantity)</p>
                                                                     {productQuantityError && <p className='text-red-500 text-xs absolute'> {formik.errors.productQuantity}</p>}
 
@@ -821,7 +821,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                             <div className='flex items-center justify-start mt-4'>
                                                                 <div>
                                                                     <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${compareAtPriceError && 'border !border-red-500'}`}>
-                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('compareAtPrice')} name='compareAtPrice' id="compareAtPrice" className={`w-full focus:outline-none`} placeholder='Compare Price' />
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('compareAtPrice')} name='compareAtPrice' id="compareAtPrice" className={`no-spin w-full focus:outline-none`} placeholder='Compare Price' />
 
                                                                     </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(Compare At Price)</p>
@@ -829,7 +829,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                 </div>
                                                                 <div>
                                                                     <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productPriceError && 'border !border-red-500'}`}>
-                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className={`w-full focus:outline-none`} placeholder='Price' />
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productPrice')} name='productPrice' id="productPrice" className={`no-spin w-full focus:outline-none`} placeholder='Price' />
 
                                                                     </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(Price)</p>
@@ -839,7 +839,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                                                                 <div>
 
                                                                     <div className={`flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px] ${productCostError && 'border !border-red-500'}`}>
-                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='w-full focus:outline-none' placeholder='COGS' />
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productCost')} name='productCost' id="productCost" className='no-spin w-full focus:outline-none' placeholder='COGS' />
                                                                     </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(COGS)</p>
                                                                     {productCostError && <p className='text-red-500 text-xs absolute'> {formik.errors.productPrice}</p>}
@@ -847,7 +847,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
                                                                 <div>
                                                                     <div className='flex items-center mr-3 outline-none focus:outline-none border border-white rounded bg-white text-brand-text px-5 py-4 w-[148px]'>
-                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='w-full focus:outline-none' placeholder={`Margin: $${prodMargin && prodMargin}`} />
+                                                                        {<p className='mr-1'>{decideCountry()}</p>}<input type='number' {...formik.getFieldProps('productMargin')} name='productMargin' id="productMargin" className='no-spin w-full focus:outline-none' placeholder={`Margin: $${prodMargin && prodMargin}`} />
                                                                     </div>
                                                                     <p className='text-center text-sm italic text-gray-600'>(Margin)</p>
 

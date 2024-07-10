@@ -177,6 +177,7 @@ export default function Dashboard({ session, sellerData }: any) {
   useEffect(() => {
     async function fetchData() {
       const result = await getData()
+      console.log(result)
       setData(result)
     }
     fetchData()
