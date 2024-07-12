@@ -6,9 +6,12 @@ import { BsPencil } from 'react-icons/bs'
 import { getSession } from 'next-auth/react'
 import { CiImageOn } from 'react-icons/ci'
 import CustomImage from '../../../../utlis/CustomImage';
-
+import { useRouter } from "next/router";
 
 export default function OrderID({ orderData }: { orderData: any }) {
+
+    const router = useRouter()
+
 
     const orderDetails = orderData
     const [editingTrackingNumber, setEditingTrackingNumber] = useState<any>([]);
@@ -61,6 +64,45 @@ export default function OrderID({ orderData }: { orderData: any }) {
     }
 
     async function handleSubmit() {
+
+        let atLeastOneItemFulfilled = false;
+        editingTrackingNumber.forEach((item: any) => {
+            if (item.tracking && item.carrier) {
+                atLeastOneItemFulfilled = true;
+            }
+        });
+
+        if (!atLeastOneItemFulfilled) {
+            notification(false, 'Please add tracking number for at least one item');
+            return;
+        }
+
+        // Check if one or more tracking numbers are > 0 but < 4 or item carrier is > 0 but less than 3
+        let invalidTrackingNumbers = false;
+        editingTrackingNumber.forEach((item: any) => {
+            if ((item.tracking.length > 0 && item.tracking.length < 4) || (item.carrier.length > 0 && item.carrier.length < 3)) {
+                invalidTrackingNumbers = true;
+            }
+        });
+
+        if (invalidTrackingNumbers) {
+            notification(false, 'Invalid tracking number or carrier name');
+            return;
+        }
+
+
+        // Check if one or more tracking numbers have been added but carrier name is missing or vice versa
+        let missingTrackingNumbers = false;
+        editingTrackingNumber.forEach((item: any) => {
+            if ((item.tracking.length > 0 && item.carrier.length === 0) || (item.carrier.length > 0 && item.tracking.length === 0)) {
+                missingTrackingNumbers = true;
+            }
+        });
+
+        if (missingTrackingNumbers) {
+            notification(false, 'Please add both tracking number and carrier name for each item');
+            return;
+        }
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/fulfill-order/${orderDetails?.id}`, {
             method: 'POST',
             headers: {
@@ -72,6 +114,7 @@ export default function OrderID({ orderData }: { orderData: any }) {
         const data = await response.json();
 
         if (data.success) {
+            router.push(`/orders/${orderDetails?.id}`)
             notification(true, 'Tracking Number Added successfully')
         } else {
             notification(false, 'Something Went Wrong')

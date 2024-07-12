@@ -238,7 +238,7 @@ export default function Orders({ session, ordersData, sellerData }: any) {
                                 year: 'numeric'
                               })}`}</td>
                               <td className="py-4 px-4 border-b">{row.customerName}</td>
-                              <td className="py-4 px-4 border-b"><span className={`${row.status.toUpperCase() === 'UNFULFILLED' ? 'bg-yellow-500' : 'bg-gray-400'} text-white px-4 py-1 text-sm rounded-xl`}>{row.status.toUpperCase()}</span></td>
+                              <td className="py-4 px-4 border-b"><span className={`${row.status.toUpperCase() === 'UNFULFILLED' ? 'bg-yellow-400' : 'bg-gray-400'} text-white px-4 py-1 text-sm rounded-xl`}>{row.status.toUpperCase()}</span></td>
                               <td className="py-4 px-4 border-b"><span className={`${row.paymentStatus.toUpperCase() === 'PAID' ? 'bg-green-500' : 'bg-red-500'} text-white px-4 py-1 text-sm rounded-xl`}>{row.paymentStatus.toUpperCase()}</span></td>
                               <td className="py-4 px-4 border-b">${row.finalAmount}</td>
                               {/* <Dialog>
@@ -322,12 +322,12 @@ export async function getServerSideProps({ req }: any) {
 
   if (!sellerData?.data?.isPlanActive) {
     return {
-        redirect: {
-            destination: '/account',
-            permanent: false
-        }
+      redirect: {
+        destination: '/account',
+        permanent: false
+      }
     }
-}
+  }
 
   // Get the seller data using the email that the user is logged in with
   // const orderResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/order/user/${sellerData?.data?.Brands[0]?.id}?page=1&limit=20`)

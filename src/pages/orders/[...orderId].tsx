@@ -144,6 +144,10 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
         }
     }
 
+    function allItemsHaveTrackingNo() {
+        return orderDetails.orderItems.every((item: any) => item.shipmentTrackingNo);
+    }
+
 
     return (
         <Layout>
@@ -226,7 +230,7 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                         })}
                                                     </div>}
 
-                                                    <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
+                                                    {!allItemsHaveTrackingNo() && <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
                                                         <span className='mb-5 flex items-center'>
                                                             <HiOutlineExclamationCircle filter='drop-shadow(0px 0px 5px rgb(255 19 3 / 0.6)' fontSize='24px' fill='#fff' color='red' />
                                                             <p className='font-semibold ml-4'>Unfulfilled</p>
@@ -265,7 +269,7 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                                     <Link href={`/orders/fulfill/${orderDetails?.id}`}><button className='bg-[#f12d4d] text-white font-medium py-3 px-4 rounded-md border border-[#f12d4d] '>Mark As Fulfilled</button></Link>
                                                                 </div>
                                                             </>}
-                                                    </div>
+                                                    </div>}
 
                                                     {/* Payment Card */}
                                                     <div className='bg-gray-100 mb-6 rounded-lg p-4 '>
@@ -312,6 +316,12 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
 
                                                         <div className='flex justify-between mb-3'>
                                                             <div className='flex w-full'>
+                                                                <p className='flex-1 text-gray-700'>Processing Fee</p>
+                                                            </div>
+                                                            <p className=' text-gray-700'>{`$${orderDetails?.finalAmount / 1.06 * 6 / 100}`}</p>
+                                                        </div>
+                                                        <div className='flex justify-between mb-3'>
+                                                            <div className='flex w-full'>
                                                                 <p className='flex-1 font-bold text-gray-700'>Total</p>
                                                             </div>
                                                             <p className=' font-bold text-gray-700'>{`$${orderDetails?.finalAmount}`}</p>
@@ -323,7 +333,13 @@ function OrderID({ orderData, sellerData }: { orderData: any, sellerData: any })
                                                             <div className='flex w-full'>
                                                                 <p className='flex-1 font-normal text-gray-700'>Paid by Customer</p>
                                                             </div>
-                                                            <p className=' font-normal text-gray-700'>{`$${orderDetails?.finalAmount}`}</p>
+                                                            <p className=' font-normal text-gray-700'>{`$${orderDetails.paymentStatus != "FAILED" ? orderDetails?.finalAmount : 0}`}</p>
+                                                        </div>
+                                                        <div className='flex justify-between mb-3'>
+                                                            <div className='flex w-full'>
+                                                                <p className='flex-1 font-bold  text-gray-700'>Total Est. Payout</p>
+                                                            </div>
+                                                            <p className=' font-bold text-gray-700'>{`$${orderDetails?.totalMrp - (orderDetails?.finalAmount / 1.06 * 6 / 100)}`}</p>
                                                         </div>
 
                                                     </div>
