@@ -639,6 +639,11 @@ export default function ProductList({ sellerData, productData, collecionData }: 
                 const keys = Object.keys(formik.errors);
                 const isAllKeysPresent = keys.every((key) => toSkip.includes(key));
                 if (isAllKeysPresent) {
+                    delete formik.errors.productPrice;
+                    delete formik.errors.compareAtPrice;
+                    delete formik.errors.productSizeValue;
+                    delete formik.errors.productQuantity;
+                    delete formik.errors.productCost;
                     return true
                 } else {
                     return false
@@ -1078,7 +1083,7 @@ export default function ProductList({ sellerData, productData, collecionData }: 
 
 
                                 <div className="mt-16 flex">
-                                    <button disabled={!checkFormikErrors()} type="submit" className="m-w-32 h-11 bg-[#F12D4D] px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
+                                    <button disabled={!checkFormikErrors()} type='submit' className="m-w-32 h-11 bg-[#F12D4D] disabled:bg-gray-200 px-5 flex items-center justify-center rounded-md text-white text-base font-semibold mr-5 cursor-pointer disabled:cursor-not-allowed" value="Add">{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `${isPageUpdate ? "Update Product" : "Add Product"}`}</button>
 
                                     <Link href="/inventory/products"><button type="button" className="w-32 h-11 bg-[#EAEAEA] rounded-md text-[#979797] text-base font-normal cursor-pointer">Cancel </button></Link>
                                 </div>
