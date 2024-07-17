@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { MdOutlineError } from "react-icons/md";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai'
 import { useFormik } from 'formik';
-import signupValidate from '../../forms/signupValidate';
+import resetValidate from '../../forms/resetValidate';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router'
 import { FaCheckCircle } from "react-icons/fa";
@@ -22,7 +22,7 @@ export default function Resetpassword({ token, data }: any) {
             password: "",
             cpassword: "",
         },
-        validate: signupValidate,
+        validate: resetValidate,
         onSubmit
     })
 
@@ -140,7 +140,7 @@ export default function Resetpassword({ token, data }: any) {
                                         <input {...formik.getFieldProps('cpassword')} name='cpassword' type={showPassword ? 'text' : 'password'} placeholder="Confirm Password" className='w-full outline-none' />
                                         {showPassword ? <IoEyeOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' /> : <IoEyeOffOutline onClick={() => setShowPassword(!showPassword)} className=' cursor-pointer' />}
                                     </span>
-                                    <button disabled={formDisabled || Object.keys(formik.errors).length > 0} type="submit" className='h-12 flex justify-center items-center text-white bg-[#f12d4d] w-full rounded-md text-xl font-semibold mt-10'>{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Reset Password`}</button>
+                                    <button disabled={formDisabled || Object.keys(formik.errors).length > 0} type="submit" className='h-12 flex justify-center items-center text-white bg-[#f12d4d] w-full rounded-md text-xl font-semibold mt-10 disabled:bg-gray-300'>{loading ? <AiOutlineLoading3Quarters className='spinner' /> : `Reset Password`}</button>
                                 </form>
                             </div>
 
