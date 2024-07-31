@@ -309,11 +309,13 @@ export default function ProductList({ sellerData, productData, collecionData }: 
         setVariantOptions(filteredVariantOptions);
 
         let onSale = false;
-        if (Number(values.compareAtPrice) > 0) onSale = true;
 
-        if (onSale == false && productType != "Single Product") {
+        if (productType == 'Single Product' && Number(values.compareAtPrice) > 0 && Number(values.compareAtPrice) < Number(values.productPrice)) onSale = true;
+
+        if (productType != "Single Product") {
             for (let i = 0; i < filteredVariationValues.length; i++) {
-                if (filteredVariationValues[i].compareAtPrice > 0) {
+                console.log(filteredVariationValues[i]);
+                if (filteredVariationValues[i].compareAtPrice > 0 && filteredVariationValues[i].compareAtPrice < filteredVariationValues[i].price) {
                     onSale = true;
                     break;
                 }
